@@ -1,0 +1,157 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement
+title: "[FEATURE] "
+labels: ["enhancement", "feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ✨ Feature Request
+
+        Thank you for suggesting a new feature! Your input helps us improve the toolkit.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: Provide a brief summary of the proposed feature.
+      placeholder: What would you like to see added or improved?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of feature is this?
+      options:
+        - New Scientific Framework
+        - Framework Enhancement
+        - Performance Improvement
+        - User Interface/UX
+        - Documentation
+        - Testing/Infrastructure
+        - Integration/API
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: framework
+    attributes:
+      label: Related Framework (if applicable)
+      description: Which existing framework would this feature enhance?
+      options:
+        - Inverse Precision Framework
+        - Optical Depth Enhancement
+        - Chromostereopsis Analysis
+        - 3D Iris Structure Analysis
+        - Post-Quantum Cryptography
+        - Herschel-Bulkley Rheology
+        - Multi-Phase Flow Analysis
+        - Java Security Framework
+        - Biological Flow Systems
+        - Not framework-specific
+    validations:
+      required: false
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem/Use Case
+      description: What problem would this feature solve? What use case would it enable?
+      placeholder: |
+        Currently, users need to...
+        This makes it difficult to...
+        This feature would allow users to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like this feature to work?
+      placeholder: |
+        The feature should...
+        It would include...
+        Example usage...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Have you considered any alternative approaches?
+      placeholder: |
+        Alternative 1: ...
+        Alternative 2: ...
+        Why the proposed solution is better...
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: What would be the impact of this feature?
+      placeholder: |
+        - Performance impact: ...
+        - Breaking changes: ...
+        - Maintenance burden: ...
+        - User experience: ...
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature?
+      options:
+        - Critical (blocks major use cases)
+        - High (important for many users)
+        - Medium (nice to have)
+        - Low (minor enhancement)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Estimated Complexity
+      description: How complex do you think this feature would be to implement?
+      options:
+        - Low (small changes, 1-2 weeks)
+        - Medium (moderate changes, 2-4 weeks)
+        - High (major changes, 1-3 months)
+        - Very High (architectural changes, 3+ months)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: requirements
+    attributes:
+      label: Additional Requirements
+      description: Please check all that apply.
+      options:
+        - label: Would require changes to existing APIs
+        - label: Would require new dependencies
+        - label: Would require documentation updates
+        - label: Would require additional tests
+        - label: Would benefit from performance benchmarking
+        - label: Would need scientific validation
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context or screenshots about the feature request here.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please check all that apply.
+      options:
+        - label: I have searched for similar feature requests
+        - label: This feature would benefit the broader scientific community
+        - label: I am willing to contribute to the implementation (optional)
+        - label: I understand this is a suggestion and final decisions are made by maintainers

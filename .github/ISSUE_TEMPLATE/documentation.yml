@@ -1,0 +1,126 @@
+name: 📚 Documentation Issue
+description: Report documentation problems or request improvements
+title: "[DOCS] "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📚 Documentation Issue
+
+        Help us improve our documentation! This template is for reporting problems or suggesting improvements.
+
+  - type: dropdown
+    id: documentation-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation is this issue about?
+      options:
+        - API Documentation
+        - Framework Guides
+        - Installation Instructions
+        - Tutorial/Examples
+        - Research Papers
+        - Performance Benchmarks
+        - Troubleshooting Guide
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What type of documentation issue is this?
+      options:
+        - Incorrect Information
+        - Missing Information
+        - Outdated Content
+        - Poor Clarity/Readability
+        - Broken Links
+        - Code Examples Issues
+        - Formatting Problems
+        - Translation Request
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Please describe the documentation issue in detail.
+      placeholder: What's wrong with the documentation? What needs to be improved?
+    validations:
+      required: true
+
+  - type: input
+    id: page-url
+    attributes:
+      label: Page URL (if applicable)
+      description: If this is about a specific page, please provide the URL.
+      placeholder: https://your-username.github.io/scientific-computing-toolkit/frameworks/inverse-precision.html
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current Content (if applicable)
+      description: Please quote the current problematic content.
+      placeholder: |
+        The current documentation says:
+        "Use the function like this..."
+
+  - type: textarea
+    id: suggested-improvement
+    attributes:
+      label: Suggested Improvement
+      description: How would you improve this documentation?
+      placeholder: |
+        The documentation should say:
+        "Here's a better explanation..."
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Provide any additional context that might help understand the issue.
+      placeholder: |
+        - Related sections
+        - User impact
+        - Screenshots
+        - Similar issues
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is fixing this documentation issue?
+      options:
+        - Critical (blocks users from using features)
+        - High (major confusion or missing critical info)
+        - Medium (improvement needed but workarounds exist)
+        - Low (minor improvement or enhancement)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: help-offer
+    attributes:
+      label: Would you like to help?
+      description: Are you willing to contribute to fixing this documentation issue?
+      options:
+        - label: I would like to help fix this documentation issue
+        - label: I can provide the corrected content
+        - label: I can review documentation changes
+        - label: I need guidance on how to contribute
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please check all that apply.
+      options:
+        - label: I have searched for similar documentation issues
+        - label: This issue affects multiple users
+        - label: I have provided specific examples
+        - label: I have suggested a concrete improvement

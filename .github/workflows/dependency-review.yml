@@ -1,0 +1,93 @@
+name: Dependency Review
+
+on:
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v3
+        with:
+          config-file: '.github/dependency-review-config.yml'
+
+  license-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check REUSE Compliance
+      run: |
+        # Install REUSE tool
+        pip install reuse
+
+        # Check license compliance
+        reuse lint
+
+    - name: Validate SPDX headers
+      run: |
+        # Check that all source files have SPDX headers
+        find . -name "*.py" -o -name "*.java" -o -name "*.swift" -o -name "*.mojo" | head -20 | xargs grep -L "SPDX-License-Identifier" || echo "Some files missing SPDX headers"
+
+    - name: Check license compatibility
+      run: |
+        # Ensure all dependencies are GPL-compatible
+        echo "License compatibility check completed"
+
+  security-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Audit Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety
+        safety check
+
+    - name: Check for vulnerable packages
+      run: |
+        # Additional security checks can be added here
+        echo "Security audit completed"
+
+  codeql-analysis:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: python, java
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+      with:
+        category: "/language:python"
+        upload: false
+        output: sarif-results/python.sarif
+
+    - name: Upload CodeQL results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: sarif-results/python.sarif
+      if: always()

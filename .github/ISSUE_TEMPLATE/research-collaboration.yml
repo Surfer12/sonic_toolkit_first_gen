@@ -1,0 +1,199 @@
+name: 🔬 Research Collaboration
+description: Propose research collaboration or scientific contribution
+title: "[RESEARCH] "
+labels: ["research", "collaboration"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🔬 Research Collaboration
+
+        We're excited about research collaborations! This template is for proposing scientific contributions, collaborations, or research partnerships.
+
+  - type: textarea
+    id: research-summary
+    attributes:
+      label: Research Summary
+      description: Provide a brief summary of your research proposal or contribution.
+      placeholder: What scientific problem are you addressing? What contribution are you proposing?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: collaboration-type
+    attributes:
+      label: Collaboration Type
+      description: What type of collaboration are you proposing?
+      options:
+        - New Algorithm Implementation
+        - Framework Enhancement
+        - Scientific Validation Study
+        - Performance Optimization
+        - Cross-Disciplinary Integration
+        - Educational Content
+        - Research Partnership
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scientific-domain
+    attributes:
+      label: Scientific Domain
+      description: Which scientific domain does your research focus on?
+      options:
+        - Fluid Dynamics & Rheology
+        - Optical Systems & Biometrics
+        - Cryptography & Security
+        - Biological Systems & Modeling
+        - Materials Science
+        - Computer Vision & Image Processing
+        - Numerical Methods & Optimization
+        - Scientific Computing
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: textarea
+    id: scientific-background
+    attributes:
+      label: Scientific Background
+      description: Please provide your scientific background and expertise relevant to this collaboration.
+      placeholder: |
+        - Academic background: ...
+        - Research experience: ...
+        - Publications: ...
+        - Technical expertise: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-contribution
+    attributes:
+      label: Proposed Contribution
+      description: What specific contribution are you proposing?
+      placeholder: |
+        - What would you implement/add?
+        - What scientific problem would this solve?
+        - How would this benefit the toolkit?
+        - What validation would you perform?
+    validations:
+      required: true
+
+  - type: textarea
+    id: methodology
+    attributes:
+      label: Methodology & Approach
+      description: How would you approach this research problem?
+      placeholder: |
+        - Theoretical foundation: ...
+        - Implementation approach: ...
+        - Validation methodology: ...
+        - Expected outcomes: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: resources-needed
+    attributes:
+      label: Resources Needed
+      description: What resources would you need for this collaboration?
+      placeholder: |
+        - Computational resources: ...
+        - Data requirements: ...
+        - Software dependencies: ...
+        - Time commitment: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-impact
+    attributes:
+      label: Expected Impact
+      description: What impact would this collaboration have?
+      placeholder: |
+        - Scientific impact: ...
+        - Practical applications: ...
+        - Community benefit: ...
+        - Innovation potential: ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: timeline
+    attributes:
+      label: Proposed Timeline
+      description: What is your proposed timeline for this collaboration?
+      options:
+        - 1-3 months (short-term project)
+        - 3-6 months (medium-term collaboration)
+        - 6-12 months (extended collaboration)
+        - Ongoing (long-term partnership)
+        - Flexible (depending on resources)
+    validations:
+      required: true
+
+  - type: textarea
+    id: funding-support
+    attributes:
+      label: Funding & Support
+      description: Do you have funding support or are you seeking funding opportunities?
+      placeholder: |
+        - Current funding status: ...
+        - Grant applications: ...
+        - Institutional support: ...
+        - Seeking collaboration funding: ...
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References & Publications
+      description: Please provide relevant references, publications, or prior work.
+      placeholder: |
+        - Key publications: ...
+        - Related work: ...
+        - GitHub repositories: ...
+        - Personal website: ...
+
+  - type: checkboxes
+    id: collaboration-readiness
+    attributes:
+      label: Collaboration Readiness
+      description: Please check all that apply.
+      options:
+        - label: I have preliminary code/results to share
+        - label: I have access to necessary computational resources
+        - label: I am familiar with the toolkit's architecture
+        - label: I am willing to contribute to documentation
+        - label: I am open to co-authorship on publications
+        - label: I can commit to regular progress updates
+
+  - type: textarea
+    id: contact-information
+    attributes:
+      label: Contact Information
+      description: How can we reach you for further discussion?
+      placeholder: |
+        - Email: ...
+        - Institution: ...
+        - LinkedIn/GitHub: ...
+        - Preferred communication method: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-information
+    attributes:
+      label: Additional Information
+      description: Any additional information you'd like to share?
+
+  - type: checkboxes
+    id: acknowledgments
+    attributes:
+      label: Acknowledgments
+      description: Please confirm you understand our collaboration process.
+      options:
+        - label: I understand this is a proposal and collaboration decisions are made by maintainers
+        - label: I agree to follow the project's code of conduct and contribution guidelines
+        - label: I am willing to sign any necessary contributor agreements
+        - label: I understand intellectual property considerations for research collaborations

@@ -1,0 +1,42 @@
+# Dependency Review Configuration
+# See https://github.com/actions/dependency-review-action
+
+fail_on_severity: moderate
+allow_licenses:
+  - 'GPL-3.0-only'
+  - 'GPL-3.0-or-later'
+  - 'LGPL-3.0-only'
+  - 'LGPL-3.0-or-later'
+  - 'MIT'
+  - 'BSD-2-Clause'
+  - 'BSD-3-Clause'
+  - 'Apache-2.0'
+  - 'ISC'
+  - 'CC0-1.0'
+
+deny_licenses:
+  - 'MS-PL'  # Microsoft Public License
+  - 'WTFPL'  # Do What The F*ck You Want To Public License
+
+vulnerability_check: true
+license_check: true
+base_ref: 'main'
+head_ref: 'HEAD'
+
+# Allow specific packages with known vulnerabilities that are acceptable
+allow_package_names:
+  # List any packages with acceptable vulnerabilities here
+
+# Deny specific packages
+deny_package_names:
+  # List any packages to deny here
+
+# Custom license expressions
+license_expression: 'GPL-3.0-only OR MIT OR BSD-3-Clause OR Apache-2.0'
+
+# Configuration for scientific computing packages
+scientific_packages:
+  numpy: '>=1.23.0'
+  scipy: '>=1.10.0'
+  matplotlib: '>=3.7.0'
+  pandas: '>=2.0.0'

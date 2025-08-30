@@ -22,6 +22,7 @@ New Folder With Items
 **/.git
 
 # Xcode workspace files (problematic)
+
 *.xcworkspace/
 *.xcworkspace
 

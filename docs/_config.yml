@@ -1,0 +1,66 @@
+# Site settings
+title: "Advanced Scientific Computing Toolkit"
+description: "A comprehensive, research-grade scientific computing ecosystem featuring advanced frameworks for fluid dynamics, optical systems, biological modeling, cryptography, and materials science."
+url: "https://your-username.github.io"
+baseurl: "/scientific-computing-toolkit"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# Collections
+collections:
+  frameworks:
+    output: true
+    permalink: /frameworks/:name/
+  api:
+    output: true
+    permalink: /api/:name/
+  research:
+    output: true
+    permalink: /research/:name/
+  tutorials:
+    output: true
+    permalink: /tutorials/:name/
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor/
+  - .bundle/
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+
+# Include files
+include:
+  - _pages
+
+# Repository information
+repository: your-username/scientific-computing-toolkit
+github_username: your-username
+
+# Social media
+social:
+  name: Advanced Scientific Computing Toolkit
+  links:
+    - https://github.com/your-username/scientific-computing-toolkit
+
+# Custom variables
+logo: /assets/images/logo.png
+github: https://github.com/your-username/scientific-computing-toolkit
+
+# SEO settings
+author: "Scientific Computing Research Team"
+social:
+  name: Advanced Scientific Computing Toolkit
+  links:
+    - https://github.com/your-username/scientific-computing-toolkit
