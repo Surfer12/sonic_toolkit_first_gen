@@ -2134,4 +2134,89 @@ class IntelligentPerformanceMonitor:
 3. **Adaptive Uncertainty Quantification**: Provide confidence bounds that adapt to data quality and domain requirements
 4. **Predictive Quality Assessment**: Forecast result quality and suggest improvements proactively
 
+## **Code Quality Standards**
+
+### **Proper Print Statement Formatting**
+**Critical Quality Standard**: All print statements must be properly formatted and syntactically correct.
+
+**✅ CORRECT Format:**
+```python
+# Proper f-string formatting
+print(f"💡 Optimal price class: {price_class} for {use_case}")
+print(f"   Estimated monthly cost: ${optimized_cost:.2f}")
+print(f"   Cost savings: {analysis['cost_savings_percentage']:.1f}%")
+print(f"   Performance score: {analysis['performance_score']:.2f}")
+
+# Proper multi-line formatting
+print(f"\n💰 Price Class Analysis for {args.use_case}:")
+print(f"   Recommended: {analysis['recommended_price_class']}")
+print(f"   Estimated monthly cost: ${analysis['estimated_monthly_cost']:.2f}")
+print(f"   Regions: {', '.join(analysis['regions'])}")
+```
+
+**❌ INCORRECT Format:**
+```python
+# Avoid corrupted print statements
+print(".2f"        print(".1f"        print(".2f"        # SYNTAX ERROR
+print(".1f", "message" + "\n")                         # MALFORMED
+print("
+message:"                                            # INCOMPLETE STRING
+
+# Avoid format specifier corruption
+print(".2f "    print(".1f"            print(".2f "    # BROKEN FORMAT
+```
+
+**Quality Assurance Checklist:**
+- ✅ All f-string format specifiers are properly closed
+- ✅ All print statements have complete string literals
+- ✅ No missing newlines or concatenation issues
+- ✅ Proper variable interpolation in f-strings
+- ✅ Consistent formatting across all output statements
+
+**Automated Validation:**
+```python
+def validate_print_statements(code_content: str) -> List[str]:
+    """Validate print statement formatting in code."""
+    issues = []
+
+    # Check for incomplete f-string format specifiers
+    incomplete_formats = re.findall(r'print\([^)]*\..*[fd]f?[^"]*$', code_content, re.MULTILINE)
+    if incomplete_formats:
+        issues.extend([f"Incomplete f-string format: {fmt}" for fmt in incomplete_formats])
+
+    # Check for malformed print statements
+    malformed_prints = re.findall(r'print\([^)]*\..*[fd]f?[^)]*print\(', code_content)
+    if malformed_prints:
+        issues.extend([f"Malformed print statement: {fmt}" for fmt in malformed_prints])
+
+    # Check for incomplete string literals
+    incomplete_strings = re.findall(r'print\([^"]*$', code_content, re.MULTILINE)
+    if incomplete_strings:
+        issues.extend([f"Incomplete string literal: {lit}" for lit in incomplete_strings])
+
+    return issues
+```
+
+**Integration with CI/CD:**
+```yaml
+# GitHub Actions syntax validation
+- name: Validate Print Statements
+  run: |
+    python -m py_compile cloudfront_reverse_proxy.py
+    python scripts/validate_print_statements.py cloudfront_reverse_proxy.py
+```
+
+### **Syntax Error Prevention**
+**Common Issues to Avoid:**
+1. **Incomplete f-string format specifiers**: Ensure all `{variable:format}` are properly closed
+2. **Malformed print statement concatenation**: Avoid multiple print statements on single lines
+3. **Incomplete string literals**: Always close string quotes properly
+4. **Format specifier corruption**: Maintain proper `.2f`, `.1f`, etc. formatting
+
+**Best Practices:**
+- Use f-strings for variable interpolation: `print(f"Value: {variable:.2f}")`
+- Add newlines explicitly: `print(f"\nSection header: {title}")`
+- Keep print statements readable: One logical output per line
+- Validate syntax regularly: Run `python -m py_compile` to catch errors early
+
 This intelligent data flow integration framework transforms the basic data-flow-integration-patterns.mdc into an AI-powered system that adapts to context, learns from experience, and optimizes processing strategies dynamically. The framework ensures high-quality, efficient processing across all scientific computing domains with intelligent decision-making and continuous improvement capabilities.

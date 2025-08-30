@@ -962,7 +962,9 @@ class CloudFrontReverseProxy:
 
         print(f"✅ Price class analysis complete for {use_case}")
         print(f"   Recommended: {config['price_class']}")
-        print(".2f"        print(".1f"        print(".2f"
+        print(f"   Estimated monthly cost: ${optimized_cost:.2f}")
+        print(f"   Cost savings: {analysis['cost_savings_percentage']:.1f}%")
+        print(f"   Performance score: {analysis['performance_score']:.2f}")
         return analysis
 
     def _generate_price_class_recommendations(self, use_case: str, config: Dict[str, Any]) -> List[str]:
@@ -1034,8 +1036,10 @@ class CloudFrontReverseProxy:
         optimal_config = PRICE_CLASS_OPTIMIZATION[use_case]
         price_class = optimal_config["price_class"]
 
-        print(f"💡 Optimal price class: {price_class} for {use_case}")
-        print(".1f"        print(".2f"
+        print(f"💡 Optimal price class: {price_class} for {use_case}" + "\n")
+        print(f"   Estimated monthly cost: ${optimized_cost:.2f}")
+        print(f"   Cost savings: {analysis['cost_savings_percentage']:.1f}%")
+        print(f"   Performance score: {analysis['performance_score']:.2f}") 
         # Create distribution with optimized settings
         distribution_config = self.create_distribution(
             origin_domain=origin_domain,
@@ -1355,7 +1359,10 @@ Examples:
             )
             print(f"\n💰 Price Class Analysis for {args.use_case}:")
             print(f"   Recommended: {analysis['recommended_price_class']}")
-            print(".2f"            print(".1f"            print(".2f"            print(f"   Regions: {', '.join(analysis['regions'])}")
+            print(f"   Estimated monthly cost: ${analysis['estimated_monthly_cost']:.2f}")
+            print(f"   Cost savings: {analysis['cost_savings_percentage']:.1f}%")
+            print(f"   Performance score: {analysis['performance_score']:.2f}")
+            print(f"   Regions: {', '.join(analysis['regions'])}" + "\n")
             print(f"\n📋 Recommendations:")
             for rec in analysis['recommendations']:
                 print(f"   • {rec}")
@@ -1375,15 +1382,18 @@ Examples:
             comparison = cf_proxy.compare_price_class_options(
                 args.origin_domain, args.requests, args.data_transfer
             )
-            print("
-📊 Price Class Comparison Results:"            print(f"🏆 Best Option: {comparison['best_option']['use_case']}")
-            print(".2f"            print(f"💰 Cost Range: ${comparison['summary']['cost_range']['min']:.2f} - ${comparison['summary']['cost_range']['max']:.2f}")
+            print("\n📊 Price Class Comparison Results:")
+            print(f"🏆 Best Option: {comparison['best_option']['use_case']}")
+            print(f"💰 Cost Range: ${comparison['summary']['cost_range']['min']:.2f} - ${comparison['summary']['cost_range']['max']:.2f}")
 
             for use_case, details in comparison.items():
                 if isinstance(details, dict) and "price_class" in details:
                     print(f"\n{use_case.replace('_', ' ').title()}:")
                     print(f"   Price Class: {details['price_class']}")
-                    print(".2f"                    print(".1f"                    print(".2f"                    print(f"   Regions: {len(details['regions'])} locations")
+                    print(f"   Estimated monthly cost: ${details.get('estimated_monthly_cost', 0):.2f}")
+                    print(f"   Cost savings: {details.get('cost_savings_percentage', 0):.1f}%")
+                    print(f"   Performance score: {details.get('performance_score', 0):.2f}")
+                    print(f"   Regions: {len(details['regions'])} locations")
             return 0
 
         else:
