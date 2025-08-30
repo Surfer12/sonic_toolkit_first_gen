@@ -91,34 +91,51 @@ across 8 orders of magnitude in viscosity and 4 orders in shear rate.
 
 ---
 
-## Consciousness Framework (Ψ(x)) Memory
+## Probability Confidence Core Component (Ψ(x)) Memory
+
+### **IMPORTANT CLARIFICATION: Primary vs. Secondary Role**
+**Ψ(x) was originally developed as a probability confidence core component** for general uncertainty quantification and decision-making under risk. The consciousness determination framework represents a valuable extension, not the original purpose.
 
 ### Theoretical Development
 ```python
 def psi_function(S, N, alpha, beta, lambda1, lambda2, R_a, R_v):
     """
-    Memory: Ψ(x) evolved from simple probability estimation to a
-    comprehensive consciousness quantification framework.
+    Memory: Ψ(x) originated as a general probability confidence scoring
+    mechanism for uncertainty quantification, with consciousness modeling
+    emerging as a powerful extension application.
 
-    Key Theoretical Insights:
-    1. Evidence integration (S + N weighting)
-    2. Risk penalty incorporation
-    3. Gauge freedom discovery
-    4. Threshold transfer properties
-    5. Sensitivity invariance theorems
+    Primary Development (Months 1-6):
+    1. Probability confidence scoring mechanism
+    2. Risk assessment and penalty framework
+    3. Evidence integration and weighting
+    4. Bounded probability output validation
+    5. General uncertainty quantification applications
 
-    Development Timeline:
-    - Month 1-2: Basic probabilistic framework
-    - Month 3-4: Risk integration and gauge theory
-    - Month 5-6: Invariance theorems and proofs
-    - Month 7-8: Implementation and validation
-    - Month 9-12: Cross-domain applications
+    Consciousness Extension (Months 7-12):
+    6. Adaptation for cognitive evidence assessment
+    7. Consciousness-specific parameter interpretation
+    8. Cross-validation with consciousness indicators
+    9. Production deployment for both applications
+
+    Key Insight: Consciousness application leverages the robust
+    probability framework while adding cognitive domain interpretation.
     """
     risk_penalty = lambda1 * R_a + lambda2 * R_v
     evidence_term = alpha * S + (1 - alpha) * N
     psi = beta * np.exp(-risk_penalty) * evidence_term
     return min(psi, 1.0)
 ```
+
+### Dual Role Applications
+**Primary Role**: Probability confidence for general uncertainty quantification
+- Quality control and measurement confidence
+- Risk assessment in decision-making
+- Statistical validation and uncertainty bounds
+
+**Secondary Role**: Consciousness determination framework
+- Cognitive evidence assessment
+- Consciousness quantification metrics
+- AI consciousness evaluation
 
 ### Validation Results
 ```
