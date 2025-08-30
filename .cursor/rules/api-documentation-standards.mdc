@@ -1,0 +1,485 @@
+---
+alwaysApply: false
+description: "API documentation standards for scientific computing frameworks"
+globs: *.py,*.java,*.swift
+---
+# API Documentation Standards
+
+## Overview
+This rule establishes comprehensive API documentation standards for scientific computing frameworks, ensuring clear, consistent, and comprehensive documentation for all public interfaces.
+
+## Documentation Structure Requirements
+
+### Class Documentation Template
+```python
+class HybridModel(nn.Module):
+    """Advanced hybrid physics-informed neural network with uncertainty quantification.
+
+    This class implements a sophisticated framework that combines physics-based
+    predictions with neural corrections to provide uncertainty-aware predictions
+    with Ψ(x) confidence calibration.
+
+    The model architecture consists of:
+    - Physics Interpolator: Domain-specific surface-to-sigma transformations
+    - Neural Residual Network: Heteroscedastic uncertainty quantification
+    - Hybrid Integration: Adaptive physics-neural blending with risk assessment
+
+    Attributes:
+        phys (PhysicsInterpolator): Physics-based prediction component
+        nn (ResidualNet): Neural residual correction component
+        alpha (nn.Parameter): Hybrid weighting parameter (learnable)
+        lambdas (Dict[str, float]): Risk penalty weights
+        beta (nn.Parameter): Posterior calibration factor
+
+    Mathematical Foundation:
+        The hybrid prediction is computed as:
+        O(x) = α · S(x) + (1-α) · N(x)
+
+        Where S(x) represents physics-based predictions and N(x) represents
+        neural corrections with associated uncertainty estimates.
+
+    Example:
+        ```python
+        # Initialize model
+        model = HybridModel(
+            grid_metrics={'dx': 1.0, 'dy': 1.0},
+            in_ch=2, out_ch=2
+        )
+
+        # Forward pass
+        inputs = torch.randn(32, 2, 64, 64)
+        outputs = model(inputs)
+
+        # Access results
+        predictions = outputs['O']
+        confidence = outputs['psi']
+        uncertainty = outputs['sigma_res']
+        ```
+    """
+
+    def __init__(self, grid_metrics: Dict[str, float], **kwargs):
+        """Initialize the HybridModel.
+
+        Args:
+            grid_metrics (Dict[str, float]): Grid spacing parameters containing
+                'dx' and 'dy' keys with spatial discretization values.
+            **kwargs: Additional configuration parameters including:
+                - in_ch (int): Input tensor channels (default: 2)
+                - out_ch (int): Output tensor channels (default: 2)
+                - residual_scale (float): Neural residual scaling factor (default: 0.02)
+                - init_alpha (float): Initial hybrid weighting (default: 0.5)
+                - lambda_cog (float): Cognitive risk penalty weight (default: 0.5)
+                - lambda_eff (float): Efficiency risk penalty weight (default: 0.5)
+                - beta (float): Posterior calibration factor (default: 1.0)
+
+        Raises:
+            ValueError: If grid_metrics is missing required keys
+            TypeError: If parameter types are incorrect
+
+        Note:
+            All penalty weights (lambda_cog, lambda_eff) should be positive.
+            The beta parameter controls posterior calibration in Ψ(x) computation.
+        """
+```
+
+### Method Documentation Template
+```python
+def forward(self, x: torch.Tensor, external_P: Optional[torch.Tensor] = None) -> Dict[str, torch.Tensor]:
+    """Execute forward pass with uncertainty quantification.
+
+    This method performs the complete hybrid prediction pipeline, combining
+    physics-based and neural predictions with comprehensive uncertainty analysis
+    and Ψ(x) confidence calibration.
+
+    Args:
+        x (torch.Tensor): Input tensor of shape [B, C, H, W] where:
+            - B: Batch size
+            - C: Number of input channels (typically 2 for velocity fields)
+            - H, W: Spatial dimensions of the input field
+        external_P (Optional[torch.Tensor]): External probability tensor for
+            posterior calibration. If None, defaults to 0.5. Should be scalar
+            or have shape [B, 1, 1, 1].
+
+    Returns:
+        Dict[str, torch.Tensor]: Dictionary containing:
+            - 'S' (torch.Tensor): Physics-based predictions [B, C, H, W]
+            - 'N' (torch.Tensor): Neural corrections [B, C, H, W]
+            - 'O' (torch.Tensor): Hybrid predictions [B, C, H, W]
+            - 'psi' (torch.Tensor): Ψ(x) confidence values [B, C, H, W]
+            - 'sigma_res' (torch.Tensor): Residual uncertainties [B, C, H, W]
+            - 'pen' (torch.Tensor): Risk penalty values [B, 1, 1, 1]
+            - 'R_cog' (torch.Tensor): Cognitive risk values [B, 1, 1, 1]
+            - 'R_eff' (torch.Tensor): Efficiency risk values [B, 1, 1, 1]
+
+    Raises:
+        RuntimeError: If CUDA operations fail on GPU
+        ValueError: If input tensor dimensions are invalid
+
+    Computational Complexity:
+        - Time: O(B × C × H × W × hidden_size)
+        - Space: O(B × C × H × W × model_parameters)
+
+    Example:
+        ```python
+        # Single sample prediction
+        x = torch.randn(1, 2, 64, 64)
+        outputs = model(x)
+
+        # Batch prediction with external probability
+        batch_x = torch.randn(32, 2, 128, 128)
+        external_prob = torch.tensor(0.8)
+        results = model(batch_x, external_prob)
+
+        # Extract key results
+        predictions = results['O']
+        confidence = results['psi']
+        uncertainty = results['sigma_res']
+        ```
+    """
+```
+
+### Function Documentation Template
+```python
+def loss_objective(
+    outputs: Dict[str, torch.Tensor],
+    target: torch.Tensor,
+    w_rec: float = 1.0,
+    w_nll: float = 1.0,
+    w_cog: float = 1.0,
+    w_eff: float = 1.0,
+) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+    """Compute hybrid loss function for training.
+
+    This function implements a comprehensive loss objective that combines
+    reconstruction accuracy, uncertainty quantification, and physical
+    constraints through cognitive and efficiency penalties.
+
+    The total loss is computed as:
+    L = w_rec · ||O - y||² + w_nll · L_nll + w_cog · R_cog + w_eff · R_eff
+
+    Args:
+        outputs (Dict[str, torch.Tensor]): Model outputs from forward pass
+        target (torch.Tensor): Ground truth target tensor [B, C, H, W]
+        w_rec (float): Weight for reconstruction loss (default: 1.0)
+        w_nll (float): Weight for negative log-likelihood (default: 1.0)
+        w_cog (float): Weight for cognitive risk penalty (default: 1.0)
+        w_eff (float): Weight for efficiency risk penalty (default: 1.0)
+
+    Returns:
+        Tuple[torch.Tensor, Dict[str, torch.Tensor]]: Loss tensor and metrics dictionary:
+            - loss (torch.Tensor): Scalar total loss value
+            - metrics (Dict[str, torch.Tensor]): Dictionary containing:
+                - 'mse': Mean squared error [scalar]
+                - 'nll': Negative log-likelihood [scalar]
+                - 'R_cog': Cognitive risk penalty [scalar]
+                - 'R_eff': Efficiency risk penalty [scalar]
+                - 'pen': Total penalty [scalar]
+
+    Mathematical Details:
+        - MSE Loss: Standard L2 reconstruction error
+        - NLL Loss: Gaussian negative log-likelihood for heteroscedastic uncertainty
+        - Cognitive Penalty: Penalizes divergence and rotational smoothness
+        - Efficiency Penalty: Penalizes gradient magnitude variations
+
+    Example:
+        ```python
+        # Compute loss during training
+        outputs = model(batch_inputs)
+        loss, metrics = loss_objective(outputs, batch_targets)
+
+        # Access individual loss components
+        mse_loss = metrics['mse']
+        nll_loss = metrics['nll']
+        cognitive_penalty = metrics['R_cog']
+        efficiency_penalty = metrics['R_eff']
+
+        # Backward pass
+        loss.backward()
+        optimizer.step()
+        ```
+    """
+```
+
+## REST API Documentation Standards
+
+### Endpoint Documentation Template
+```python
+# POST /api/v1/hybrid_uq/predict
+@app.route('/predict', methods=['POST'])
+def predict():
+    """Generate predictions with uncertainty quantification.
+
+    This endpoint provides the primary interface for hybrid uncertainty
+    quantification predictions, combining physics-based and neural predictions
+    with comprehensive confidence assessment.
+
+    Request Body:
+        JSON object with the following structure:
+        {
+            "inputs": [[[float, ...], ...], ...],  // [B, C, H, W] input tensor
+            "grid_metrics": {"dx": float, "dy": float},  // Grid spacing parameters
+            "return_diagnostics": bool,  // Include diagnostic information (default: true)
+            "conformal_calibration": bool  // Use conformal prediction intervals (default: true)
+        }
+
+    Response:
+        JSON object with prediction results:
+        {
+            "predictions": [[[float, ...], ...], ...],  // Hybrid predictions [B, C, H, W]
+            "uncertainty": [[[float, ...], ...], ...],  // Prediction uncertainties [B, C, H, W]
+            "psi_confidence": [[[float, ...], ...], ...],  // Ψ(x) confidence values [B, C, H, W]
+            "confidence_intervals": {
+                "lower": [[[float, ...], ...], ...],  // Lower prediction bounds [B, C, H, W]
+                "upper": [[[float, ...], ...], ...],  // Upper prediction bounds [B, C, H, W]
+            },
+            "diagnostics": {  // Optional diagnostic information
+                "vorticity": [[[float, ...], ...], ...],  // Vorticity field [B, 1, H, W]
+                "divergence": [[[float, ...], ...], ...],  // Divergence field [B, 1, H, W]
+                "risk_penalties": {
+                    "cognitive": float,  // Cognitive risk penalty
+                    "efficiency": float  // Efficiency risk penalty
+                }
+            },
+            "processing_time": float,  // Processing time in seconds
+            "confidence_level": float,  // Overall confidence level (0.0-1.0)
+            "status": "success"
+        }
+
+    Error Responses:
+        400 Bad Request:
+            {"error": "Invalid input format", "details": "..."}
+        422 Unprocessable Entity:
+            {"error": "Model validation error", "details": "..."}
+        500 Internal Server Error:
+            {"error": "Internal processing error", "details": "..."}
+
+    Authentication: Bearer token required
+    Rate Limit: 100 requests per minute
+    Timeout: 30 seconds
+
+    Example Request:
+        ```bash
+        curl -X POST http://localhost:5000/predict \
+             -H "Content-Type: application/json" \
+             -H "Authorization: Bearer YOUR_TOKEN" \
+             -d '{
+               "inputs": [[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]],
+               "grid_metrics": {"dx": 1.0, "dy": 1.0}
+             }'
+        ```
+
+    Performance Characteristics:
+        - Latency: < 100ms for typical inputs (64×64)
+        - Throughput: > 1000 samples/second on GPU
+        - Memory: < 512 MB for batch processing
+        - Scalability: Linear scaling with input size
+    """
+```
+
+## Error Handling Documentation
+
+### Exception Documentation Template
+```python
+class HybridUQError(Exception):
+    """Base exception for Hybrid UQ framework.
+
+    This exception serves as the root of the exception hierarchy for the
+    Hybrid UQ framework, providing consistent error handling across all
+    components.
+
+    Attributes:
+        message (str): Human-readable error description
+        error_code (str): Machine-readable error code
+        details (Dict[str, Any]): Additional error context and metadata
+
+    Error Codes:
+        - INPUT_VALIDATION_ERROR: Invalid input parameters or format
+        - COMPUTATION_ERROR: Numerical computation failure
+        - GPU_ERROR: CUDA/GPU operation failure
+        - MODEL_LOAD_ERROR: Model loading or initialization failure
+        - CONFIGURATION_ERROR: Invalid configuration parameters
+
+    Example:
+        ```python
+        try:
+            result = hybrid_model.predict(inputs)
+        except HybridUQError as e:
+            print(f"Hybrid UQ Error: {e.message}")
+            print(f"Error Code: {e.error_code}")
+            if hasattr(e, 'details'):
+                print(f"Additional Details: {e.details}")
+        ```
+    """
+
+class InputValidationError(HybridUQError):
+    """Raised when input data fails validation.
+
+    This exception is raised when input tensors, parameters, or configuration
+    values do not meet the required specifications.
+
+    Common Causes:
+        - Invalid tensor dimensions or shapes
+        - Missing required parameters
+        - Out-of-range parameter values
+        - Incompatible data types
+
+    Resolution:
+        - Check input tensor shapes against documentation
+        - Validate parameter ranges
+        - Ensure data types match expected formats
+        - Review configuration requirements
+    """
+
+class ComputationError(HybridUQError):
+    """Raised when numerical computations fail.
+
+    This exception indicates failures in mathematical operations, typically
+    due to numerical instability, convergence issues, or invalid intermediate
+    results.
+
+    Common Causes:
+        - NaN or Inf values in computations
+        - Matrix singularity or conditioning issues
+        - Gradient explosion in neural networks
+        - Insufficient numerical precision
+
+    Resolution:
+        - Check for NaN/Inf values in inputs
+        - Adjust numerical tolerances
+        - Implement gradient clipping
+        - Use higher precision data types
+    """
+```
+
+## Data Structure Documentation
+
+### Type Annotations and Schemas
+```python
+from typing import Dict, List, Optional, Tuple, Union, Any
+from pydantic import BaseModel, Field
+import torch
+
+# Type definitions
+TensorDict = Dict[str, torch.Tensor]
+ConfigDict = Dict[str, Union[float, int, str]]
+GridMetrics = Dict[str, float]
+
+class PredictionRequest(BaseModel):
+    """Request model for prediction endpoint.
+
+    This Pydantic model provides automatic validation and documentation
+    for API request bodies.
+    """
+    inputs: List[List[List[float]]] = Field(
+        ...,
+        description="Input tensor data [B, C, H, W]",
+        example=[[[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]]
+    )
+    grid_metrics: Dict[str, float] = Field(
+        ...,
+        description="Grid spacing parameters",
+        example={"dx": 1.0, "dy": 1.0}
+    )
+    return_diagnostics: bool = Field(
+        default=True,
+        description="Include diagnostic information in response"
+    )
+    conformal_calibration: bool = Field(
+        default=True,
+        description="Generate conformal prediction intervals"
+    )
+
+class PredictionResponse(BaseModel):
+    """Response model for prediction endpoint.
+
+    This model ensures consistent API responses and automatic documentation.
+    """
+    predictions: List[List[List[float]]] = Field(
+        ...,
+        description="Hybrid predictions [B, C, H, W]"
+    )
+    uncertainty: List[List[List[float]]] = Field(
+        ...,
+        description="Prediction uncertainties [B, C, H, W]"
+    )
+    psi_confidence: List[List[List[float]]] = Field(
+        ...,
+        description="Ψ(x) confidence values [B, C, H, W]"
+    )
+    confidence_intervals: Optional[Dict[str, List[List[List[float]]]]] = Field(
+        None,
+        description="Conformal prediction intervals (if requested)"
+    )
+    diagnostics: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Diagnostic information (if requested)"
+    )
+    processing_time: float = Field(
+        ...,
+        description="Processing time in seconds"
+    )
+    confidence_level: float = Field(
+        ...,
+        description="Overall confidence level (0.0-1.0)",
+        ge=0.0,
+        le=1.0
+    )
+    status: str = Field(
+        default="success",
+        description="Response status"
+    )
+```
+
+## Documentation Quality Metrics
+
+### Completeness Checklist
+- [ ] All public classes have comprehensive docstrings
+- [ ] All public methods have detailed parameter and return documentation
+- [ ] All exceptions are documented with causes and resolutions
+- [ ] All data structures have type annotations and examples
+- [ ] All API endpoints have complete request/response documentation
+- [ ] Mathematical formulations are clearly explained
+- [ ] Performance characteristics are documented
+- [ ] Error handling patterns are covered
+- [ ] Usage examples are provided for all major functionality
+
+### Quality Assurance
+```python
+def validate_documentation_completeness():
+    """Validate documentation completeness and quality."""
+
+    import inspect
+    from hybrid_uq import HybridModel, PhysicsInterpolator, ResidualNet
+
+    classes_to_check = [HybridModel, PhysicsInterpolator, ResidualNet]
+
+    completeness_score = 0
+    total_checks = 0
+
+    for cls in classes_to_check:
+        # Check class docstring
+        total_checks += 1
+        if cls.__doc__ and len(cls.__doc__) > 100:
+            completeness_score += 1
+
+        # Check method docstrings
+        for name, method in inspect.getmembers(cls, predicate=inspect.isfunction):
+            if not name.startswith('_'):  # Skip private methods
+                total_checks += 1
+                if method.__doc__ and len(method.__doc__) > 50:
+                    completeness_score += 1
+
+    completeness_percentage = (completeness_score / total_checks) * 100
+
+    print(f"Documentation Completeness: {completeness_percentage:.1f}%")
+    print(f"Checks Passed: {completeness_score}/{total_checks}")
+
+    assert completeness_percentage >= 90.0, f"Documentation incomplete: {completeness_percentage:.1f}%"
+
+    return completeness_percentage
+```
+
+## References
+- [hybrid_uq_api_reference.md](mdc:hybrid_uq_api_reference.md) - Complete API reference
+- [hybrid_uq_implementation_tutorial.md](mdc:hybrid_uq_implementation_tutorial.md) - Implementation guide
+- [integrated_framework_testing_coverage.md](mdc:integrated_framework_testing_coverage.md) - Testing documentation

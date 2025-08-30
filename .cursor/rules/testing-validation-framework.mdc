@@ -1,0 +1,458 @@
+---
+alwaysApply: false
+description: "Testing and validation procedures for scientific computing frameworks"
+globs: test*.py,tests/**,validation*.py,*test*,*validation*
+---
+# Testing and Validation Framework
+
+## Overview
+This rule establishes comprehensive testing and validation procedures for scientific computing frameworks, ensuring reliability, accuracy, and performance across all components.
+
+## Testing Strategy Hierarchy
+
+### Unit Testing (Foundation Layer)
+**Purpose**: Validate individual components and functions
+
+**Requirements**:
+- **Coverage Target**: 90%+ code coverage
+- **Methodology**: PyTest with scientific assertions
+- **Frequency**: Continuous (every commit)
+- **Scope**: Individual functions, classes, and modules
+
+**Pattern**:
+```python
+import pytest
+import torch
+import numpy as np
+from hybrid_uq import HybridModel
+
+class TestHybridModel:
+    """Unit tests for HybridModel class."""
+
+    @pytest.fixture
+    def model(self):
+        """Fixture for creating test model."""
+        config = {
+            'grid_metrics': {'dx': 1.0, 'dy': 1.0},
+            'in_ch': 2, 'out_ch': 2,
+            'residual_scale': 0.02
+        }
+        return HybridModel(**config)
+
+    def test_model_initialization(self, model):
+        """Test model initializes correctly."""
+        assert model.residual_scale == 0.02
+        assert model.alpha.item() == 0.5  # Default alpha
+        assert hasattr(model, 'phys')
+        assert hasattr(model, 'nn')
+
+    def test_forward_pass(self, model):
+        """Test forward pass produces expected outputs."""
+        batch_size, channels, height, width = 4, 2, 32, 32
+        x = torch.randn(batch_size, channels, height, width)
+
+        outputs = model(x)
+
+        # Validate output structure
+        required_keys = ['S', 'N', 'O', 'psi', 'sigma_res', 'pen', 'R_cog', 'R_eff']
+        for key in required_keys:
+            assert key in outputs, f"Missing output key: {key}"
+
+        # Validate output shapes
+        assert outputs['O'].shape == x.shape
+        assert outputs['psi'].shape == x.shape
+
+        # Validate value ranges
+        assert torch.all(outputs['psi'] >= 0.0), "Ψ(x) values must be non-negative"
+        assert torch.all(outputs['psi'] <= 1.0), "Ψ(x) values must be bounded"
+
+    def test_numerical_stability(self, model):
+        """Test numerical stability with edge cases."""
+        # Test with extreme values
+        x_extreme = torch.tensor([[[[1e10, -1e10], [float('inf'), -float('inf')]]]])
+        x_extreme = torch.nan_to_num(x_extreme, nan=0.0, posinf=1e6, neginf=-1e6)
+
+        outputs = model(x_extreme)
+
+        # Ensure no NaN or Inf values
+        for key, value in outputs.items():
+            assert not torch.isnan(value).any(), f"NaN detected in {key}"
+            assert not torch.isinf(value).any(), f"Inf detected in {key}"
+```
+
+### Integration Testing (Interaction Layer)
+**Purpose**: Validate component interactions and data flow
+
+**Requirements**:
+- **Coverage Target**: All integration pathways
+- **Methodology**: End-to-end workflow testing
+- **Frequency**: Pre-deployment validation
+- **Scope**: Multi-component interactions
+
+**Pattern**:
+```python
+import pytest
+from hybrid_uq import HybridModel
+from scientific_computing_toolkit import InversePrecisionFramework
+
+class TestFrameworkIntegration:
+    """Integration tests for framework components."""
+
+    def test_hybrid_uq_inverse_precision_integration(self):
+        """Test integration between hybrid UQ and inverse precision."""
+
+        # Initialize components
+        hybrid_model = HybridModel(grid_metrics={'dx': 1.0, 'dy': 1.0})
+        inverse_framework = InversePrecisionFramework()
+
+        # Generate synthetic data
+        true_params = np.array([0.8, 0.6, 0.7, 1.5])  # τ_y, K, n, consistency
+        shear_rates = np.logspace(-1, 3, 50)
+        stresses = true_params[0] + true_params[1] * shear_rates ** true_params[2]
+
+        # Add realistic noise
+        noise_level = 0.05
+        noisy_stresses = stresses * (1 + noise_level * np.random.randn(*stresses.shape))
+
+        # Inverse parameter estimation
+        estimated_params = inverse_framework.solve(shear_rates, noisy_stresses)
+
+        # Uncertainty quantification with hybrid UQ
+        param_tensor = torch.tensor(estimated_params, dtype=torch.float32).unsqueeze(0)
+        uq_results = hybrid_model(param_tensor.unsqueeze(-1).unsqueeze(-1))
+
+        # Validate integration
+        assert 'psi' in uq_results, "Missing Ψ(x) confidence from hybrid UQ"
+        assert uq_results['psi'].item() > 0.7, "Low confidence in parameter estimation"
+
+        # Validate parameter accuracy
+        param_error = np.abs(estimated_params - true_params) / true_params
+        mean_error = np.mean(param_error)
+        assert mean_error < 0.1, f"High parameter estimation error: {mean_error:.3f}"
+```
+
+### Performance Testing (Optimization Layer)
+**Purpose**: Validate computational efficiency and scalability
+
+**Requirements**:
+- **Coverage Target**: Production workload simulation
+- **Methodology**: Benchmark suites with statistical analysis
+- **Frequency**: Regression testing and optimization cycles
+- **Scope**: Computational performance and resource usage
+
+**Pattern**:
+```python
+import pytest
+import time
+import psutil
+import torch
+from hybrid_uq import HybridModel
+
+class TestPerformanceBenchmarks:
+    """Performance testing for hybrid UQ framework."""
+
+    @pytest.fixture
+    def performance_model(self):
+        """High-performance model configuration."""
+        return HybridModel(
+            grid_metrics={'dx': 1.0, 'dy': 1.0},
+            in_ch=2, out_ch=2,
+            residual_scale=0.02
+        )
+
+    def test_inference_performance(self, performance_model):
+        """Test inference performance meets requirements."""
+
+        # Test configurations
+        test_configs = [
+            (1, 32, 32),    # Small batch, small image
+            (4, 64, 64),    # Medium batch, medium image
+            (16, 128, 128)  # Large batch, large image
+        ]
+
+        for batch_size, height, width in test_configs:
+            x = torch.randn(batch_size, 2, height, width)
+
+            # Warm-up
+            for _ in range(5):
+                _ = performance_model(x)
+
+            # Benchmark
+            start_time = time.time()
+            iterations = 50
+
+            for _ in range(iterations):
+                outputs = performance_model(x)
+
+            total_time = time.time() - start_time
+            avg_time = total_time / iterations
+
+            # Performance assertions
+            max_time = 0.1 if batch_size <= 4 else 0.5  # seconds
+            assert avg_time < max_time, f"Slow inference: {avg_time:.3f}s for {batch_size}x{height}x{width}"
+
+            # Memory assertions
+            memory_usage = psutil.Process().memory_info().rss / 1024 / 1024  # MB
+            max_memory = 512  # MB
+            assert memory_usage < max_memory, f"High memory usage: {memory_usage:.1f} MB"
+
+            # Accuracy assertions
+            assert torch.all(outputs['psi'] >= 0.0), "Invalid Ψ(x) values"
+            assert torch.all(outputs['psi'] <= 1.0), "Ψ(x) values not bounded"
+
+    def test_scalability_analysis(self, performance_model):
+        """Test performance scaling with problem size."""
+
+        sizes = [32, 64, 128, 256]
+        scaling_results = []
+
+        for size in sizes:
+            x = torch.randn(8, 2, size, size)
+
+            start_time = time.time()
+            outputs = performance_model(x)
+            inference_time = time.time() - start_time
+
+            scaling_results.append({
+                'size': size,
+                'time': inference_time,
+                'throughput': 8 / inference_time
+            })
+
+        # Validate scaling behavior
+        for i in range(1, len(scaling_results)):
+            prev_time = scaling_results[i-1]['time']
+            curr_time = scaling_results[i]['time']
+
+            # Allow for some scaling inefficiency but not exponential
+            scaling_factor = curr_time / prev_time
+            max_scaling = 4.0  # Allow up to 4x slowdown for 2x size increase
+
+            assert scaling_factor < max_scaling, f"Poor scaling: {scaling_factor:.2f}x slowdown"
+```
+
+### Validation Testing (Accuracy Layer)
+**Purpose**: Validate scientific accuracy and correctness
+
+**Requirements**:
+- **Coverage Target**: All scientific computations
+- **Methodology**: Ground truth comparison and error analysis
+- **Frequency**: Model validation and confidence assessment
+- **Scope**: Scientific accuracy and error bounds
+
+**Pattern**:
+```python
+import pytest
+import numpy as np
+from scipy.optimize import curve_fit
+
+class TestScientificValidation:
+    """Scientific validation tests for accuracy and correctness."""
+
+    def test_herschel_bulkley_fitting(self):
+        """Validate Herschel-Bulkley parameter fitting accuracy."""
+
+        # Generate synthetic HB data
+        def hb_model(gamma, tau_y, K, n):
+            return tau_y + K * gamma ** n
+
+        # True parameters
+        true_params = [0.5, 100.0, 0.8]  # τ_y, K, n
+
+        # Generate data
+        gamma_range = np.logspace(-1, 3, 100)
+        tau_true = hb_model(gamma_range, *true_params)
+
+        # Add realistic noise
+        noise_level = 0.05
+        tau_noisy = tau_true * (1 + noise_level * np.random.randn(*tau_true.shape))
+
+        # Fit parameters
+        popt, pcov = curve_fit(hb_model, gamma_range, tau_noisy, p0=[0.3, 80.0, 0.9])
+
+        # Validate fitting accuracy
+        param_errors = np.abs(popt - true_params) / true_params
+        max_error = np.max(param_errors)
+
+        assert max_error < 0.1, f"High fitting error: {max_error:.3f}"
+        assert np.all(param_errors < 0.2), f"Parameter errors too high: {param_errors}"
+
+        # Validate R²
+        tau_fitted = hb_model(gamma_range, *popt)
+        ss_res = np.sum((tau_noisy - tau_fitted) ** 2)
+        ss_tot = np.sum((tau_noisy - np.mean(tau_noisy)) ** 2)
+        r_squared = 1 - (ss_res / ss_tot)
+
+        assert r_squared > 0.95, f"Low R²: {r_squared:.3f}"
+
+    def test_conformal_prediction_coverage(self):
+        """Validate conformal prediction coverage guarantee."""
+
+        from hybrid_uq import SplitConformal
+        import torch
+
+        # Generate synthetic data
+        n_samples = 1000
+        x = torch.randn(n_samples, 2, 32, 32)
+        targets = torch.randn(n_samples, 2, 32, 32)
+
+        # Split data for conformal prediction
+        train_size = int(0.8 * n_samples)
+        cal_size = n_samples - train_size
+
+        x_train, x_cal = x[:train_size], x[train_size:]
+        targets_train, targets_cal = targets[:train_size], targets[train_size:]
+
+        # Simple prediction model (identity for testing)
+        predictions = x_cal  # Perfect predictions for testing coverage
+
+        # Fit conformal predictor
+        conformal = SplitConformal(quantile=0.9)
+        conformal.fit(predictions, targets_cal)
+
+        # Generate prediction intervals
+        intervals = conformal.intervals(predictions)
+
+        # Validate coverage
+        lower_bounds, upper_bounds = intervals
+        coverage = torch.mean(
+            (targets_cal >= lower_bounds) & (targets_cal <= upper_bounds)
+        ).item()
+
+        # Should achieve approximately 90% coverage
+        assert 0.85 <= coverage <= 0.95, f"Coverage out of bounds: {coverage:.3f}"
+
+        # Additional validation
+        interval_widths = (upper_bounds - lower_bounds).mean().item()
+        assert interval_widths > 0, "Zero interval widths"
+        assert interval_widths < 10.0, f"Excessive interval widths: {interval_widths:.3f}"
+```
+
+## Automated Testing Pipeline
+
+### CI/CD Integration
+```yaml
+# .github/workflows/scientific-validation.yml
+name: Scientific Framework Validation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, '3.10']
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov
+
+    - name: Run unit tests
+      run: |
+        pytest tests/unit/ -v --cov=hybrid_uq --cov-report=xml
+
+    - name: Run integration tests
+      run: |
+        pytest tests/integration/ -v
+
+    - name: Run performance tests
+      run: |
+        pytest tests/performance/ -v --durations=10
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  validation:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Run scientific validation
+      run: |
+        python scripts/run_scientific_validation.py
+
+    - name: Generate validation report
+      run: |
+        python scripts/generate_validation_report.py
+
+    - name: Upload validation artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: validation-report
+        path: validation_report.pdf
+```
+
+### Test Quality Metrics
+```python
+def analyze_test_quality():
+    """Analyze test suite quality metrics."""
+
+    import subprocess
+    import json
+
+    # Run pytest with coverage
+    result = subprocess.run([
+        'pytest', '--cov=hybrid_uq', '--cov-report=json',
+        '--durations=10', '-v'
+    ], capture_output=True, text=True)
+
+    # Parse coverage report
+    with open('coverage.json', 'r') as f:
+        coverage_data = json.load(f)
+
+    # Extract metrics
+    total_coverage = coverage_data['totals']['percent_covered']
+    num_tests = len(result.stdout.split('\n')) - 1  # Approximate
+
+    # Quality assertions
+    assert total_coverage >= 90.0, f"Low coverage: {total_coverage:.1f}%"
+    assert num_tests >= 100, f"Insufficient tests: {num_tests}"
+
+    # Performance metrics
+    slow_tests = [line for line in result.stdout.split('\n')
+                  if 'slowest' in line.lower()]
+
+    print("Test Quality Analysis:")
+    print(f"Total Coverage: {total_coverage:.1f}%")
+    print(f"Number of Tests: {num_tests}")
+    print(f"Slow Tests: {len(slow_tests)}")
+
+    return {
+        'coverage': total_coverage,
+        'num_tests': num_tests,
+        'slow_tests': len(slow_tests),
+        'quality_score': min(100, total_coverage + num_tests/10)
+    }
+```
+
+## References
+- [integrated_framework_testing_coverage.md](mdc:integrated_framework_testing_coverage.md) - Testing coverage documentation
+- [hybrid_uq_validation_verification.tex](mdc:hybrid_uq_validation_verification.tex) - Validation verification report
+- [hybrid_uq_implementation_tutorial.md](mdc:hybrid_uq_implementation_tutorial.md) - Implementation guidance
+- [hybrid_uq_api_reference.md](mdc:hybrid_uq_api_reference.md) - API documentation

@@ -1,0 +1,232 @@
+---
+alwaysApply: true
+description: "Prevents incorrect MCMC assumptions in scientific computing documentation and ensures proper deterministic optimization terminology"
+globs: *.md,*.tex,*.py,*.rst,*.yml,*.yaml
+---
+# MCMC Assumption Avoidance
+
+## Critical Warning
+**MCMC (Markov Chain Monte Carlo) is NOT implemented in the scientific computing toolkit.** All documentation must avoid MCMC assumptions and use accurate deterministic optimization terminology.
+
+## Historical Context
+MCMC assumptions were incorrectly introduced during documentation phases when describing Bayesian capabilities. These assumptions outpaced actual implementation and must be systematically corrected.
+
+## Incorrect Terminology (AVOID)
+
+### MCMC-Related Terms
+```markdown
+# ❌ NEVER USE
+"Bayesian MCMC methods"
+"MCMC sampling achieves 0.9987 precision"
+"Full posterior distributions via MCMC"
+"MCMC for efficient inference"
+"MCMC convergence analysis"
+"MCMC diagnostics"
+"MCMC posterior sampling"
+```
+
+### Sampling Terminology
+```markdown
+# ❌ INCORRECT
+"Posterior sampling methods"
+"Sampling-based optimization"
+"Monte Carlo optimization"
+"Stochastic sampling algorithms"
+```
+
+## Correct Terminology (USE INSTEAD)
+
+### Deterministic Optimization
+```markdown
+# ✅ CORRECT
+"Deterministic optimization methods"
+"Levenberg-Marquardt algorithm"
+"Trust Region optimization"
+"Differential Evolution"
+"Basin Hopping method"
+"Gradient-based optimization"
+"Newton-type methods"
+```
+
+### Bayesian Terminology (Deterministic)
+```markdown
+# ✅ CORRECT
+"Conjugate prior analysis"
+"Analytical posterior computation"
+"Maximum likelihood estimation"
+"Bootstrap uncertainty quantification"
+"Asymptotic confidence intervals"
+"Deterministic posterior calculation"
+```
+
+## Correction Patterns
+
+### Algorithm References
+```markdown
+# ❌ INCORRECT
+optimizer = BayesianMCMC()  # MCMC doesn't exist
+result = mcmc_sampling(data)  # Not implemented
+
+# ✅ CORRECT
+from scipy.optimize import least_squares
+result = least_squares(objective_function, x0, method='lm')
+
+from multi_algorithm_optimization import PrimeEnhancedOptimizer
+optimizer = PrimeEnhancedOptimizer()
+result = optimizer.optimize_with_prime_enhancement(...)
+```
+
+### Performance Claims
+```markdown
+# ❌ INCORRECT
+"MCMC achieves 0.9987 correlation coefficients in 1e-6 time"
+
+# ✅ CORRECT
+"Levenberg-Marquardt achieves 0.9987 correlation coefficients with 234ms average execution time"
+```
+
+### Documentation Standards
+```latex
+% ❌ INCORRECT
+Bayesian MCMC methods achieving 0.9987 correlation coefficients
+with 1e-6 convergence tolerance
+
+% ✅ CORRECT
+Deterministic optimization methods achieving 0.9987 correlation coefficients
+with 1e-6 convergence tolerance through systematic multi-algorithm approaches
+```
+
+## Validation Commands
+
+### Documentation Audit
+```bash
+# Find MCMC references (should return empty)
+grep -r -i "mcmc\|markov.*chain.*monte.*carlo" docs/ *.md *.tex
+
+# Check for incorrect sampling terminology
+grep -r -i "posterior.*sampling\|monte.*carlo.*optimization" docs/
+
+# Verify correct deterministic terminology
+grep -r -i "levenberg.*marquardt\|trust.*region\|differential.*evolution" docs/
+```
+
+### Code Validation
+```python
+def validate_no_mcmc_assumptions():
+    """Ensure no MCMC assumptions exist in codebase."""
+    import os
+    import re
+
+    mcmc_patterns = [
+        r'mcmc|MCMC',
+        r'Markov.*Chain.*Monte.*Carlo',
+        r'posterior.*sampling',
+        r'monte.*carlo.*optimization',
+        r'bayesian.*sampling'
+    ]
+
+    issues = []
+    for root, dirs, files in os.walk('.'):
+        for file in files:
+            if file.endswith(('.py', '.md', '.tex', '.rst')):
+                filepath = os.path.join(root, file)
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        for pattern in mcmc_patterns:
+                            if re.search(pattern, content, re.IGNORECASE):
+                                issues.append(f"{filepath}: {pattern}")
+                except:
+                    pass
+
+    if issues:
+        print("MCMC assumptions found:")
+        for issue in issues:
+            print(f"  {issue}")
+        return False
+    else:
+        print("✅ No MCMC assumptions found")
+        return True
+```
+
+## Common Correction Examples
+
+### Example 1: Performance Claims
+```markdown
+# BEFORE (Incorrect)
+Bayesian MCMC methods achieving 0.9987 correlation coefficients
+with 1e-6 convergence tolerance
+
+# AFTER (Correct)
+Deterministic optimization methods achieving 0.9987 correlation coefficients
+with 1e-6 convergence tolerance through systematic multi-algorithm approaches
+```
+
+### Example 2: Method Descriptions
+```markdown
+# BEFORE (Incorrect)
+The framework uses MCMC sampling for parameter estimation
+with full posterior distributions
+
+# AFTER (Correct)
+The framework uses conjugate priors for analytical posterior computation
+with bootstrap uncertainty quantification
+```
+
+### Example 3: Algorithm Selection
+```markdown
+# BEFORE (Incorrect)
+For complex optimization, use MCMC sampling methods
+
+# AFTER (Correct)
+For complex optimization, use Differential Evolution for global search
+followed by Trust Region for local refinement
+```
+
+## Quality Assurance
+
+### Documentation Review Checklist
+- [ ] **No MCMC references**: Verified absence of MCMC terminology
+- [ ] **Correct algorithm names**: Uses actual implemented methods
+- [ ] **Deterministic terminology**: References deterministic optimization
+- [ ] **Performance validation**: Claims backed by actual timing data
+- [ ] **Implementation accuracy**: Matches actual code capabilities
+
+### Automated Validation
+```python
+def run_mcmc_audit():
+    """Comprehensive audit for MCMC assumptions."""
+    print("🔍 Running MCMC assumption audit...")
+
+    # Check documentation
+    doc_issues = validate_no_mcmc_assumptions()
+
+    # Check code comments
+    code_issues = validate_code_comments()
+
+    # Check performance claims
+    perf_issues = validate_performance_claims()
+
+    if all([doc_issues, code_issues, perf_issues]):
+        print("✅ All MCMC assumption audits passed")
+        return True
+    else:
+        print("❌ MCMC assumption issues found")
+        return False
+```
+
+## Implementation Status
+
+### Files Corrected
+- [ ] `rebus_interpretation_paper.tex` - MCMC references removed
+- [ ] `docs/### 🎯 Response to Publication Framework.md` - MCMC references corrected
+- [ ] `scientific_computing_toolkit_capabilities.tex` - Accurate deterministic methods
+- [ ] `scientific_computing_toolkit_capabilities.md` - Accurate deterministic methods
+
+### Ongoing Monitoring
+- [ ] Regular documentation audits
+- [ ] Automated MCMC detection in CI/CD
+- [ ] Code review checklists include MCMC validation
+- [ ] Performance claim validation requirements
+
+This rule ensures the scientific computing toolkit documentation maintains accuracy and avoids incorrect MCMC assumptions, reflecting the actual deterministic optimization foundation.
