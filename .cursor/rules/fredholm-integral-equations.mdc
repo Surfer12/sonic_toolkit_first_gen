@@ -1,0 +1,389 @@
+---
+globs: *.py,*.java,*.cpp,*.js
+description: Fredholm integral equations of the second kind and their numerical solution methods
+---
+
+# Fredholm Integral Equations of the Second Kind
+
+## Overview
+Fredholm integral equations of the second kind are fundamental to many inverse problems in scientific computing, particularly in your toolkit's applications for parameter identification, inverse rheology, and tomographic reconstruction.
+
+## Mathematical Formulation
+
+### Standard Form
+```math
+f(x) + \lambda \int_a^b K(x,t) f(t) \, dt = g(x), \quad x \in [a,b]
+```
+
+where:
+- \(f(x)\): Unknown function to be determined
+- \(K(x,t)\): Kernel function (continuous and bounded)
+- \(\lambda\): Parameter (often complex for spectral problems)
+- \(g(x)\): Known right-hand side function
+- \([a,b]\): Finite integration domain
+
+### Homogeneous and Non-Homogeneous Cases
+```math
+\begin{aligned}
+&\text{Homogeneous: } f(x) + \lambda \int_a^b K(x,t) f(t) \, dt = 0 \\
+&\text{Non-homogeneous: } f(x) + \lambda \int_a^b K(x,t) f(t) \, dt = g(x)
+\end{aligned}
+```
+
+## Fredholm Alternative Theorem
+
+### Statement
+For the equation \(f + \lambda K f = g\), where \(K\) is a compact operator:
+
+1. Either the homogeneous equation \(f + \lambda K f = 0\) has only the trivial solution, and the non-homogeneous equation has a unique solution for all \(g\)
+
+2. Or the homogeneous equation has non-trivial solutions, and the non-homogeneous equation has solutions if and only if \(g\) is orthogonal to all solutions of the adjoint homogeneous equation
+
+### Practical Implications
+- **Well-posed problems**: Unique solution exists for all right-hand sides
+- **Ill-posed problems**: Require regularization (Tikhonov, Landweber, etc.)
+
+## Numerical Solution Methods
+
+### 1. Nyström Method
+Discretizes the integral using quadrature rules:
+
+```math
+f(x_i) + \lambda \sum_{j=1}^n w_j K(x_i, t_j) f(t_j) = g(x_i)
+```
+
+**Advantages**: Simple implementation, good for smooth kernels
+**Limitations**: Dense matrix for large n, memory intensive
+
+### 2. Collocation Method
+Expands solution in basis functions and enforces equation at collocation points:
+
+```math
+f(x) \approx \sum_{k=1}^n c_k \phi_k(x)
+```
+
+Substituting gives linear system: \((I + \lambda A)c = g\)
+
+### 3. Galerkin Method
+Similar to collocation but uses different test functions for better accuracy.
+
+### 4. Iterative Methods
+For large-scale problems:
+- **Landweber iteration**: Simple fixed-point iteration with regularization
+- **Conjugate gradient**: For normal equations
+- **GMRES**: For non-symmetric systems
+
+## Implementation in Scientific Computing Toolkit
+
+### Inverse Rheology Application
+```python
+import numpy as np
+from scipy.integrate import quad
+from scipy.linalg import solve, LinAlgError
+from typing import Callable, Tuple
+
+class FredholmSolver:
+    """Solver for Fredholm integral equations of the second kind."""
+
+    def __init__(self, regularization_param: float = 1e-6):
+        self.alpha = regularization_param  # Tikhonov regularization
+
+    def solve_nystrom(self,
+                     kernel_func: Callable[[float, float], float],
+                     lambda_param: float,
+                     rhs_func: Callable[[float], float],
+                     a: float, b: float,
+                     n_points: int = 100) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Solve using Nyström method with Gauss-Legendre quadrature.
+
+        Parameters:
+        -----------
+        kernel_func : callable
+            Kernel function K(x,t)
+        lambda_param : float
+            Parameter λ
+        rhs_func : callable
+            Right-hand side g(x)
+        a, b : float
+            Integration limits
+        n_points : int
+            Number of quadrature points
+
+        Returns:
+        --------
+        x_vals : ndarray
+            Evaluation points
+        f_vals : ndarray
+            Solution values
+        """
+        # Gauss-Legendre quadrature points and weights
+        x_vals, weights = np.polynomial.legendre.leggauss(n_points)
+
+        # Scale to [a,b]
+        x_vals = 0.5 * (b - a) * x_vals + 0.5 * (a + b)
+        weights = 0.5 * (b - a) * weights
+
+        # Build system matrix A where A[i,j] = weights[j] * K(x_i, x_j)
+        A = np.zeros((n_points, n_points))
+        for i in range(n_points):
+            for j in range(n_points):
+                A[i, j] = weights[j] * kernel_func(x_vals[i], x_vals[j])
+
+        # Build right-hand side
+        g_vals = np.array([rhs_func(x) for x in x_vals])
+
+        # Regularized system: (I + λA + αI)c = g
+        I = np.eye(n_points)
+        try:
+            c_vals = solve(I + lambda_param * A + self.alpha * I, g_vals)
+        except LinAlgError:
+            # Add more regularization if singular
+            c_vals = solve(I + lambda_param * A + (self.alpha * 10) * I, g_vals)
+
+        return x_vals, c_vals
+
+    def solve_collocation(self,
+                         kernel_func: Callable[[float, float], float],
+                         lambda_param: float,
+                         rhs_func: Callable[[float], float],
+                         basis_funcs: list,
+                         collocation_points: np.ndarray) -> np.ndarray:
+        """
+        Solve using collocation method with specified basis functions.
+        """
+        n_basis = len(basis_funcs)
+        n_points = len(collocation_points)
+
+        # Build collocation matrix
+        A = np.zeros((n_points, n_basis))
+
+        for i, x_i in enumerate(collocation_points):
+            # Basis function contributions
+            for j, phi_j in enumerate(basis_funcs):
+                A[i, j] = phi_j(x_i)
+
+            # Integral term with collocation
+            for j, phi_j in enumerate(basis_funcs):
+                integral = quad(
+                    lambda t: kernel_func(x_i, t) * phi_j(t),
+                    collocation_points[0], collocation_points[-1]
+                )[0]
+                A[i, j] += lambda_param * integral
+
+        # Right-hand side
+        g_vals = np.array([rhs_func(x) for x in collocation_points])
+
+        # Solve for coefficients
+        coeffs = solve(A + self.alpha * np.eye(n_points), g_vals)
+
+        return coeffs
+
+    def iterative_solve(self,
+                       kernel_func: Callable[[float, float], float],
+                       lambda_param: float,
+                       rhs_func: Callable[[float], float],
+                       a: float, b: float,
+                       n_points: int = 100,
+                       max_iter: int = 1000,
+                       tol: float = 1e-6) -> Tuple[np.ndarray, dict]:
+        """
+        Solve using Landweber iteration for ill-posed problems.
+        """
+        # Discretize
+        x_vals = np.linspace(a, b, n_points)
+        h = (b - a) / (n_points - 1)
+
+        # Initial guess
+        f_old = np.zeros(n_points)
+
+        # Pre-compute kernel matrix
+        K = np.zeros((n_points, n_points))
+        for i in range(n_points):
+            for j in range(n_points):
+                K[i, j] = kernel_func(x_vals[i], x_vals[j])
+
+        g_vals = np.array([rhs_func(x) for x in x_vals])
+
+        for iteration in range(max_iter):
+            # Landweber step: f_new = f_old + λ K^T (g - K f_old)
+            residual = g_vals - K @ f_old
+            update = lambda_param * (K.T @ residual)
+            f_new = f_old + update
+
+            # Check convergence
+            if np.linalg.norm(f_new - f_old) < tol:
+                break
+
+            f_old = f_new
+
+        convergence_info = {
+            'iterations': iteration + 1,
+            'residual_norm': np.linalg.norm(residual),
+            'converged': iteration < max_iter - 1
+        }
+
+        return x_vals, f_new, convergence_info
+```
+
+### Application to Inverse Problems
+
+#### Inverse Rheology Example
+```python
+def inverse_viscoelastic_kernel(x, t):
+    """Kernel for inverse viscoelastic problem."""
+    # Memory function for generalized Maxwell model
+    relaxation_time = 1.0  # Example value
+    return np.exp(-(x - t) / relaxation_time) / relaxation_time
+
+def solve_inverse_rheology(stress_data, strain_data):
+    """Solve inverse rheology as Fredholm equation."""
+    solver = FredholmSolver(regularization_param=1e-4)
+
+    # Define the kernel based on material model
+    def kernel(x, t):
+        return inverse_viscoelastic_kernel(x, t)
+
+    # Solve for relaxation spectrum
+    x_vals, f_vals = solver.solve_nystrom(
+        kernel, lambda_param=1.0,
+        rhs_func=lambda x: np.interp(x, strain_data, stress_data),
+        a=0, b=10, n_points=100
+    )
+
+    return x_vals, f_vals
+```
+
+#### Optical Tomography Example
+```python
+def radon_kernel(x, t, theta):
+    """Radon transform kernel for tomography."""
+    # Simplified 2D Radon transform
+    return np.where(np.abs(x - t * np.cos(theta)) < 0.1, 1.0, 0.0)
+
+def solve_inverse_tomography(sinogram, angles):
+    """Solve inverse tomography problem."""
+    solver = FredholmSolver(regularization_param=1e-3)
+
+    def kernel(x, t):
+        # Average over angles for simplified case
+        return np.mean([radon_kernel(x, t, theta) for theta in angles])
+
+    x_vals, density = solver.solve_nystrom(
+        kernel, lambda_param=-1.0,  # Negative for inverse
+        rhs_func=lambda x: sinogram[int(x * len(sinogram) / np.pi)],
+        a=0, b=np.pi, n_points=128
+    )
+
+    return x_vals, density
+```
+
+## Regularization Techniques
+
+### Tikhonov Regularization
+```math
+\min \|Af - g\|^2 + \alpha \|f\|^2
+```
+
+### Truncated SVD
+Retain only largest singular values above threshold.
+
+### Iterative Regularization
+```python
+def tikhonov_regularization(A, g, alpha):
+    """Tikhonov regularization for ill-posed problems."""
+    U, s, Vt = np.linalg.svd(A)
+    s_reg = s / (s**2 + alpha)
+    f_reg = Vt.T @ (s_reg * (U.T @ g))
+    return f_reg
+```
+
+## Integration with Scientific Computing Toolkit
+
+### HB Flow Package Integration
+```python
+from hbflow.models import hb_tau_from_gamma
+
+def inverse_rheology_fredholm(stress_data, shear_rate_data):
+    """Solve inverse rheology using Fredholm framework."""
+    # Implementation integrating with HB flow package
+    # Use Fredholm solver for parameter identification
+    pass
+```
+
+### Biological Transport Framework
+```python
+from biological_transport_model import solve_advection_diffusion
+
+def nutrient_transport_inverse(concentration_data, time_data):
+    """Solve inverse nutrient transport problem."""
+    # Implementation using Fredholm methods for parameter estimation
+    # in advection-diffusion-reaction systems
+    pass
+```
+
+## Quality Assurance and Validation
+
+### Solution Verification
+```python
+def verify_fredholm_solution(x_vals, f_vals, kernel_func, lambda_param, rhs_func, tolerance=1e-6):
+    """Verify the solution satisfies the original equation."""
+    n_points = len(x_vals)
+    residual = np.zeros(n_points)
+
+    for i in range(n_points):
+        x = x_vals[i]
+        # Compute integral term
+        integral = quad(
+            lambda t: kernel_func(x, t) * np.interp(t, x_vals, f_vals),
+            x_vals[0], x_vals[-1]
+        )[0]
+
+        # Check equation: f(x) + λ∫K(x,t)f(t)dt = g(x)
+        predicted = f_vals[i] + lambda_param * integral
+        actual = rhs_func(x)
+        residual[i] = abs(predicted - actual)
+
+    max_residual = np.max(residual)
+    return max_residual < tolerance, max_residual
+```
+
+### Convergence Analysis
+```python
+def analyze_convergence_rates(lambda_range, n_points_range):
+    """Analyze convergence rates for different parameters."""
+    rates = {}
+    for lambda_val in lambda_range:
+        rates[lambda_val] = {}
+        for n in n_points_range:
+            # Solve and measure error
+            # Implementation for convergence study
+            pass
+    return rates
+```
+
+## Performance Considerations
+
+### Computational Complexity
+- **Nyström Method**: O(n²) for matrix assembly and solve
+- **Collocation Method**: O(n_basis × n_collocation) 
+- **Iterative Methods**: O(n²) per iteration, but can be faster for large n
+
+### Memory Requirements
+- **Dense matrices**: O(n²) storage for direct methods
+- **Iterative methods**: O(n) storage with matrix-vector products
+
+### Blackwell MXFP8 Optimization
+```python
+def blackwell_optimized_fredholm_solve(A, g):
+    """Optimized Fredholm solve using Blackwell MXFP8."""
+    # Quantize matrices to MXFP8 format
+    A_mxfp8 = quantize_matrix_e4m3(A)
+    g_mxfp8 = quantize_vector_e5m2(g)
+
+    # Perform matrix operations with MXFP8 precision
+    # Implementation using Blackwell tensor cores
+    pass
+```
+
+This rule provides comprehensive guidance for implementing and solving Fredholm integral equations of the second kind, with specific applications to inverse problems in your scientific computing toolkit's rheology, biological transport, and optical analysis frameworks.
