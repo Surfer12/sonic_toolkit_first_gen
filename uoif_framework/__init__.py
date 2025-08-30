@@ -21,10 +21,18 @@ from .source_hierarchy import SourceHierarchy, SourceType
 from .claim_validation import ClaimValidator, ClaimType, ValidationResult
 from .scoring_engine import ScoringEngine, ScoreComponents
 from .allocation_system import AllocationSystem, AllocationResult
+from .toolkit_integration import (
+    BootstrapIntegrator,
+    UncertaintyQuantificationIntegrator,
+    UOIFTemporalIntegrator
+)
 
 __all__ = [
     'SourceHierarchy', 'SourceType',
     'ClaimValidator', 'ClaimType', 'ValidationResult',
     'ScoringEngine', 'ScoreComponents',
-    'AllocationSystem', 'AllocationResult'
+    'AllocationSystem', 'AllocationResult',
+    'BootstrapIntegrator',
+    'UncertaintyQuantificationIntegrator',
+    'UOIFTemporalIntegrator'
 ]
