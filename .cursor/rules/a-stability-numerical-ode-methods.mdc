@@ -1,8 +1,7 @@
 ---
-globs: *.py,*.java,*.js,*.cpp,*.swift,*.mojo
 description: A-stability analysis and numerical ODE method selection for differential equation solving
+alwaysApply: false
 ---
-
 # A-Stability in Numerical ODE Methods
 
 ## Overview
