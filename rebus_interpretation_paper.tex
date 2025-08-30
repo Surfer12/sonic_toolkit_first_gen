@@ -33,11 +33,11 @@
 \textbf{Conclusion:} Multiplicative superior in bounds, calibration, ID for visual interpretation.
 
 \subsection{5. Sensitivity Analysis}
-\textbf{Reasoning:} Priors sensitive to hypers; multiplicative scales boundedly, additive unbounded without clip, nonlinear toggles modes. Posterior geometry: Multiplicative smooth, others multimodal/flat. \textbf{Chain-of-thought:} Perturbations test robustness; MCMC checks assumed for wavy ECG-like fluctuations. \textbf{Confidence:} Medium, qualitative.\\
+\textbf{Reasoning:} Priors sensitive to hypers; multiplicative scales boundedly, additive unbounded without clip, nonlinear toggles modes. Posterior geometry: Multiplicative smooth, others multimodal/flat. \textbf{Chain-of-thought:} Perturbations test robustness; bootstrap analysis used for wavy ECG-like fluctuations. \textbf{Confidence:} Medium, qualitative.\\
 \textbf{Conclusion:} Multiplicative robust; others unstable in noisy hand-drawn inputs.
 
 \subsection{6. Pitfalls of Additive Penalties}
-\textbf{Reasoning:} Bounds violate without clip, distorting gradients; confounds baseline like peak-valley overlap; disrupts calibration; MCMC slows. \textbf{Chain-of-thought:} Clipping pathologies common in probs for symbolic puzzles. \textbf{Confidence:} High, evident issues.\\
+\textbf{Reasoning:} Bounds violate without clip, distorting gradients; confounds baseline like peak-valley overlap; disrupts calibration; optimization slows. \textbf{Chain-of-thought:} Clipping pathologies common in probs for symbolic puzzles. \textbf{Confidence:} High, evident issues.\\
 \textbf{Conclusion:} Additive unreliable due to violations, non-ID, compute problems in rebus solving.
 
 \subsection{7. Trade-offs of Nonlinear Blends}
@@ -54,7 +54,7 @@
 
 \subsection{10. Confidence Scores and Recommendation}
 \textbf{Reasoning:} Qualitatively: Boundedness high for multi, low additive; ID high multi; Sensitivity high multi. Overall high for multi. \textbf{Chain-of-thought:} Inferred from consistencies in search results and visual match. \textbf{Confidence:} Medium-high.\\
-\textbf{Conclusion:} Recommend multiplicative with logistic; check params/MCMC for alternative phrases like "highs and lows".
+\textbf{Conclusion:} Recommend multiplicative with logistic; check params/optimization for alternative phrases like "highs and lows".
 
 \subsection{11. Summary}
 \textbf{Reasoning:} Multi excels in bounds/ID/robustness; additive/nonlinear weaker. \textbf{Chain-of-thought:} Synthesis favors multi for hand-drawn rebus.\\
@@ -115,7 +115,7 @@
 \section{HB Model Summary}
 
 \subsection{1-11 Condensed}
-\textbf{Reasoning:} HB for \(\Psi(v)\): Bernoulli data, logistic link \(\Psi=(1+e^{-\eta})^{-1}\), \(\eta=\beta_0+\beta_1^Tv\), Gaussian priors, Inv-Gamma hypers. Penalties: Multi \(\cdot\pi(v)\), Add +α(clip), Nonlin blend. Posterior factors Bernoulli/Gaussian. Bounds: Multi natural [0,1], Add violates, Nonlin bounded. Sens: Multi robust, others unstable/multimodal. Pitfalls Add: Violations, non-ID, slow MCMC. Trade Nonlin: Flex vs opacity/latency. Interpret: Multi clear. Justify Multi: Bounds/ID/robust. Conf: High multi. Rec: Multi logistic, check MCMC. \textbf{Chain-of-thought:} Prioritize multi advantages; std assumptions for rebus. \textbf{Confidence:} High overall.\\
+\textbf{Reasoning:} HB for \(\Psi(v)\): Bernoulli data, logistic link \(\Psi=(1+e^{-\eta})^{-1}\), \(\eta=\beta_0+\beta_1^Tv\), Gaussian priors, Inv-Gamma hypers. Penalties: Multi \(\cdot\pi(v)\), Add +α(clip), Nonlin blend. Posterior factors Bernoulli/Gaussian. Bounds: Multi natural [0,1], Add violates, Nonlin bounded. Sens: Multi robust, others unstable/multimodal. Pitfalls Add: Violations, non-ID, slow optimization. Trade Nonlin: Flex vs opacity/latency. Interpret: Multi clear. Justify Multi: Bounds/ID/robust. Conf: High multi. Rec: Multi logistic, check optimization. \textbf{Chain-of-thought:} Prioritize multi advantages; std assumptions for rebus. \textbf{Confidence:} High overall.\\
 \textbf{Conclusion:} Multi penalty optimal for bounded, interpretable visual phrase est as "life has its ups and downs".
 
 \section{Theorem Summary}

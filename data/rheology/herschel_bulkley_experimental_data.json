@@ -1,0 +1,33 @@
+{
+  "experiment_metadata": {
+    "material": "Polymer Melt (HDPE)",
+    "temperature": 200.0,
+    "temperature_unit": "Celsius",
+    "measurement_device": "Rheometric Scientific ARES-G2",
+    "experiment_date": "2024-01-15",
+    "researcher": "Dr. Ryan D. Oates",
+    "notes": "Steady shear viscosity measurements for parameter extraction validation"
+  },
+  "measurement_data": {
+    "shear_rate": [0.1, 0.5, 1.0, 5.0, 10.0, 20.0, 50.0, 100.0],
+    "shear_rate_unit": "1/s",
+    "viscosity": [12500.0, 8900.0, 7200.0, 4500.0, 3200.0, 2400.0, 1800.0, 1400.0],
+    "viscosity_unit": "Pa·s",
+    "uncertainty_viscosity": [125.0, 89.0, 72.0, 45.0, 32.0, 24.0, 18.0, 14.0]
+  },
+  "expected_parameters": {
+    "yield_stress_tau_y": 0.0,
+    "consistency_index_K": 8000.0,
+    "flow_behavior_index_n": 0.8,
+    "confidence_intervals": {
+      "tau_y": [0.0, 0.0],
+      "K": [7500.0, 8500.0],
+      "n": [0.75, 0.85]
+    }
+  },
+  "validation_targets": {
+    "convergence_threshold": 0.9987,
+    "r_squared_target": 0.95,
+    "parameter_tolerance": 0.05
+  }
+}
