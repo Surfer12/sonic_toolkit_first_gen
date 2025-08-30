@@ -1,0 +1,363 @@
+---
+globs: *.py,*.json,*.md
+description: "Data flow patterns, integration workflows, and processing pipelines for the scientific computing toolkit"
+---
+
+# 🔄 Data Flow Integration Patterns
+
+This rule defines the complete data flow architecture and integration patterns for the scientific computing toolkit, ensuring seamless workflow from experimental data to publication-ready results.
+
+## 📊 **Core Data Flow Architecture**
+
+### **Primary Data Pipeline**
+```
+data/ → Corpus/ → data_output/ → docs/
+   ↓       ↓         ↓         ↓
+Input   Processing  Results   Documentation
+Datasets Framework  Reports   & Guidance
+```
+
+### **Processing Stages**
+1. **Data Ingestion**: Load from `data/` experimental datasets
+2. **Framework Processing**: Execute through `Corpus/qualia/` frameworks
+3. **Result Generation**: Output to `data_output/` with structured formats
+4. **Documentation**: Generate research papers and technical guides
+
+## 🗂️ **Directory Integration Patterns**
+
+### **data/ Directory Integration**
+**Input datasets with standardized structure:**
+```python
+# Standard dataset loading pattern
+def load_experimental_data(dataset_name: str) -> Dict[str, Any]:
+    """Load experimental dataset with validation."""
+    data_path = f"data/{dataset_name}/dataset.json"
+
+    with open(data_path, 'r') as f:
+        data = json.load(f)
+
+    # Validate required fields
+    required_fields = ["experiment_metadata", "measurement_data", "validation_targets"]
+    for field in required_fields:
+        if field not in data:
+            raise ValueError(f"Missing required field: {field}")
+
+    return data
+```
+
+**Dataset Standards:**
+- JSON format with comprehensive metadata
+- Units specification and uncertainty quantification
+- Validation targets and quality metrics
+- Cross-referenced with processing frameworks
+
+### **Corpus/ Directory Processing**
+**Java security and mathematical analysis frameworks:**
+```java
+// Standard Corpus processing pattern
+public class CorpusDataProcessor {
+    private JavaPenetrationTesting penetrationTesting;
+    private ReverseKoopmanOperator koopmanOperator;
+
+    public ProcessingResult processDataset(Dataset data) {
+        // 1. Load and validate input data
+        validateInputData(data);
+
+        // 2. Execute security/mathematical analysis
+        AnalysisResult analysis = performAnalysis(data);
+
+        // 3. Generate structured output
+        ProcessingResult result = generateResult(analysis);
+
+        // 4. Log processing metrics
+        logProcessingMetrics(result);
+
+        return result;
+    }
+}
+```
+
+**Integration Points:**
+- Java processing frameworks for security analysis
+- Mathematical frameworks for system characterization
+- Statistical validation with K-S framework
+- Output generation for downstream processing
+
+### **data_output/ Directory Results**
+**Comprehensive result generation and reporting:**
+```python
+# Standard data_output integration pattern
+class DataFlowProcessor:
+    def __init__(self):
+        self.processor = CorpusDataFlowProcessor()
+        self.config = self.load_integration_config()
+
+    def run_complete_pipeline(self) -> Dict[str, Any]:
+        """Execute complete data processing pipeline."""
+        results = {}
+
+        # Process each dataset type
+        pipelines = [
+            ("security", self.processor.process_security_dataset),
+            ("biometric", self.processor.process_biometric_dataset),
+            ("rheology", self.processor.process_rheology_dataset),
+            ("optical", self.processor.process_optical_dataset),
+            ("biological", self.processor.process_biological_dataset)
+        ]
+
+        for name, pipeline_func in pipelines:
+            try:
+                result = pipeline_func()
+                results[name] = result
+
+                # Save structured results
+                self.save_processing_result(name, result)
+
+                # Generate reports
+                self.generate_report(name, result)
+
+            except Exception as e:
+                logger.error(f"Pipeline {name} failed: {e}")
+                results[name] = {"status": "error", "error": str(e)}
+
+        return results
+```
+
+**Output Formats:**
+- JSON results for programmatic access
+- HTML reports for web viewing
+- PDF documents for publications
+- CSV data for analysis tools
+
+### **Farmer/ Directory iOS Integration**
+**Swift iOS components complementing Java frameworks:**
+```swift
+// Standard Farmer integration pattern
+class iOSDataProcessor {
+    private let penetrationTesting: iOSPenetrationTesting
+    private let koopmanOperator: ReverseKoopmanOperator
+
+    func processDataset(dataset: Dataset) async throws -> ProcessingResult {
+        // 1. Validate iOS-specific requirements
+        try validateiOSDataset(dataset)
+
+        // 2. Execute iOS-native processing
+        let analysis = try await performiOSAnalysis(dataset)
+
+        // 3. Generate cross-platform compatible output
+        let result = generateCrossPlatformResult(analysis)
+
+        // 4. Sync with Java backend if needed
+        try await syncWithBackend(result)
+
+        return result
+    }
+}
+```
+
+**Cross-Platform Features:**
+- Native iOS performance optimizations
+- Integration with Java backend services
+- Cross-platform data format compatibility
+- Mobile-specific security testing
+
+### **docs/ Directory Documentation**
+**Research documentation generation and validation:**
+```python
+# Standard docs integration pattern
+class DocumentationGenerator:
+    def generate_comprehensive_docs(self, processing_results: Dict[str, Any]):
+        """Generate complete documentation from processing results."""
+
+        # Generate technical documentation
+        self.generate_technical_docs(processing_results)
+
+        # Create research papers
+        self.generate_research_papers(processing_results)
+
+        # Update API references
+        self.update_api_references(processing_results)
+
+        # Generate usage examples
+        self.generate_usage_examples(processing_results)
+```
+
+## 🚀 **Integration Workflow Commands**
+
+### **Complete Integration Test**
+```bash
+# Run comprehensive integration validation
+python3 complete_integration_test.py
+```
+
+### **Pipeline Execution**
+```bash
+# Process specific dataset
+cd data_output && python3 integration_runner.py --pipeline security
+
+# Process all datasets
+cd data_output && python3 integration_runner.py --all
+
+# Run integration tests
+cd data_output && python3 integration_runner.py --test
+```
+
+### **Result Generation**
+```bash
+# Generate comprehensive reports
+cd data_output && python3 integration_runner.py --generate-reports
+
+# Export results in multiple formats
+cd data_output && python3 integration_runner.py --export-results json,html,pdf
+```
+
+## 📋 **Data Processing Standards**
+
+### **Input Data Requirements**
+```json
+{
+  "experiment_metadata": {
+    "experiment_name": "string",
+    "researcher": "string",
+    "timestamp": "ISO8601",
+    "validation_targets": {
+      "convergence_threshold": 0.9987,
+      "accuracy_target": 0.95,
+      "performance_target": "sub-second"
+    }
+  },
+  "measurement_data": {
+    "units_specified": true,
+    "uncertainty_quantified": true,
+    "quality_metrics": {
+      "completeness": 1.0,
+      "consistency": 0.98,
+      "validity": 0.95
+    }
+  }
+}
+```
+
+### **Processing Result Standards**
+```json
+{
+  "processing_result": {
+    "status": "success|error",
+    "processing_time_seconds": 1.23,
+    "memory_usage_mb": 45.6,
+    "convergence_achieved": true,
+    "accuracy_metrics": {
+      "r_squared": 0.987,
+      "rmse": 0.023,
+      "mae": 0.018
+    },
+    "validation_results": {
+      "cross_validation_score": 0.982,
+      "statistical_significance": 0.999,
+      "uncertainty_bounds": [0.015, 0.031]
+    }
+  }
+}
+```
+
+## 🔧 **Error Handling and Validation**
+
+### **Pipeline Error Recovery**
+```python
+class PipelineErrorHandler:
+    def handle_processing_error(self, pipeline_name: str, error: Exception):
+        """Handle processing errors with recovery strategies."""
+
+        # Log detailed error information
+        logger.error(f"Pipeline {pipeline_name} failed: {error}")
+
+        # Attempt recovery strategies
+        if self.can_recover(error):
+            return self.attempt_recovery(pipeline_name, error)
+
+        # Generate error report
+        self.generate_error_report(pipeline_name, error)
+
+        # Notify stakeholders
+        self.notify_error(pipeline_name, error)
+
+    def validate_processing_result(self, result: Dict[str, Any]) -> bool:
+        """Validate processing result meets quality standards."""
+
+        required_fields = ["status", "processing_time_seconds", "accuracy_metrics"]
+
+        # Check required fields
+        for field in required_fields:
+            if field not in result:
+                return False
+
+        # Validate accuracy metrics
+        accuracy = result.get("accuracy_metrics", {})
+        if accuracy.get("r_squared", 0) < 0.8:
+            logger.warning("Low R² score detected")
+            return False
+
+        return True
+```
+
+## 📊 **Performance Monitoring**
+
+### **Key Performance Indicators**
+- **Processing Time**: Target < 2 seconds for typical datasets
+- **Memory Usage**: Target < 100 MB for standard processing
+- **Success Rate**: Target > 95% for established pipelines
+- **Data Throughput**: Target > 100 datasets/hour
+
+### **Monitoring Integration**
+```python
+class PerformanceMonitor:
+    def monitor_pipeline_performance(self, pipeline_name: str):
+        """Monitor and log pipeline performance metrics."""
+
+        start_time = time.time()
+
+        try:
+            # Execute pipeline
+            result = self.execute_pipeline(pipeline_name)
+
+            # Record performance metrics
+            processing_time = time.time() - start_time
+            memory_usage = self.get_memory_usage()
+            success_rate = self.calculate_success_rate(result)
+
+            # Log metrics
+            logger.info(f"Pipeline {pipeline_name}: {processing_time:.2f}s, {memory_usage:.1f}MB")
+
+            # Store for analysis
+            self.store_performance_metrics(pipeline_name, {
+                "processing_time": processing_time,
+                "memory_usage": memory_usage,
+                "success_rate": success_rate,
+                "timestamp": datetime.now().isoformat()
+            })
+
+        except Exception as e:
+            logger.error(f"Performance monitoring failed for {pipeline_name}: {e}")
+```
+
+## 🎯 **Best Practices**
+
+### **Data Flow Optimization**
+1. **Batch Processing**: Group similar datasets for efficient processing
+2. **Caching Strategy**: Cache intermediate results to avoid redundant computation
+3. **Parallel Processing**: Utilize multi-core processing for independent pipelines
+4. **Resource Management**: Monitor and limit resource usage per pipeline
+
+### **Error Prevention**
+1. **Input Validation**: Validate all inputs before processing
+2. **Resource Checks**: Verify system resources before starting pipelines
+3. **Dependency Management**: Ensure all required components are available
+4. **Graceful Degradation**: Provide fallback options when optimal processing fails
+
+### **Result Quality Assurance**
+1. **Statistical Validation**: Apply statistical tests to all results
+2. **Cross-Validation**: Validate against independent datasets
+3. **Uncertainty Quantification**: Provide confidence bounds for all metrics
+4. **Reproducibility**: Ensure results can be reproduced with same inputs
+
+This data flow integration pattern ensures reliable, efficient, and high-quality processing across the entire scientific computing toolkit ecosystem.

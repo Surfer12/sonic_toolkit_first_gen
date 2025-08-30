@@ -1,0 +1,790 @@
+---
+alwaysApply: false
+description: "Performance optimization patterns for scientific computing frameworks"
+globs: *.py,scientific-computing-tools/**,performance*.py
+---
+# Performance Optimization Patterns
+
+## Overview
+This rule establishes comprehensive performance optimization patterns for scientific computing frameworks, focusing on GPU acceleration, memory management, and computational efficiency in research-grade applications.
+
+## GPU Acceleration Patterns
+
+### CUDA Optimization Framework
+```python
+class CUDAOptimizer:
+    """Advanced CUDA optimization for scientific computing workloads.
+
+    This class implements GPU acceleration patterns optimized for scientific
+    computing, including mixed precision training and memory-efficient operations.
+    """
+
+    def __init__(self, device='cuda', enable_fp16=True, enable_grad_checkpoint=True):
+        self.device = torch.device(device if torch.cuda.is_available() else 'cpu')
+        self.enable_fp16 = enable_fp16 and torch.cuda.is_available()
+        self.enable_grad_checkpoint = enable_grad_checkpoint
+
+        # Initialize CUDA settings
+        if torch.cuda.is_available():
+            torch.backends.cudnn.benchmark = True
+            torch.backends.cudnn.deterministic = False
+
+    def optimize_model_for_cuda(self, model: nn.Module) -> nn.Module:
+        """Apply CUDA-specific optimizations to a model.
+
+        Args:
+            model: PyTorch model to optimize
+
+        Returns:
+            Optimized model for CUDA execution
+        """
+        # Move to GPU
+        model = model.to(self.device)
+
+        # Apply mixed precision if enabled
+        if self.enable_fp16:
+            model = self._apply_mixed_precision(model)
+
+        # Enable gradient checkpointing for memory efficiency
+        if self.enable_grad_checkpoint:
+            model = self._apply_gradient_checkpointing(model)
+
+        return model
+
+    def _apply_mixed_precision(self, model: nn.Module) -> nn.Module:
+        """Apply automatic mixed precision optimization."""
+        # Use torch.amp for newer PyTorch versions
+        if hasattr(torch.cuda, 'amp'):
+            model.forward = torch.cuda.amp.autocast()(model.forward)
+
+        return model
+
+    def _apply_gradient_checkpointing(self, model: nn.Module) -> nn.Module:
+        """Apply gradient checkpointing to reduce memory usage."""
+        # Apply to specific layers that benefit from checkpointing
+        for name, module in model.named_modules():
+            if isinstance(module, (nn.Linear, nn.Conv2d)) and module.in_features > 1000:
+                module.forward = torch.utils.checkpoint.checkpoint_wrapper(
+                    module.forward, preserve_rng_state=False
+                )
+
+        return model
+
+    def create_optimized_dataloader(self, dataset, batch_size: int, num_workers: int = 4):
+        """Create CUDA-optimized DataLoader.
+
+        Args:
+            dataset: PyTorch dataset
+            batch_size: Batch size for training
+            num_workers: Number of worker processes
+
+        Returns:
+            Optimized DataLoader
+        """
+        # Use pinned memory for faster GPU transfers
+        dataloader = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=num_workers,
+            pin_memory=torch.cuda.is_available(),
+            persistent_workers=num_workers > 0,
+            prefetch_factor=2 if num_workers > 0 else None
+        )
+
+        return dataloader
+
+    def monitor_cuda_performance(self) -> Dict[str, float]:
+        """Monitor CUDA performance metrics.
+
+        Returns:
+            Dictionary of performance metrics
+        """
+        if not torch.cuda.is_available():
+            return {'gpu_available': False}
+
+        metrics = {
+            'gpu_memory_allocated': torch.cuda.memory_allocated() / 1024**3,  # GB
+            'gpu_memory_reserved': torch.cuda.memory_reserved() / 1024**3,    # GB
+            'gpu_utilization': self._get_gpu_utilization(),
+            'temperature': self._get_gpu_temperature()
+        }
+
+        return metrics
+
+    def _get_gpu_utilization(self) -> float:
+        """Get GPU utilization percentage."""
+        try:
+            result = subprocess.run(['nvidia-smi', '--query-gpu=utilization.gpu',
+                                   '--format=csv,noheader,nounits'],
+                                  capture_output=True, text=True)
+            return float(result.stdout.strip().split('\n')[0])
+        except:
+            return 0.0
+
+    def _get_gpu_temperature(self) -> float:
+        """Get GPU temperature."""
+        try:
+            result = subprocess.run(['nvidia-smi', '--query-gpu=temperature.gpu',
+                                   '--format=csv,noheader,nounits'],
+                                  capture_output=True, text=True)
+            return float(result.stdout.strip().split('\n')[0])
+        except:
+            return 0.0
+
+# Usage example
+def optimize_scientific_model():
+    """Example of optimizing a scientific computing model for CUDA."""
+    from hybrid_uq import HybridModel
+
+    # Initialize CUDA optimizer
+    cuda_optimizer = CUDAOptimizer(
+        device='cuda',
+        enable_fp16=True,
+        enable_grad_checkpoint=True
+    )
+
+    # Create and optimize model
+    model_config = {'grid_metrics': {'dx': 1.0, 'dy': 1.0}}
+    model = HybridModel(**model_config)
+    optimized_model = cuda_optimizer.optimize_model_for_cuda(model)
+
+    # Monitor performance
+    metrics = cuda_optimizer.monitor_cuda_performance()
+    print(f"GPU Performance: {metrics}")
+
+    return optimized_model, cuda_optimizer
+```
+
+### Memory Management Patterns
+```python
+class MemoryOptimizer:
+    """Advanced memory optimization for scientific computing.
+
+    This class implements memory-efficient patterns for large-scale scientific
+    computations, including gradient accumulation and memory pooling.
+    """
+
+    def __init__(self, max_memory_gb: float = 8.0, enable_memory_pooling=True):
+        self.max_memory_gb = max_memory_gb
+        self.enable_memory_pooling = enable_memory_pooling
+        self.memory_pool = {}
+        self.peak_memory_usage = 0
+
+    def optimize_batch_processing(self, model: nn.Module, data_loader,
+                                accumulation_steps: int = 1):
+        """Optimize batch processing with gradient accumulation.
+
+        Args:
+            model: PyTorch model
+            data_loader: DataLoader for batch processing
+            accumulation_steps: Number of steps to accumulate gradients
+
+        Yields:
+            Processed batches with memory optimization
+        """
+        model.zero_grad()
+        scaler = torch.cuda.amp.GradScaler() if torch.cuda.is_available() else None
+
+        for step, batch in enumerate(data_loader):
+            # Process batch
+            with torch.cuda.amp.autocast() if scaler else torch.no_grad():
+                outputs = model(batch['inputs'])
+                loss = self.compute_loss(outputs, batch['targets'])
+
+            # Scale loss for gradient accumulation
+            loss = loss / accumulation_steps
+
+            # Backward pass with scaling
+            if scaler:
+                scaler.scale(loss).backward()
+            else:
+                loss.backward()
+
+            # Update parameters every N steps
+            if (step + 1) % accumulation_steps == 0:
+                if scaler:
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    optimizer.step()
+                optimizer.zero_grad()
+
+            # Memory cleanup
+            del outputs, loss
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+            # Monitor memory usage
+            self._update_memory_tracking()
+
+            yield step, batch
+
+    def create_memory_efficient_model(self, model_class, model_config: Dict,
+                                    quantization_bits: int = 8):
+        """Create memory-efficient model with quantization.
+
+        Args:
+            model_class: Model class to instantiate
+            model_config: Model configuration dictionary
+            quantization_bits: Quantization precision (8 or 4)
+
+        Returns:
+            Memory-optimized model
+        """
+        model = model_class(**model_config)
+
+        # Apply quantization
+        if quantization_bits == 8:
+            model = torch.quantization.quantize_dynamic(
+                model, {nn.Linear, nn.Conv2d}, dtype=torch.qint8
+            )
+        elif quantization_bits == 4:
+            # Custom 4-bit quantization
+            model = self._apply_4bit_quantization(model)
+
+        return model
+
+    def _apply_4bit_quantization(self, model: nn.Module) -> nn.Module:
+        """Apply custom 4-bit quantization to model."""
+        for name, module in model.named_modules():
+            if isinstance(module, nn.Linear):
+                # Replace with quantized version
+                quantized_layer = self._quantize_linear_layer(module, bits=4)
+                setattr(model, name, quantized_layer)
+
+        return model
+
+    def _quantize_linear_layer(self, layer: nn.Linear, bits: int) -> nn.Module:
+        """Quantize a linear layer to specified bit precision."""
+        # Implement custom quantization logic
+        # This is a simplified example
+        weight_scale = layer.weight.abs().max() / (2**(bits-1) - 1)
+
+        class QuantizedLinear(nn.Module):
+            def __init__(self, original_layer, scale):
+                super().__init__()
+                self.weight = torch.round(original_layer.weight / scale)
+                self.bias = original_layer.bias
+                self.scale = scale
+                self.out_features = original_layer.out_features
+
+            def forward(self, x):
+                return F.linear(x, self.weight * self.scale, self.bias)
+
+        return QuantizedLinear(layer, weight_scale)
+
+    def _update_memory_tracking(self):
+        """Update memory usage tracking."""
+        if torch.cuda.is_available():
+            current_memory = torch.cuda.memory_allocated() / 1024**3  # GB
+            self.peak_memory_usage = max(self.peak_memory_usage, current_memory)
+
+    def get_memory_report(self) -> Dict[str, float]:
+        """Generate memory usage report."""
+        return {
+            'peak_memory_usage': self.peak_memory_usage,
+            'current_memory_usage': torch.cuda.memory_allocated() / 1024**3 if torch.cuda.is_available() else 0,
+            'memory_pool_size': len(self.memory_pool),
+            'memory_efficiency_score': self._calculate_efficiency_score()
+        }
+
+    def _calculate_efficiency_score(self) -> float:
+        """Calculate memory efficiency score."""
+        if self.peak_memory_usage == 0:
+            return 1.0
+
+        efficiency = min(self.max_memory_gb / self.peak_memory_usage, 1.0)
+        return efficiency
+
+# Usage example
+def create_memory_optimized_training():
+    """Create memory-optimized training setup."""
+    memory_optimizer = MemoryOptimizer(max_memory_gb=8.0)
+
+    # Create memory-efficient model
+    model = memory_optimizer.create_memory_efficient_model(
+        HybridModel,
+        {'grid_metrics': {'dx': 1.0, 'dy': 1.0}},
+        quantization_bits=8
+    )
+
+    # Create optimized data loader
+    cuda_optimizer = CUDAOptimizer()
+    train_loader = cuda_optimizer.create_optimized_dataloader(
+        train_dataset, batch_size=4, num_workers=2
+    )
+
+    # Run optimized training
+    for step, batch in memory_optimizer.optimize_batch_processing(
+        model, train_loader, accumulation_steps=4
+    ):
+        if step % 100 == 0:
+            memory_report = memory_optimizer.get_memory_report()
+            print(f"Step {step}: {memory_report}")
+
+    return model, memory_optimizer
+```
+
+## Computational Optimization Patterns
+
+### Parallel Processing Framework
+```python
+class ScientificParallelProcessor:
+    """Parallel processing framework for scientific computing workloads.
+
+    This class implements advanced parallelization patterns for scientific
+    computations, including data parallelism, model parallelism, and pipeline
+    parallelism optimized for research workloads.
+    """
+
+    def __init__(self, num_processes: int = None, use_cuda: bool = True):
+        self.num_processes = num_processes or min(os.cpu_count(), 8)
+        self.use_cuda = use_cuda and torch.cuda.is_available()
+        self.cuda_devices = list(range(torch.cuda.device_count())) if self.use_cuda else []
+
+    def parallel_model_evaluation(self, model: nn.Module, test_data,
+                                evaluation_fn=None) -> List[Dict]:
+        """Evaluate model in parallel across multiple processes/GPUs.
+
+        Args:
+            model: Model to evaluate
+            test_data: Test dataset
+            evaluation_fn: Custom evaluation function
+
+        Returns:
+            List of evaluation results from each process
+        """
+        if evaluation_fn is None:
+            evaluation_fn = self._default_evaluation_fn
+
+        # Split data across processes
+        data_chunks = self._split_data_for_parallel(test_data)
+
+        # Create process pool
+        with multiprocessing.Pool(processes=self.num_processes) as pool:
+            # Launch parallel evaluation
+            results = pool.starmap(
+                self._evaluate_on_chunk,
+                [(model, chunk, evaluation_fn, device)
+                 for chunk, device in zip(data_chunks, self._cycle_devices())]
+            )
+
+        return results
+
+    def _split_data_for_parallel(self, data) -> List:
+        """Split data into chunks for parallel processing."""
+        if hasattr(data, '__len__'):
+            chunk_size = len(data) // self.num_processes
+            chunks = [data[i:i + chunk_size]
+                     for i in range(0, len(data), chunk_size)]
+        else:
+            # For streaming data, create chunks of fixed size
+            chunks = [data] * self.num_processes  # Simplified
+
+        return chunks
+
+    def _cycle_devices(self) -> List[str]:
+        """Cycle through available devices for parallel processing."""
+        devices = []
+        for i in range(self.num_processes):
+            if self.use_cuda and self.cuda_devices:
+                device_idx = self.cuda_devices[i % len(self.cuda_devices)]
+                devices.append(f'cuda:{device_idx}')
+            else:
+                devices.append('cpu')
+        return devices
+
+    def _evaluate_on_chunk(self, model, chunk, evaluation_fn, device):
+        """Evaluate model on a single data chunk."""
+        # Move model to device
+        model = model.to(device)
+        model.eval()
+
+        # Move data to device
+        if hasattr(chunk, 'to'):
+            chunk = chunk.to(device)
+
+        # Perform evaluation
+        with torch.no_grad():
+            result = evaluation_fn(model, chunk)
+
+        return result
+
+    def _default_evaluation_fn(self, model, data):
+        """Default evaluation function."""
+        outputs = model(data)
+        return {
+            'mean_output': outputs.mean().item(),
+            'std_output': outputs.std().item(),
+            'output_shape': list(outputs.shape),
+            'device': str(outputs.device)
+        }
+
+    def distributed_training_setup(self, model: nn.Module,
+                                 data_parallel: bool = True,
+                                 model_parallel: bool = False):
+        """Set up distributed training configuration.
+
+        Args:
+            model: Model to distribute
+            data_parallel: Enable data parallelism
+            model_parallel: Enable model parallelism
+
+        Returns:
+            Distributed model and training configuration
+        """
+        if torch.cuda.device_count() > 1 and data_parallel:
+            # Data parallelism
+            model = nn.DataParallel(model)
+
+        elif model_parallel and torch.cuda.device_count() > 1:
+            # Model parallelism (simplified example)
+            model = self._apply_model_parallelism(model)
+
+        return model
+
+    def _apply_model_parallelism(self, model: nn.Module) -> nn.Module:
+        """Apply model parallelism across multiple GPUs."""
+        # Simplified model parallelism implementation
+        # In practice, this would split model layers across devices
+
+        class ModelParallelWrapper(nn.Module):
+            def __init__(self, original_model):
+                super().__init__()
+                self.original_model = original_model
+
+            def forward(self, x):
+                # Split computation across devices
+                device_count = torch.cuda.device_count()
+                if device_count > 1:
+                    # Distribute across GPUs (simplified)
+                    split_size = x.shape[0] // device_count
+                    outputs = []
+
+                    for i in range(device_count):
+                        device = torch.device(f'cuda:{i}')
+                        chunk = x[i*split_size:(i+1)*split_size].to(device)
+
+                        # Move model to device (in practice, different parts of model)
+                        model_chunk = self.original_model.to(device)
+                        output_chunk = model_chunk(chunk)
+                        outputs.append(output_chunk.to(x.device))
+
+                    return torch.cat(outputs, dim=0)
+                else:
+                    return self.original_model(x)
+
+        return ModelParallelWrapper(model)
+
+# Usage example
+def create_parallel_scientific_processor():
+    """Create parallel processor for scientific computing."""
+    processor = ScientificParallelProcessor(num_processes=4, use_cuda=True)
+
+    # Load model
+    model = HybridModel(grid_metrics={'dx': 1.0, 'dy': 1.0})
+
+    # Set up distributed training
+    distributed_model = processor.distributed_training_setup(
+        model, data_parallel=True
+    )
+
+    # Run parallel evaluation
+    test_data = torch.randn(100, 2, 64, 64)
+    results = processor.parallel_model_evaluation(
+        distributed_model, test_data
+    )
+
+    print(f"Parallel evaluation results: {len(results)} chunks processed")
+    for i, result in enumerate(results):
+        print(f"Chunk {i}: Mean={result['mean_output']:.4f}, Device={result['device']}")
+
+    return processor, results
+```
+
+## Profiling and Benchmarking Patterns
+
+### Advanced Performance Profiler
+```python
+class ScientificPerformanceProfiler:
+    """Advanced performance profiling for scientific computing.
+
+    This class provides comprehensive profiling capabilities for scientific
+    workloads, including memory usage, computation time, and bottleneck analysis.
+    """
+
+    def __init__(self, enable_cuda_profiling=True, enable_memory_profiling=True):
+        self.enable_cuda_profiling = enable_cuda_profiling
+        self.enable_memory_profiling = enable_memory_profiling
+        self.profiling_data = defaultdict(list)
+
+    def profile_function(self, func, *args, **kwargs):
+        """Profile a function execution with comprehensive metrics."""
+        import cProfile
+        import pstats
+        from io import StringIO
+
+        # Set up profiling
+        profiler = cProfile.Profile()
+        profiler.enable()
+
+        # Execute function with timing
+        start_time = time.time()
+        start_memory = self._get_memory_usage()
+
+        try:
+            result = func(*args, **kwargs)
+        finally:
+            end_time = time.time()
+            end_memory = self._get_memory_usage()
+
+            profiler.disable()
+
+        # Collect profiling data
+        execution_time = end_time - start_time
+        memory_usage = end_memory - start_memory
+
+        # Get profiling statistics
+        s = StringIO()
+        ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
+        ps.print_stats()
+
+        profiling_stats = {
+            'execution_time': execution_time,
+            'memory_usage': memory_usage,
+            'cpu_profile': s.getvalue(),
+            'function_calls': ps.total_calls,
+            'timestamp': datetime.now().isoformat()
+        }
+
+        # Store profiling data
+        self.profiling_data[func.__name__].append(profiling_stats)
+
+        return result, profiling_stats
+
+    def profile_model_inference(self, model: nn.Module, input_data,
+                              num_runs: int = 10) -> Dict[str, Any]:
+        """Profile model inference performance."""
+        model.eval()
+
+        inference_times = []
+        memory_usages = []
+
+        for _ in range(num_runs):
+            start_memory = self._get_memory_usage()
+
+            with torch.no_grad():
+                start_time = time.time()
+                _ = model(input_data)
+                end_time = time.time()
+
+            end_memory = self._get_memory_usage()
+
+            inference_times.append(end_time - start_time)
+            memory_usages.append(end_memory - start_memory)
+
+        profiling_result = {
+            'mean_inference_time': np.mean(inference_times),
+            'std_inference_time': np.std(inference_times),
+            'min_inference_time': np.min(inference_times),
+            'max_inference_time': np.max(inference_times),
+            'mean_memory_usage': np.mean(memory_usages),
+            'std_memory_usage': np.std(memory_usages),
+            'throughput': len(input_data) / np.mean(inference_times) if hasattr(input_data, '__len__') else 0,
+            'num_runs': num_runs
+        }
+
+        return profiling_result
+
+    def profile_training_loop(self, model: nn.Module, data_loader,
+                            optimizer, criterion, num_epochs: int = 1) -> Dict[str, List]:
+        """Profile complete training loop."""
+        training_metrics = {
+            'epoch_times': [],
+            'batch_times': [],
+            'memory_usage': [],
+            'loss_values': []
+        }
+
+        model.train()
+
+        for epoch in range(num_epochs):
+            epoch_start_time = time.time()
+            epoch_losses = []
+
+            for batch_idx, (inputs, targets) in enumerate(data_loader):
+                batch_start_time = time.time()
+                start_memory = self._get_memory_usage()
+
+                # Forward pass
+                outputs = model(inputs)
+                loss = criterion(outputs, targets)
+
+                # Backward pass
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+                # Record metrics
+                batch_time = time.time() - batch_start_time
+                memory_usage = self._get_memory_usage() - start_memory
+
+                training_metrics['batch_times'].append(batch_time)
+                training_metrics['memory_usage'].append(memory_usage)
+                epoch_losses.append(loss.item())
+
+            epoch_time = time.time() - epoch_start_time
+            training_metrics['epoch_times'].append(epoch_time)
+            training_metrics['loss_values'].extend(epoch_losses)
+
+        return training_metrics
+
+    def _get_memory_usage(self) -> float:
+        """Get current memory usage in MB."""
+        import psutil
+        process = psutil.Process(os.getpid())
+        return process.memory_info().rss / 1024 / 1024  # MB
+
+    def generate_performance_report(self) -> Dict[str, Any]:
+        """Generate comprehensive performance report."""
+        report = {
+            'timestamp': datetime.now().isoformat(),
+            'system_info': {
+                'cpu_count': os.cpu_count(),
+                'memory_total': psutil.virtual_memory().total / (1024**3),  # GB
+                'gpu_available': torch.cuda.is_available(),
+                'gpu_count': torch.cuda.device_count() if torch.cuda.is_available() else 0,
+                'cuda_version': torch.version.cuda if torch.cuda.is_available() else None
+            },
+            'profiling_summary': {}
+        }
+
+        # Summarize profiling data
+        for function_name, profiles in self.profiling_data.items():
+            if profiles:
+                execution_times = [p['execution_time'] for p in profiles]
+                memory_usages = [p['memory_usage'] for p in profiles]
+
+                report['profiling_summary'][function_name] = {
+                    'num_profiles': len(profiles),
+                    'mean_execution_time': np.mean(execution_times),
+                    'std_execution_time': np.std(execution_times),
+                    'mean_memory_usage': np.mean(memory_usages),
+                    'std_memory_usage': np.std(memory_usages),
+                    'total_calls': sum(p['function_calls'] for p in profiles)
+                }
+
+        return report
+
+    def identify_bottlenecks(self) -> List[str]:
+        """Identify performance bottlenecks from profiling data."""
+        bottlenecks = []
+
+        for function_name, profiles in self.profiling_data.items():
+            if profiles:
+                avg_time = np.mean([p['execution_time'] for p in profiles])
+                avg_memory = np.mean([p['memory_usage'] for p in profiles])
+
+                # Identify potential bottlenecks
+                if avg_time > 1.0:  # More than 1 second
+                    bottlenecks.append(f"High execution time in {function_name}: {avg_time:.3f}s")
+
+                if avg_memory > 1000:  # More than 1GB
+                    bottlenecks.append(f"High memory usage in {function_name}: {avg_memory:.1f}MB")
+
+        return bottlenecks
+
+# Usage example
+def create_performance_profiling_setup():
+    """Create comprehensive performance profiling setup."""
+    profiler = ScientificPerformanceProfiler()
+
+    # Profile model inference
+    model = HybridModel(grid_metrics={'dx': 1.0, 'dy': 1.0})
+    test_input = torch.randn(32, 2, 64, 64)
+
+    inference_profile = profiler.profile_model_inference(model, test_input, num_runs=20)
+    print(f"Inference profiling: {inference_profile}")
+
+    # Profile custom function
+    def custom_scientific_function(x):
+        # Simulate scientific computation
+        result = torch.sin(x) * torch.cos(x) + torch.exp(-x**2)
+        return torch.sum(result)
+
+    _, function_profile = profiler.profile_function(custom_scientific_function, test_input)
+    print(f"Function profiling: {function_profile}")
+
+    # Generate performance report
+    report = profiler.generate_performance_report()
+    print(f"Performance report generated with {len(report['profiling_summary'])} profiled functions")
+
+    # Identify bottlenecks
+    bottlenecks = profiler.identify_bottlenecks()
+    if bottlenecks:
+        print("Performance bottlenecks identified:")
+        for bottleneck in bottlenecks:
+            print(f"  - {bottleneck}")
+
+    return profiler, report
+```
+
+## Optimization Best Practices
+
+### Memory-Efficient Training Patterns
+```python
+def memory_efficient_training_pattern(model, optimizer, train_loader, max_epochs=10):
+    """Implement memory-efficient training patterns."""
+
+    # Use gradient accumulation
+    accumulation_steps = 4
+    scaler = torch.cuda.amp.GradScaler()
+
+    for epoch in range(max_epochs):
+        model.train()
+
+        for step, (inputs, targets) in enumerate(train_loader):
+            # Forward pass with mixed precision
+            with torch.cuda.amp.autocast():
+                outputs = model(inputs)
+                loss = compute_loss(outputs, targets) / accumulation_steps
+
+            # Backward pass with gradient scaling
+            scaler.scale(loss).backward()
+
+            # Update weights every N steps
+            if (step + 1) % accumulation_steps == 0:
+                scaler.step(optimizer)
+                scaler.update()
+                optimizer.zero_grad()
+
+            # Memory cleanup
+            del outputs, loss
+            torch.cuda.empty_cache()
+
+        print(f"Epoch {epoch+1}/{max_epochs} completed")
+```
+
+### Computational Graph Optimization
+```python
+def optimize_computational_graph(model):
+    """Apply computational graph optimizations."""
+
+    # Fuse operations where possible
+    model = torch.jit.script(model)  # TorchScript compilation
+
+    # Enable CUDA graph capture for static graphs
+    if torch.cuda.is_available():
+        # Create CUDA graph for repeated computations
+        static_input = torch.randn_like(your_input_example)
+        with torch.cuda.graph(static_input):
+            static_output = model(static_input)
+
+    return model
+```
+
+## References
+- [hybrid_uq_validation_verification.tex](mdc:hybrid_uq_validation_verification.tex) - Performance benchmarking results
+- [integrated_framework_testing_coverage.md](mdc:integrated_framework_testing_coverage.md) - Performance testing patterns
+- [scientific-integration-patterns.mdc](mdc:scientific-integration-patterns.mdc) - Integration performance patterns

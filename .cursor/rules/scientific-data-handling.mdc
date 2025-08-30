@@ -1,0 +1,970 @@
+---
+alwaysApply: false
+description: "Scientific data handling and preprocessing patterns for research computing"
+globs: data/**,preprocessing/**,*data*,*preprocess*,scientific-computing-tools/**
+---
+# Scientific Data Handling Patterns
+
+## Overview
+This rule establishes comprehensive patterns for scientific data handling, preprocessing, and management in research computing environments. It covers data ingestion, validation, transformation, and quality assurance for scientific datasets.
+
+## Data Ingestion Framework
+
+### Scientific Data Loader
+```python
+class ScientificDataLoader:
+    """Advanced data loader for scientific computing with format detection and validation.
+
+    This class provides robust data loading capabilities for various scientific
+    data formats, including automatic format detection, validation, and
+    preprocessing pipelines optimized for research workflows.
+    """
+
+    def __init__(self, data_root: str, cache_dir: str = None, enable_validation=True):
+        self.data_root = Path(data_root)
+        self.cache_dir = Path(cache_dir) if cache_dir else self.data_root / '.cache'
+        self.enable_validation = enable_validation
+
+        # Supported formats with their loaders
+        self.format_loaders = {
+            '.csv': self._load_csv,
+            '.json': self._load_json,
+            '.h5': self._load_hdf5,
+            '.npy': self._load_numpy,
+            '.mat': self._load_matlab,
+            '.nc': self._load_netcdf,
+            '.tif': self._load_tiff,
+            '.fits': self._load_fits
+        }
+
+        # Data validation rules
+        self.validation_rules = {
+            'numerical_range': self._validate_numerical_range,
+            'missing_values': self._validate_missing_values,
+            'data_types': self._validate_data_types,
+            'dimensionality': self._validate_dimensionality,
+            'physical_constraints': self._validate_physical_constraints
+        }
+
+        self.cache_dir.mkdir(exist_ok=True)
+
+    def load_dataset(self, dataset_path: Union[str, Path], format_hint: str = None,
+                    validation_rules: List[str] = None) -> Dict[str, Any]:
+        """Load scientific dataset with automatic format detection and validation.
+
+        Args:
+            dataset_path: Path to dataset file or directory
+            format_hint: Optional format hint to bypass auto-detection
+            validation_rules: List of validation rules to apply
+
+        Returns:
+            Dictionary containing loaded data and metadata
+
+        Raises:
+            DataLoadError: If loading or validation fails
+            UnsupportedFormatError: If format is not supported
+        """
+        dataset_path = Path(dataset_path)
+
+        if dataset_path.is_dir():
+            return self._load_dataset_directory(dataset_path, validation_rules)
+        else:
+            return self._load_dataset_file(dataset_path, format_hint, validation_rules)
+
+    def _load_dataset_file(self, file_path: Path, format_hint: str = None,
+                          validation_rules: List[str] = None) -> Dict[str, Any]:
+        """Load single dataset file."""
+        # Auto-detect format
+        if format_hint is None:
+            file_format = self._detect_format(file_path)
+        else:
+            file_format = format_hint
+
+        if file_format not in self.format_loaders:
+            raise UnsupportedFormatError(f"Unsupported format: {file_format}")
+
+        # Load data
+        try:
+            loader = self.format_loaders[file_format]
+            data, metadata = loader(file_path)
+
+            # Apply validation if enabled
+            if self.enable_validation and validation_rules:
+                self._apply_validation(data, validation_rules)
+
+            # Cache loaded data
+            cache_key = self._get_cache_key(file_path)
+            self._cache_data(cache_key, data, metadata)
+
+            result = {
+                'data': data,
+                'metadata': metadata,
+                'format': file_format,
+                'file_path': str(file_path),
+                'load_timestamp': datetime.now().isoformat(),
+                'validation_status': 'passed' if validation_rules else 'not_validated'
+            }
+
+            return result
+
+        except Exception as e:
+            raise DataLoadError(f"Failed to load {file_path}: {e}") from e
+
+    def _detect_format(self, file_path: Path) -> str:
+        """Auto-detect file format from extension and content."""
+        # Check extension first
+        suffix = file_path.suffix.lower()
+
+        if suffix in self.format_loaders:
+            return suffix
+
+        # Try content-based detection for files without extensions
+        try:
+            with open(file_path, 'rb') as f:
+                header = f.read(64)
+
+            # Check for HDF5 signature
+            if header.startswith(b'\x89HDF\r\n\x1a\n'):
+                return '.h5'
+
+            # Check for JSON
+            if header.strip().startswith(b'{'):
+                return '.json'
+
+            # Check for NumPy array
+            if len(header) >= 128:  # NumPy arrays have header
+                return '.npy'
+
+        except:
+            pass
+
+        raise UnsupportedFormatError(f"Could not detect format for {file_path}")
+
+    def _load_csv(self, file_path: Path) -> Tuple[Any, Dict[str, Any]]:
+        """Load CSV data with scientific data handling."""
+        import pandas as pd
+
+        # Read CSV with automatic type detection
+        df = pd.read_csv(file_path, low_memory=False)
+
+        # Extract metadata
+        metadata = {
+            'shape': df.shape,
+            'columns': list(df.columns),
+            'dtypes': df.dtypes.to_dict(),
+            'memory_usage': df.memory_usage(deep=True).sum(),
+            'null_counts': df.isnull().sum().to_dict()
+        }
+
+        return df, metadata
+
+    def _load_json(self, file_path: Path) -> Tuple[Any, Dict[str, Any]]:
+        """Load JSON data with validation."""
+        import json
+
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        metadata = {
+            'type': type(data).__name__,
+            'size': len(data) if hasattr(data, '__len__') else 1,
+            'keys': list(data.keys()) if isinstance(data, dict) else None
+        }
+
+        return data, metadata
+
+    def _load_hdf5(self, file_path: Path) -> Tuple[Any, Dict[str, Any]]:
+        """Load HDF5 data with scientific dataset handling."""
+        import h5py
+
+        with h5py.File(file_path, 'r') as f:
+            # Load all datasets
+            data = {}
+            for key in f.keys():
+                data[key] = f[key][:]
+
+            metadata = {
+                'keys': list(f.keys()),
+                'shapes': {k: f[k].shape for k in f.keys()},
+                'dtypes': {k: f[k].dtype for k in f.keys()},
+                'attributes': dict(f.attrs) if f.attrs else {}
+            }
+
+        return data, metadata
+
+    def _load_numpy(self, file_path: Path) -> Tuple[Any, Dict[str, Any]]:
+        """Load NumPy array with metadata extraction."""
+        data = np.load(file_path)
+
+        metadata = {
+            'shape': data.shape,
+            'dtype': str(data.dtype),
+            'size': data.size,
+            'nbytes': data.nbytes,
+            'min': float(data.min()) if data.size > 0 else None,
+            'max': float(data.max()) if data.size > 0 else None,
+            'mean': float(data.mean()) if data.size > 0 else None,
+            'std': float(data.std()) if data.size > 0 else None
+        }
+
+        return data, metadata
+
+    def _load_netcdf(self, file_path: Path) -> Tuple[Any, Dict[str, Any]]:
+        """Load NetCDF data for climate/oceanographic datasets."""
+        try:
+            import xarray as xr
+            ds = xr.open_dataset(file_path)
+
+            metadata = {
+                'variables': list(ds.data_vars),
+                'coordinates': list(ds.coords),
+                'dimensions': dict(ds.dims),
+                'attributes': dict(ds.attrs)
+            }
+
+            return ds, metadata
+        except ImportError:
+            # Fallback to netCDF4
+            import netCDF4 as nc
+            ds = nc.Dataset(file_path)
+
+            data = {}
+            for var_name in ds.variables:
+                data[var_name] = ds.variables[var_name][:]
+
+            metadata = {
+                'variables': list(ds.variables.keys()),
+                'dimensions': dict(ds.dimensions),
+                'attributes': dict(ds.__dict__)
+            }
+
+            return data, metadata
+
+    def _validate_numerical_range(self, data: Any, min_val: float = None,
+                                 max_val: float = None) -> bool:
+        """Validate numerical data is within acceptable range."""
+        if hasattr(data, 'min') and hasattr(data, 'max'):
+            data_min = float(data.min())
+            data_max = float(data.max())
+
+            if min_val is not None and data_min < min_val:
+                return False
+            if max_val is not None and data_max > max_val:
+                return False
+
+        return True
+
+    def _validate_missing_values(self, data: Any, max_missing_ratio: float = 0.1) -> bool:
+        """Validate missing values are within acceptable limits."""
+        if hasattr(data, 'isnull'):
+            # Pandas DataFrame/Series
+            missing_ratio = data.isnull().sum().sum() / data.size
+        elif hasattr(data, '__array__'):
+            # NumPy array
+            missing_ratio = np.isnan(data).sum() / data.size
+        else:
+            return True  # Assume no missing values for other types
+
+        return missing_ratio <= max_missing_ratio
+
+    def _validate_data_types(self, data: Any, expected_types: Dict[str, str] = None) -> bool:
+        """Validate data types match expectations."""
+        if expected_types is None:
+            return True
+
+        # Implement type validation logic
+        return True  # Placeholder
+
+    def _validate_dimensionality(self, data: Any, expected_shape: Tuple = None) -> bool:
+        """Validate data dimensionality."""
+        if expected_shape is None:
+            return True
+
+        if hasattr(data, 'shape'):
+            return data.shape == expected_shape
+
+        return True
+
+    def _validate_physical_constraints(self, data: Any, constraints: Dict = None) -> bool:
+        """Validate data against physical constraints."""
+        if constraints is None:
+            return True
+
+        # Implement physics-based validation
+        return True  # Placeholder
+
+    def _apply_validation(self, data: Any, rules: List[str]):
+        """Apply validation rules to data."""
+        for rule in rules:
+            if rule in self.validation_rules:
+                validator = self.validation_rules[rule]
+                if not validator(data):
+                    raise ValidationError(f"Validation failed for rule: {rule}")
+
+    def _get_cache_key(self, file_path: Path) -> str:
+        """Generate cache key for file."""
+        import hashlib
+        file_hash = hashlib.md5(str(file_path).encode()).hexdigest()
+        return f"{file_path.stem}_{file_hash[:8]}"
+
+    def _cache_data(self, cache_key: str, data: Any, metadata: Dict):
+        """Cache loaded data for faster subsequent access."""
+        cache_file = self.cache_dir / f"{cache_key}.pkl"
+
+        cache_data = {
+            'data': data,
+            'metadata': metadata,
+            'cache_timestamp': datetime.now().isoformat()
+        }
+
+        try:
+            import pickle
+            with open(cache_file, 'wb') as f:
+                pickle.dump(cache_data, f)
+        except Exception as e:
+            logger.warning(f"Failed to cache data: {e}")
+
+# Usage example
+def create_scientific_data_loader():
+    """Create scientific data loader with comprehensive capabilities."""
+    loader = ScientificDataLoader(
+        data_root='./scientific_data',
+        cache_dir='./data_cache',
+        enable_validation=True
+    )
+
+    # Load various scientific data formats
+    datasets = {
+        'experimental_data': loader.load_dataset('experiment_001.csv'),
+        'simulation_results': loader.load_dataset('simulation.h5'),
+        'climate_data': loader.load_dataset('climate_data.nc'),
+        'measurement_data': loader.load_dataset('measurements.json')
+    }
+
+    # Apply validation rules
+    validation_rules = ['numerical_range', 'missing_values', 'data_types']
+    for name, dataset in datasets.items():
+        try:
+            loader._apply_validation(dataset['data'], validation_rules)
+            print(f"✅ {name}: Validation passed")
+        except ValidationError as e:
+            print(f"❌ {name}: Validation failed - {e}")
+
+    return loader, datasets
+```
+
+### Data Preprocessing Pipeline
+```python
+class ScientificDataPreprocessor:
+    """Comprehensive data preprocessing pipeline for scientific datasets.
+
+    This class implements a modular preprocessing pipeline that can handle
+    various scientific data types and apply appropriate transformations,
+    normalization, and quality assurance steps.
+    """
+
+    def __init__(self, config: Dict[str, Any] = None):
+        self.config = config or {}
+        self.preprocessing_steps = []
+        self.applied_transforms = []
+
+        # Initialize preprocessing components
+        self._init_preprocessing_components()
+
+    def _init_preprocessing_components(self):
+        """Initialize preprocessing components."""
+        self.components = {
+            'normalizer': DataNormalizer(),
+            'outlier_detector': OutlierDetector(),
+            'missing_value_handler': MissingValueHandler(),
+            'feature_scaler': FeatureScaler(),
+            'dimensionality_reducer': DimensionalityReducer(),
+            'noise_filter': NoiseFilter()
+        }
+
+    def add_preprocessing_step(self, step_name: str, component: str,
+                              params: Dict[str, Any] = None):
+        """Add a preprocessing step to the pipeline.
+
+        Args:
+            step_name: Unique name for the step
+            component: Component to use ('normalizer', 'outlier_detector', etc.)
+            params: Parameters for the component
+        """
+        if component not in self.components:
+            raise ValueError(f"Unknown component: {component}")
+
+        self.preprocessing_steps.append({
+            'name': step_name,
+            'component': component,
+            'params': params or {},
+            'status': 'pending'
+        })
+
+    def preprocess_data(self, data: Any, target_columns: List[str] = None) -> Any:
+        """Apply preprocessing pipeline to data.
+
+        Args:
+            data: Input data (DataFrame, array, etc.)
+            target_columns: Columns to preprocess (for tabular data)
+
+        Returns:
+            Preprocessed data
+        """
+        processed_data = data.copy() if hasattr(data, 'copy') else data
+
+        for step in self.preprocessing_steps:
+            try:
+                step['status'] = 'running'
+
+                component = self.components[step['component']]
+                params = step['params']
+
+                # Apply preprocessing step
+                if hasattr(component, 'fit_transform'):
+                    if target_columns and hasattr(processed_data, 'select_dtypes'):
+                        # Tabular data preprocessing
+                        numeric_columns = processed_data.select_dtypes(include=[np.number]).columns
+                        columns_to_process = [col for col in numeric_columns if col in target_columns]
+
+                        if columns_to_process:
+                            processed_data[columns_to_process] = component.fit_transform(
+                                processed_data[columns_to_process], **params
+                            )
+                    else:
+                        # Array/tensor preprocessing
+                        processed_data = component.fit_transform(processed_data, **params)
+
+                # Record applied transformation
+                self.applied_transforms.append({
+                    'step': step['name'],
+                    'component': step['component'],
+                    'params': params,
+                    'timestamp': datetime.now().isoformat()
+                })
+
+                step['status'] = 'completed'
+
+            except Exception as e:
+                step['status'] = 'failed'
+                logger.error(f"Preprocessing step {step['name']} failed: {e}")
+                raise
+
+        return processed_data
+
+    def get_preprocessing_report(self) -> Dict[str, Any]:
+        """Generate comprehensive preprocessing report."""
+        return {
+            'pipeline_steps': self.preprocessing_steps,
+            'applied_transforms': self.applied_transforms,
+            'pipeline_status': {
+                'total_steps': len(self.preprocessing_steps),
+                'completed_steps': len([s for s in self.preprocessing_steps if s['status'] == 'completed']),
+                'failed_steps': len([s for s in self.preprocessing_steps if s['status'] == 'failed'])
+            },
+            'timestamp': datetime.now().isoformat()
+        }
+
+class DataNormalizer:
+    """Advanced data normalization for scientific datasets."""
+
+    def __init__(self, method: str = 'zscore'):
+        self.method = method
+        self.params = {}
+
+    def fit_transform(self, data: Union[np.ndarray, pd.DataFrame],
+                     **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        """Fit normalizer and transform data."""
+
+        if isinstance(data, pd.DataFrame):
+            # Handle DataFrame normalization
+            numeric_columns = data.select_dtypes(include=[np.number]).columns
+
+            for col in numeric_columns:
+                if self.method == 'zscore':
+                    mean_val = data[col].mean()
+                    std_val = data[col].std()
+                    data[col] = (data[col] - mean_val) / std_val
+
+                    self.params[col] = {'mean': mean_val, 'std': std_val}
+
+                elif self.method == 'minmax':
+                    min_val = data[col].min()
+                    max_val = data[col].max()
+                    data[col] = (data[col] - min_val) / (max_val - min_val)
+
+                    self.params[col] = {'min': min_val, 'max': max_val}
+
+        else:
+            # Handle array normalization
+            if self.method == 'zscore':
+                self.params['mean'] = np.mean(data, axis=0)
+                self.params['std'] = np.std(data, axis=0)
+                data = (data - self.params['mean']) / self.params['std']
+
+            elif self.method == 'minmax':
+                self.params['min'] = np.min(data, axis=0)
+                self.params['max'] = np.max(data, axis=0)
+                data = (data - self.params['min']) / (self.params['max'] - self.params['min'])
+
+        return data
+
+class OutlierDetector:
+    """Advanced outlier detection for scientific datasets."""
+
+    def __init__(self, method: str = 'iqr', threshold: float = 1.5):
+        self.method = method
+        self.threshold = threshold
+        self.outlier_indices = []
+
+    def fit_transform(self, data: Union[np.ndarray, pd.DataFrame],
+                     **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        """Detect and handle outliers."""
+
+        if isinstance(data, pd.DataFrame):
+            numeric_columns = data.select_dtypes(include=[np.number]).columns
+
+            for col in numeric_columns:
+                self._detect_outliers_1d(data[col].values, col)
+
+        else:
+            # Handle array data
+            if data.ndim == 1:
+                self._detect_outliers_1d(data, 'array')
+            else:
+                # Multi-dimensional array
+                for i in range(data.shape[1]):
+                    self._detect_outliers_1d(data[:, i], f'feature_{i}')
+
+        return data
+
+    def _detect_outliers_1d(self, data: np.ndarray, label: str):
+        """Detect outliers in 1D data."""
+
+        if self.method == 'iqr':
+            q1 = np.percentile(data, 25)
+            q3 = np.percentile(data, 75)
+            iqr = q3 - q1
+
+            lower_bound = q1 - self.threshold * iqr
+            upper_bound = q3 + self.threshold * iqr
+
+            outliers = np.where((data < lower_bound) | (data > upper_bound))[0]
+            self.outlier_indices.extend([(label, idx) for idx in outliers])
+
+        elif self.method == 'zscore':
+            z_scores = np.abs((data - np.mean(data)) / np.std(data))
+            outliers = np.where(z_scores > self.threshold)[0]
+            self.outlier_indices.extend([(label, idx) for idx in outliers])
+
+class MissingValueHandler:
+    """Advanced missing value handling for scientific datasets."""
+
+    def __init__(self, strategy: str = 'interpolate'):
+        self.strategy = strategy
+
+    def fit_transform(self, data: Union[np.ndarray, pd.DataFrame],
+                     **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        """Handle missing values in data."""
+
+        if isinstance(data, pd.DataFrame):
+            if self.strategy == 'interpolate':
+                data = data.interpolate(method='linear', limit_direction='both')
+            elif self.strategy == 'mean':
+                numeric_columns = data.select_dtypes(include=[np.number]).columns
+                data[numeric_columns] = data[numeric_columns].fillna(data[numeric_columns].mean())
+            elif self.strategy == 'median':
+                numeric_columns = data.select_dtypes(include=[np.number]).columns
+                data[numeric_columns] = data[numeric_columns].fillna(data[numeric_columns].median())
+            elif self.strategy == 'drop':
+                data = data.dropna()
+        else:
+            # Handle array data
+            if np.ma.is_masked(data):
+                # Handle masked arrays
+                if self.strategy == 'interpolate':
+                    data = np.ma.filled(data, np.interp(
+                        np.where(data.mask)[0],
+                        np.where(~data.mask)[0],
+                        data[~data.mask]
+                    ))
+                else:
+                    data = data.filled(np.nan)
+
+            # Handle NaN values
+            if np.any(np.isnan(data)):
+                if self.strategy == 'interpolate':
+                    # Simple linear interpolation for 1D
+                    if data.ndim == 1:
+                        nans = np.isnan(data)
+                        data[nans] = np.interp(
+                            np.where(nans)[0],
+                            np.where(~nans)[0],
+                            data[~nans]
+                        )
+                elif self.strategy == 'mean':
+                    mean_val = np.nanmean(data)
+                    data = np.nan_to_num(data, nan=mean_val)
+                elif self.strategy == 'median':
+                    median_val = np.nanmedian(data)
+                    data = np.nan_to_num(data, nan=median_val)
+
+        return data
+
+# Usage example
+def create_comprehensive_preprocessing_pipeline():
+    """Create comprehensive preprocessing pipeline for scientific data."""
+    preprocessor = ScientificDataPreprocessor()
+
+    # Add preprocessing steps
+    preprocessor.add_preprocessing_step(
+        'handle_missing',
+        'missing_value_handler',
+        {'strategy': 'interpolate'}
+    )
+
+    preprocessor.add_preprocessing_step(
+        'detect_outliers',
+        'outlier_detector',
+        {'method': 'iqr', 'threshold': 1.5}
+    )
+
+    preprocessor.add_preprocessing_step(
+        'normalize_data',
+        'normalizer',
+        {'method': 'zscore'}
+    )
+
+    # Load and preprocess data
+    loader = ScientificDataLoader('./data')
+    raw_data = loader.load_dataset('scientific_dataset.csv')
+
+    # Apply preprocessing pipeline
+    processed_data = preprocessor.preprocess_data(
+        raw_data['data'],
+        target_columns=['measurement_1', 'measurement_2', 'measurement_3']
+    )
+
+    # Generate preprocessing report
+    report = preprocessor.get_preprocessing_report()
+    print(f"Preprocessing completed: {report['pipeline_status']}")
+
+    return preprocessor, processed_data, report
+```
+
+## Data Quality Assurance Framework
+
+### Scientific Data Validator
+```python
+class ScientificDataValidator:
+    """Comprehensive data quality assurance for scientific datasets.
+
+    This class implements rigorous validation procedures to ensure scientific
+    data meets quality standards, statistical requirements, and domain-specific
+    constraints before use in research computations.
+    """
+
+    def __init__(self, domain: str = 'general'):
+        self.domain = domain
+        self.validation_results = []
+        self.quality_metrics = {}
+
+        # Domain-specific validation rules
+        self.domain_validators = {
+            'physics': self._validate_physics_constraints,
+            'biology': self._validate_biology_constraints,
+            'chemistry': self._validate_chemistry_constraints,
+            'climate': self._validate_climate_constraints,
+            'general': self._validate_general_constraints
+        }
+
+    def validate_dataset(self, data: Any, metadata: Dict[str, Any] = None) -> ValidationReport:
+        """Perform comprehensive data validation.
+
+        Args:
+            data: Dataset to validate
+            metadata: Additional metadata about the dataset
+
+        Returns:
+            ValidationReport with detailed results
+        """
+        report = ValidationReport()
+
+        # Basic structural validation
+        report.add_result(self._validate_structure(data))
+
+        # Statistical validation
+        report.add_result(self._validate_statistics(data))
+
+        # Domain-specific validation
+        if self.domain in self.domain_validators:
+            validator = self.domain_validators[self.domain]
+            report.add_result(validator(data, metadata))
+
+        # Quality metrics computation
+        self._compute_quality_metrics(data)
+        report.quality_metrics = self.quality_metrics.copy()
+
+        # Overall assessment
+        report.overall_score = self._compute_overall_score(report.results)
+
+        self.validation_results.append(report)
+
+        return report
+
+    def _validate_structure(self, data: Any) -> ValidationResult:
+        """Validate data structure and format."""
+        result = ValidationResult('structure_validation')
+
+        try:
+            # Check data type consistency
+            if hasattr(data, 'dtypes'):
+                # DataFrame validation
+                dtype_consistency = len(data.dtypes.unique()) > 1
+                result.add_check('dtype_consistency', dtype_consistency)
+
+            # Check for proper indexing
+            if hasattr(data, 'index'):
+                index_monotonic = data.index.is_monotonic_increasing
+                result.add_check('index_monotonic', index_monotonic)
+
+            # Check dimensionality
+            if hasattr(data, 'shape'):
+                reasonable_dims = all(dim > 0 for dim in data.shape)
+                result.add_check('reasonable_dimensions', reasonable_dims)
+
+            result.status = 'passed' if all(r['status'] for r in result.checks) else 'failed'
+
+        except Exception as e:
+            result.status = 'error'
+            result.error_message = str(e)
+
+        return result
+
+    def _validate_statistics(self, data: Any) -> ValidationResult:
+        """Validate statistical properties of the data."""
+        result = ValidationResult('statistical_validation')
+
+        try:
+            if hasattr(data, 'select_dtypes'):
+                # DataFrame statistical validation
+                numeric_data = data.select_dtypes(include=[np.number])
+
+                if not numeric_data.empty:
+                    # Check for reasonable statistical properties
+                    for col in numeric_data.columns:
+                        series = numeric_data[col].dropna()
+
+                        if len(series) > 10:  # Sufficient sample size
+                            # Check for excessive skewness
+                            skewness = series.skew()
+                            reasonable_skewness = abs(skewness) < 3.0
+                            result.add_check(f'{col}_skewness', reasonable_skewness)
+
+                            # Check for excessive kurtosis
+                            kurtosis = series.kurtosis()
+                            reasonable_kurtosis = abs(kurtosis) < 10.0
+                            result.add_check(f'{col}_kurtosis', reasonable_kurtosis)
+
+                            # Check for zero variance
+                            non_zero_variance = series.var() > 1e-10
+                            result.add_check(f'{col}_variance', non_zero_variance)
+
+            result.status = 'passed' if all(r['status'] for r in result.checks) else 'warning'
+
+        except Exception as e:
+            result.status = 'error'
+            result.error_message = str(e)
+
+        return result
+
+    def _validate_physics_constraints(self, data: Any, metadata: Dict = None) -> ValidationResult:
+        """Validate physics-specific constraints."""
+        result = ValidationResult('physics_constraints')
+
+        # Conservation laws validation
+        if self._has_velocity_fields(data):
+            # Check mass conservation (divergence-free flow)
+            divergence = self._compute_divergence(data)
+            mass_conservation = np.abs(divergence).mean() < 0.1
+            result.add_check('mass_conservation', mass_conservation)
+
+        # Energy conservation validation
+        if self._has_energy_fields(data):
+            energy_conservation = self._validate_energy_conservation(data)
+            result.add_check('energy_conservation', energy_conservation)
+
+        result.status = 'passed' if all(r['status'] for r in result.checks) else 'failed'
+        return result
+
+    def _validate_biology_constraints(self, data: Any, metadata: Dict = None) -> ValidationResult:
+        """Validate biology-specific constraints."""
+        result = ValidationResult('biology_constraints')
+
+        # Biological range validation
+        if self._has_concentration_data(data):
+            # Check concentration ranges are biologically plausible
+            valid_ranges = self._validate_concentration_ranges(data)
+            result.add_check('concentration_ranges', valid_ranges)
+
+        # Growth rate validation
+        if self._has_growth_data(data):
+            monotonic_growth = self._validate_growth_patterns(data)
+            result.add_check('growth_patterns', monotonic_growth)
+
+        result.status = 'passed' if all(r['status'] for r in result.checks) else 'failed'
+        return result
+
+    def _compute_quality_metrics(self, data: Any):
+        """Compute comprehensive quality metrics."""
+        metrics = {}
+
+        try:
+            if hasattr(data, 'shape'):
+                metrics['dimensionality'] = data.shape
+                metrics['total_elements'] = data.size if hasattr(data, 'size') else len(data)
+
+            if hasattr(data, 'select_dtypes'):
+                # DataFrame quality metrics
+                numeric_cols = data.select_dtypes(include=[np.number]).columns
+                metrics['numeric_columns'] = len(numeric_cols)
+                metrics['missing_data_ratio'] = data.isnull().sum().sum() / data.size
+
+                if len(numeric_cols) > 0:
+                    metrics['data_range'] = {
+                        col: {'min': data[col].min(), 'max': data[col].max()}
+                        for col in numeric_cols
+                    }
+
+            elif hasattr(data, '__array__'):
+                # Array quality metrics
+                metrics['data_type'] = str(data.dtype)
+                metrics['has_nan'] = np.any(np.isnan(data))
+                metrics['has_inf'] = np.any(np.isinf(data))
+                metrics['sparsity'] = np.count_nonzero(data) / data.size
+
+            metrics['timestamp'] = datetime.now().isoformat()
+
+        except Exception as e:
+            metrics['error'] = str(e)
+
+        self.quality_metrics = metrics
+
+    def _compute_overall_score(self, results: List[ValidationResult]) -> float:
+        """Compute overall validation score."""
+        if not results:
+            return 0.0
+
+        scores = []
+        weights = {
+            'structure_validation': 0.3,
+            'statistical_validation': 0.3,
+            'physics_constraints': 0.2,
+            'biology_constraints': 0.2
+        }
+
+        for result in results:
+            if result.status == 'passed':
+                score = 1.0
+            elif result.status == 'warning':
+                score = 0.7
+            else:
+                score = 0.0
+
+            weight = weights.get(result.name, 0.25)
+            scores.append(score * weight)
+
+        return sum(scores) / sum(weights.values())
+
+    # Helper methods for domain-specific validation
+    def _has_velocity_fields(self, data: Any) -> bool:
+        """Check if data contains velocity fields."""
+        if hasattr(data, 'columns'):
+            return any('velocity' in col.lower() or 'u_' in col.lower() or 'v_' in col.lower()
+                      for col in data.columns)
+        return False
+
+    def _has_energy_fields(self, data: Any) -> bool:
+        """Check if data contains energy fields."""
+        if hasattr(data, 'columns'):
+            return any('energy' in col.lower() or 'temperature' in col.lower()
+                      for col in data.columns)
+        return False
+
+    def _has_concentration_data(self, data: Any) -> bool:
+        """Check if data contains concentration measurements."""
+        if hasattr(data, 'columns'):
+            return any('concentration' in col.lower() or 'conc' in col.lower()
+                      for col in data.columns)
+        return False
+
+    def _has_growth_data(self, data: Any) -> bool:
+        """Check if data contains growth measurements."""
+        if hasattr(data, 'columns'):
+            return any('growth' in col.lower() or 'biomass' in col.lower()
+                      for col in data.columns)
+        return False
+
+class ValidationResult:
+    """Container for validation results."""
+
+    def __init__(self, name: str):
+        self.name = name
+        self.status = 'pending'  # 'passed', 'failed', 'warning', 'error'
+        self.checks = []
+        self.error_message = None
+
+    def add_check(self, check_name: str, passed: bool, details: str = None):
+        """Add a validation check result."""
+        self.checks.append({
+            'name': check_name,
+            'status': passed,
+            'details': details
+        })
+
+class ValidationReport:
+    """Comprehensive validation report."""
+
+    def __init__(self):
+        self.results = []
+        self.quality_metrics = {}
+        self.overall_score = 0.0
+        self.timestamp = datetime.now().isoformat()
+
+    def add_result(self, result: ValidationResult):
+        """Add validation result to report."""
+        self.results.append(result)
+
+# Usage example
+def create_comprehensive_data_validation():
+    """Create comprehensive data validation system."""
+    validator = ScientificDataValidator(domain='physics')
+
+    # Load scientific dataset
+    loader = ScientificDataLoader('./scientific_data')
+    dataset = loader.load_dataset('fluid_dynamics_experiment.h5')
+
+    # Perform comprehensive validation
+    validation_report = validator.validate_dataset(
+        dataset['data'],
+        dataset['metadata']
+    )
+
+    print(f"Validation completed with score: {validation_report.overall_score:.3f}")
+    print(f"Quality metrics: {validator.quality_metrics}")
+
+    # Check individual validation results
+    for result in validation_report.results:
+        status_icon = {'passed': '✅', 'failed': '❌', 'warning': '⚠️', 'error': '🔥'}[result.status]
+        print(f"{status_icon} {result.name}: {result.status}")
+
+        if result.error_message:
+            print(f"   Error: {result.error_message}")
+
+    return validator, validation_report
+```
+
+## References
+- [integrated_framework_testing_coverage.md](mdc:integrated_framework_testing_coverage.md) - Data validation procedures
+- [hybrid_uq_api_reference.md](mdc:hybrid_uq_api_reference.md) - Data handling patterns
+- [performance-optimization-patterns.mdc](mdc:performance-optimization-patterns.mdc) - Data preprocessing optimization
