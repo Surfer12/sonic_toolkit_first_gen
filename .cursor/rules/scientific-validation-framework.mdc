@@ -1,0 +1,918 @@
+---
+description: "Comprehensive validation framework for scientific computing research"
+globs: *.py,test_*.py
+---
+# Scientific Validation Framework
+
+This rule establishes comprehensive validation standards for scientific computing research, ensuring mathematical accuracy, numerical stability, and research reproducibility.
+
+## Validation Hierarchy
+
+### 1. Mathematical Validation
+```python
+# Mathematical Validation Standards
+def mathematical_validation_framework():
+    """
+    Comprehensive mathematical validation for scientific computing.
+
+    This framework ensures mathematical correctness across all levels:
+    1. Analytical validation - against known solutions
+    2. Numerical validation - convergence and stability
+    3. Physical validation - conservation laws and constraints
+    4. Statistical validation - uncertainty quantification
+    """
+
+    class MathematicalValidator:
+        def __init__(self, tolerance=1e-10):
+            self.tolerance = tolerance
+            self.validation_results = {}
+
+        def validate_analytical_solution(self, numerical_solution, analytical_solution):
+            """Validate against analytical solutions."""
+            error = np.linalg.norm(numerical_solution - analytical_solution)
+            relative_error = error / np.linalg.norm(analytical_solution)
+
+            self.validation_results['analytical'] = {
+                'error': error,
+                'relative_error': relative_error,
+                'passed': relative_error < self.tolerance
+            }
+
+            return self.validation_results['analytical']
+
+        def validate_conservation_laws(self, solution, conservation_laws):
+            """Validate physical conservation laws."""
+            conservation_errors = {}
+
+            for law_name, law_function in conservation_laws.items():
+                conservation_value = law_function(solution)
+                error = abs(conservation_value)
+                conservation_errors[law_name] = {
+                    'value': conservation_value,
+                    'error': error,
+                    'passed': error < self.tolerance
+                }
+
+            self.validation_results['conservation'] = conservation_errors
+            return conservation_errors
+
+        def validate_numerical_stability(self, solution_history):
+            """Validate numerical stability over time steps."""
+            stability_metrics = {}
+
+            # Check for oscillations
+            oscillations = self._detect_oscillations(solution_history)
+            stability_metrics['oscillations'] = oscillations
+
+            # Check for divergence
+            divergence = self._detect_divergence(solution_history)
+            stability_metrics['divergence'] = divergence
+
+            # Check for convergence
+            convergence = self._assess_convergence(solution_history)
+            stability_metrics['convergence'] = convergence
+
+            self.validation_results['stability'] = stability_metrics
+            return stability_metrics
+
+        def _detect_oscillations(self, history):
+            """Detect numerical oscillations."""
+            if len(history) < 3:
+                return {'detected': False}
+
+            # Analyze frequency content
+            signal = np.array(history)
+            fft = np.fft.fft(signal)
+            frequencies = np.fft.ffreq(len(signal))
+
+            # High frequency content indicates oscillations
+            high_freq_power = np.sum(np.abs(fft[len(fft)//2:])**2)
+            total_power = np.sum(np.abs(fft)**2)
+
+            oscillation_ratio = high_freq_power / total_power
+            oscillation_detected = oscillation_ratio > 0.1  # 10% threshold
+
+            return {
+                'detected': oscillation_detected,
+                'ratio': oscillation_ratio,
+                'passed': not oscillation_detected
+            }
+
+        def _detect_divergence(self, history):
+            """Detect solution divergence."""
+            signal = np.array(history)
+
+            # Check if solution grows exponentially
+            log_signal = np.log(np.abs(signal) + 1e-10)
+            growth_rate = np.polyfit(np.arange(len(log_signal)), log_signal, 1)[0]
+
+            divergence_detected = growth_rate > 0.1  # Significant growth
+
+            return {
+                'detected': divergence_detected,
+                'growth_rate': growth_rate,
+                'passed': not divergence_detected
+            }
+
+        def _assess_convergence(self, history):
+            """Assess convergence behavior."""
+            signal = np.array(history)
+
+            # Compute convergence rate
+            if len(signal) > 10:
+                recent_values = signal[-10:]
+                convergence_rate = np.mean(np.abs(np.diff(recent_values)))
+                converged = convergence_rate < self.tolerance
+            else:
+                convergence_rate = float('inf')
+                converged = False
+
+            return {
+                'rate': convergence_rate,
+                'converged': converged,
+                'passed': converged
+            }
+
+        def generate_validation_report(self):
+            """Generate comprehensive validation report."""
+            report = {
+                'summary': self._generate_summary(),
+                'details': self.validation_results,
+                'recommendations': self._generate_recommendations()
+            }
+
+            return report
+
+        def _generate_summary(self):
+            """Generate validation summary."""
+            total_tests = len(self.validation_results)
+            passed_tests = sum(1 for result in self.validation_results.values()
+                             if isinstance(result, dict) and result.get('passed', False))
+
+            return {
+                'total_tests': total_tests,
+                'passed_tests': passed_tests,
+                'success_rate': passed_tests / total_tests if total_tests > 0 else 0,
+                'overall_passed': passed_tests == total_tests
+            }
+
+        def _generate_recommendations(self):
+            """Generate validation recommendations."""
+            recommendations = []
+
+            # Check analytical validation
+            if 'analytical' in self.validation_results:
+                analytical = self.validation_results['analytical']
+                if not analytical['passed']:
+                    recommendations.append(
+                        ".2e"
+                        "Consider using higher precision arithmetic or refined algorithms."
+                    )
+
+            # Check conservation laws
+            if 'conservation' in self.validation_results:
+                conservation = self.validation_results['conservation']
+                failed_laws = [law for law, result in conservation.items()
+                              if not result['passed']]
+                if failed_laws:
+                    recommendations.append(
+                        f"Conservation laws not satisfied: {', '.join(failed_laws)}. "
+                        "Review physical model and numerical scheme."
+                    )
+
+            # Check stability
+            if 'stability' in self.validation_results:
+                stability = self.validation_results['stability']
+                if stability.get('oscillations', {}).get('detected', False):
+                    recommendations.append(
+                        "Numerical oscillations detected. Consider reducing time step "
+                        "or using stabilized numerical methods."
+                    )
+                if stability.get('divergence', {}).get('detected', False):
+                    recommendations.append(
+                        "Solution divergence detected. Check boundary conditions "
+                        "and initial conditions."
+                    )
+
+            if not recommendations:
+                recommendations.append(
+                    "All validation tests passed. Solution appears mathematically sound."
+                )
+
+            return recommendations
+
+    return MathematicalValidator
+```
+
+### 2. Experimental Validation Framework
+```python
+# Experimental Validation Standards
+def experimental_validation_framework():
+    """
+    Framework for validating against experimental data.
+
+    This ensures research implementations match real-world observations
+    and provide practical utility.
+    """
+
+    class ExperimentalValidator:
+        def __init__(self, significance_level=0.05):
+            self.significance_level = significance_level
+            self.experimental_results = {}
+
+        def validate_against_dataset(self, predictions, experimental_data,
+                                   dataset_name="experimental"):
+            """Validate predictions against experimental dataset."""
+
+            # Ensure data compatibility
+            if len(predictions) != len(experimental_data):
+                raise ValueError("Prediction and experimental data must have same length")
+
+            # Statistical comparison
+            statistical_comparison = self._statistical_comparison(
+                predictions, experimental_data
+            )
+
+            # Goodness of fit metrics
+            gof_metrics = self._goodness_of_fit_metrics(
+                predictions, experimental_data
+            )
+
+            # Uncertainty analysis
+            uncertainty_analysis = self._uncertainty_analysis(
+                predictions, experimental_data
+            )
+
+            validation_result = {
+                'dataset': dataset_name,
+                'statistical_comparison': statistical_comparison,
+                'goodness_of_fit': gof_metrics,
+                'uncertainty_analysis': uncertainty_analysis,
+                'overall_assessment': self._overall_assessment(
+                    statistical_comparison, gof_metrics
+                )
+            }
+
+            self.experimental_results[dataset_name] = validation_result
+            return validation_result
+
+        def _statistical_comparison(self, predictions, experimental):
+            """Perform statistical comparison between predictions and experiments."""
+            from scipy import stats
+
+            predictions = np.array(predictions)
+            experimental = np.array(experimental)
+
+            # Basic statistics
+            pred_mean = np.mean(predictions)
+            exp_mean = np.mean(experimental)
+            pred_std = np.std(predictions, ddof=1)
+            exp_std = np.std(experimental, ddof=1)
+
+            # Statistical tests
+            # Two-sample t-test
+            t_stat, t_p_value = stats.ttest_ind(predictions, experimental)
+
+            # Kolmogorov-Smirnov test for distribution similarity
+            ks_stat, ks_p_value = stats.ks_2samp(predictions, experimental)
+
+            # Correlation analysis
+            pearson_r, pearson_p = stats.pearsonr(predictions, experimental)
+            spearman_r, spearman_p = stats.spearmanr(predictions, experimental)
+
+            return {
+                'means': {'predicted': pred_mean, 'experimental': exp_mean},
+                'std_devs': {'predicted': pred_std, 'experimental': exp_std},
+                't_test': {'statistic': t_stat, 'p_value': t_p_value},
+                'ks_test': {'statistic': ks_stat, 'p_value': ks_p_value},
+                'correlation': {
+                    'pearson': {'r': pearson_r, 'p': pearson_p},
+                    'spearman': {'r': spearman_r, 'p': spearman_p}
+                }
+            }
+
+        def _goodness_of_fit_metrics(self, predictions, experimental):
+            """Calculate goodness of fit metrics."""
+            predictions = np.array(predictions)
+            experimental = np.array(experimental)
+
+            # Error metrics
+            residuals = predictions - experimental
+
+            mse = np.mean(residuals**2)
+            rmse = np.sqrt(mse)
+            mae = np.mean(np.abs(residuals))
+            mape = np.mean(np.abs(residuals / (experimental + 1e-10))) * 100
+
+            # R-squared
+            ss_res = np.sum(residuals**2)
+            ss_tot = np.sum((experimental - np.mean(experimental))**2)
+            r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+
+            # Nash-Sutcliffe efficiency
+            nse = 1 - (ss_res / ss_tot) if ss_tot > 0 else -np.inf
+
+            return {
+                'mse': mse,
+                'rmse': rmse,
+                'mae': mae,
+                'mape': mape,
+                'r_squared': r_squared,
+                'nse': nse
+            }
+
+        def _uncertainty_analysis(self, predictions, experimental):
+            """Perform uncertainty analysis."""
+            predictions = np.array(predictions)
+            experimental = np.array(experimental)
+
+            # Bootstrap uncertainty estimation
+            n_bootstraps = 1000
+            bootstrap_errors = []
+
+            np.random.seed(42)  # For reproducibility
+            n_samples = len(predictions)
+
+            for _ in range(n_bootstraps):
+                # Bootstrap resampling
+                indices = np.random.choice(n_samples, n_samples, replace=True)
+                pred_bootstrap = predictions[indices]
+                exp_bootstrap = experimental[indices]
+
+                # Calculate error metric (RMSE)
+                bootstrap_error = np.sqrt(np.mean((pred_bootstrap - exp_bootstrap)**2))
+                bootstrap_errors.append(bootstrap_error)
+
+            bootstrap_errors = np.array(bootstrap_errors)
+
+            # Confidence intervals
+            ci_lower = np.percentile(bootstrap_errors, 2.5)
+            ci_upper = np.percentile(bootstrap_errors, 97.5)
+            ci_median = np.median(bootstrap_errors)
+
+            return {
+                'bootstrap': {
+                    'mean': np.mean(bootstrap_errors),
+                    'std': np.std(bootstrap_errors),
+                    'ci_95': (ci_lower, ci_upper),
+                    'median': ci_median
+                }
+            }
+
+        def _overall_assessment(self, statistical, gof):
+            """Generate overall validation assessment."""
+            assessment = {
+                'passed': True,
+                'confidence_level': 'high',
+                'issues': [],
+                'recommendations': []
+            }
+
+            # Check R-squared
+            if gof['r_squared'] < 0.8:
+                assessment['passed'] = False
+                assessment['issues'].append(f"Low R² = {gof['r_squared']:.3f}")
+                assessment['recommendations'].append(
+                    "Improve model accuracy - consider parameter tuning or model refinement"
+                )
+
+            # Check statistical significance
+            if statistical['t_test']['p_value'] > self.significance_level:
+                assessment['confidence_level'] = 'medium'
+                assessment['issues'].append(
+                    f"No significant difference detected (p = {statistical['t_test']['p_value']:.3f})"
+                )
+
+            # Check correlation
+            if abs(statistical['correlation']['pearson']['r']) < 0.7:
+                assessment['passed'] = False
+                assessment['issues'].append(
+                    f"Weak correlation (r = {statistical['correlation']['pearson']['r']:.3f})"
+                )
+                assessment['recommendations'].append(
+                    "Review model assumptions and data quality"
+                )
+
+            if not assessment['issues']:
+                assessment['recommendations'].append(
+                    "Validation successful - model shows good agreement with experimental data"
+                )
+
+            return assessment
+
+        def generate_validation_report(self):
+            """Generate comprehensive experimental validation report."""
+            report = {
+                'summary': self._generate_experimental_summary(),
+                'detailed_results': self.experimental_results,
+                'recommendations': self._generate_experimental_recommendations()
+            }
+
+            return report
+
+        def _generate_experimental_summary(self):
+            """Generate experimental validation summary."""
+            if not self.experimental_results:
+                return {'message': 'No experimental validation performed'}
+
+            datasets = list(self.experimental_results.keys())
+            passed_datasets = sum(1 for result in self.experimental_results.values()
+                                if result['overall_assessment']['passed'])
+
+            success_rate = passed_datasets / len(datasets)
+
+            return {
+                'total_datasets': len(datasets),
+                'passed_datasets': passed_datasets,
+                'success_rate': success_rate,
+                'overall_passed': success_rate == 1.0
+            }
+
+        def _generate_experimental_recommendations(self):
+            """Generate experimental validation recommendations."""
+            recommendations = []
+
+            for dataset_name, result in self.experimental_results.items():
+                assessment = result['overall_assessment']
+
+                if not assessment['passed']:
+                    recommendations.append(
+                        f"{dataset_name}: {', '.join(assessment['issues'])}"
+                    )
+
+                if assessment['recommendations']:
+                    recommendations.extend([
+                        f"{dataset_name}: {rec}" for rec in assessment['recommendations']
+                    ])
+
+            if not recommendations:
+                recommendations.append(
+                    "All experimental validations passed successfully"
+                )
+
+            return recommendations
+```
+
+## Comprehensive Validation Workflow
+
+### 1. Multi-Level Validation Strategy
+```python
+def comprehensive_validation_workflow(model, test_cases, experimental_data):
+    """
+    Execute comprehensive multi-level validation workflow.
+
+    Parameters
+    ----------
+    model : object
+        Scientific computing model to validate
+    test_cases : dict
+        Dictionary of analytical test cases
+    experimental_data : dict
+        Dictionary of experimental datasets
+
+    Returns
+    -------
+    dict
+        Complete validation report
+    """
+
+    # Initialize validators
+    math_validator = mathematical_validation_framework()
+    exp_validator = experimental_validation_framework()
+
+    validation_report = {
+        'mathematical_validation': {},
+        'experimental_validation': {},
+        'numerical_validation': {},
+        'overall_assessment': {}
+    }
+
+    # Level 1: Mathematical Validation
+    print("Performing mathematical validation...")
+    for test_name, test_case in test_cases.items():
+        try:
+            # Run model on test case
+            numerical_result = model.solve(test_case['inputs'])
+
+            # Validate against analytical solution
+            analytical_result = test_case['analytical_solution']
+            math_result = math_validator.validate_analytical_solution(
+                numerical_result, analytical_result
+            )
+
+            validation_report['mathematical_validation'][test_name] = math_result
+
+        except Exception as e:
+            validation_report['mathematical_validation'][test_name] = {
+                'error': str(e),
+                'passed': False
+            }
+
+    # Level 2: Experimental Validation
+    print("Performing experimental validation...")
+    for data_name, dataset in experimental_data.items():
+        try:
+            # Generate predictions
+            predictions = model.predict(dataset['inputs'])
+
+            # Validate against experimental data
+            exp_result = exp_validator.validate_against_dataset(
+                predictions, dataset['outputs'], data_name
+            )
+
+            validation_report['experimental_validation'][data_name] = exp_result
+
+        except Exception as e:
+            validation_report['experimental_validation'][data_name] = {
+                'error': str(e),
+                'overall_assessment': {'passed': False}
+            }
+
+    # Level 3: Numerical Validation
+    print("Performing numerical validation...")
+    try:
+        numerical_result = math_validator.validate_numerical_stability(
+            model.solution_history
+        )
+        validation_report['numerical_validation'] = numerical_result
+    except Exception as e:
+        validation_report['numerical_validation'] = {
+            'error': str(e),
+            'stability': {'passed': False}
+        }
+
+    # Generate overall assessment
+    validation_report['overall_assessment'] = generate_overall_assessment(
+        validation_report
+    )
+
+    # Generate final report
+    final_report = {
+        'validation_results': validation_report,
+        'summary': generate_validation_summary(validation_report),
+        'recommendations': generate_validation_recommendations(validation_report),
+        'timestamp': pd.Timestamp.now().isoformat(),
+        'model_info': get_model_info(model)
+    }
+
+    return final_report
+
+def generate_overall_assessment(validation_report):
+    """Generate overall validation assessment."""
+    assessment = {
+        'mathematical_passed': True,
+        'experimental_passed': True,
+        'numerical_passed': True,
+        'overall_passed': True,
+        'confidence_level': 'high'
+    }
+
+    # Check mathematical validation
+    math_results = validation_report['mathematical_validation']
+    if math_results:
+        math_passed = all(result.get('passed', False)
+                         for result in math_results.values()
+                         if isinstance(result, dict))
+        assessment['mathematical_passed'] = math_passed
+
+    # Check experimental validation
+    exp_results = validation_report['experimental_validation']
+    if exp_results:
+        exp_passed = all(result.get('overall_assessment', {}).get('passed', False)
+                        for result in exp_results.values()
+                        if isinstance(result, dict))
+        assessment['experimental_passed'] = exp_passed
+
+    # Check numerical validation
+    num_results = validation_report['numerical_validation']
+    if num_results:
+        num_passed = all(result.get('passed', False)
+                        for result in num_results.values()
+                        if isinstance(result, dict))
+        assessment['numerical_passed'] = num_passed
+
+    # Overall assessment
+    assessment['overall_passed'] = all([
+        assessment['mathematical_passed'],
+        assessment['experimental_passed'],
+        assessment['numerical_passed']
+    ])
+
+    # Determine confidence level
+    if assessment['overall_passed']:
+        assessment['confidence_level'] = 'high'
+    elif any([assessment['mathematical_passed'],
+              assessment['experimental_passed'],
+              assessment['numerical_passed']]):
+        assessment['confidence_level'] = 'medium'
+    else:
+        assessment['confidence_level'] = 'low'
+
+    return assessment
+
+def generate_validation_summary(validation_report):
+    """Generate validation summary."""
+    summary = {
+        'total_tests': 0,
+        'passed_tests': 0,
+        'failed_tests': 0,
+        'success_rate': 0.0
+    }
+
+    # Count mathematical tests
+    math_results = validation_report['mathematical_validation']
+    for result in math_results.values():
+        if isinstance(result, dict):
+            summary['total_tests'] += 1
+            if result.get('passed', False):
+                summary['passed_tests'] += 1
+            else:
+                summary['failed_tests'] += 1
+
+    # Count experimental tests
+    exp_results = validation_report['experimental_validation']
+    for result in exp_results.values():
+        if isinstance(result, dict):
+            summary['total_tests'] += 1
+            if result.get('overall_assessment', {}).get('passed', False):
+                summary['passed_tests'] += 1
+            else:
+                summary['failed_tests'] += 1
+
+    # Count numerical tests
+    num_results = validation_report['numerical_validation']
+    for result in num_results.values():
+        if isinstance(result, dict):
+            summary['total_tests'] += 1
+            if result.get('passed', False):
+                summary['passed_tests'] += 1
+            else:
+                summary['failed_tests'] += 1
+
+    # Calculate success rate
+    if summary['total_tests'] > 0:
+        summary['success_rate'] = summary['passed_tests'] / summary['total_tests']
+
+    return summary
+
+def generate_validation_recommendations(validation_report):
+    """Generate validation recommendations."""
+    recommendations = []
+
+    # Mathematical validation recommendations
+    math_results = validation_report['mathematical_validation']
+    failed_math = [name for name, result in math_results.items()
+                  if isinstance(result, dict) and not result.get('passed', False)]
+
+    if failed_math:
+        recommendations.append(
+            f"Mathematical validation failed for: {', '.join(failed_math)}. "
+            "Review analytical solutions and numerical methods."
+        )
+
+    # Experimental validation recommendations
+    exp_results = validation_report['experimental_validation']
+    failed_exp = [name for name, result in exp_results.items()
+                 if isinstance(result, dict) and
+                 not result.get('overall_assessment', {}).get('passed', False)]
+
+    if failed_exp:
+        recommendations.append(
+            f"Experimental validation failed for: {', '.join(failed_exp)}. "
+            "Review model parameters and experimental data quality."
+        )
+
+    # Numerical validation recommendations
+    num_results = validation_report['numerical_validation']
+    failed_num = [name for name, result in num_results.items()
+                 if isinstance(result, dict) and not result.get('passed', False)]
+
+    if failed_num:
+        recommendations.append(
+            f"Numerical validation failed for: {', '.join(failed_num)}. "
+            "Review numerical stability and convergence criteria."
+        )
+
+    if not recommendations:
+        recommendations.append(
+            "All validation tests passed successfully. "
+            "Model shows good agreement with analytical and experimental data."
+        )
+
+    return recommendations
+```
+
+## Validation Testing Standards
+
+### 1. Unit Test Validation Framework
+```python
+import pytest
+import numpy as np
+from numpy.testing import assert_allclose, assert_array_less
+
+class TestMathematicalValidation:
+    """Test mathematical validation framework."""
+
+    @pytest.fixture
+    def validator(self):
+        """Create mathematical validator instance."""
+        return mathematical_validation_framework()()
+
+    @pytest.fixture
+    def test_solution(self):
+        """Create test solution data."""
+        x = np.linspace(0, 2*np.pi, 100)
+        analytical = np.sin(x)
+        numerical = analytical + 0.001 * np.random.randn(len(x))
+
+        return {
+            'numerical': numerical,
+            'analytical': analytical,
+            'x': x
+        }
+
+    def test_analytical_validation(self, validator, test_solution):
+        """Test analytical solution validation."""
+        result = validator.validate_analytical_solution(
+            test_solution['numerical'],
+            test_solution['analytical']
+        )
+
+        assert result['passed'], f"Analytical validation failed: {result}"
+        assert result['relative_error'] < 0.01, f"High relative error: {result['relative_error']}"
+
+    def test_conservation_laws(self, validator):
+        """Test conservation law validation."""
+        # Simple conservation law: total mass conservation
+        def mass_conservation(solution):
+            return np.sum(solution) - np.sum(solution[0])  # Should be zero
+
+        solution_history = [np.array([1.0, 2.0, 3.0])] * 10  # Constant solution
+        conservation_laws = {'mass': mass_conservation}
+
+        result = validator.validate_conservation_laws(
+            solution_history[-1], conservation_laws
+        )
+
+        assert result['mass']['passed'], f"Conservation law validation failed: {result}"
+
+    def test_numerical_stability(self, validator):
+        """Test numerical stability validation."""
+        # Create stable solution history
+        x = np.linspace(0, 10, 100)
+        stable_solution = np.exp(-x)  # Decaying exponential
+
+        result = validator.validate_numerical_stability([stable_solution])
+
+        assert result['convergence']['passed'], f"Stability validation failed: {result}"
+        assert not result['oscillations']['detected'], f"Oscillations detected: {result}"
+        assert not result['divergence']['detected'], f"Divergence detected: {result}"
+
+class TestExperimentalValidation:
+    """Test experimental validation framework."""
+
+    @pytest.fixture
+    def validator(self):
+        """Create experimental validator instance."""
+        return experimental_validation_framework()()
+
+    @pytest.fixture
+    def test_data(self):
+        """Create test experimental data."""
+        np.random.seed(42)
+        x = np.linspace(0, 10, 50)
+        true_function = lambda x: 2*x + 1
+        experimental = true_function(x) + 0.1 * np.random.randn(len(x))
+        predictions = true_function(x) + 0.05 * np.random.randn(len(x))
+
+        return {
+            'predictions': predictions,
+            'experimental': experimental,
+            'x': x
+        }
+
+    def test_statistical_comparison(self, validator, test_data):
+        """Test statistical comparison between predictions and experiments."""
+        result = validator.validate_against_dataset(
+            test_data['predictions'],
+            test_data['experimental'],
+            'test_dataset'
+        )
+
+        # Check that statistical comparison was performed
+        assert 'statistical_comparison' in result
+        assert 't_test' in result['statistical_comparison']
+        assert 'correlation' in result['statistical_comparison']
+
+        # Check correlation
+        pearson_r = result['statistical_comparison']['correlation']['pearson']['r']
+        assert abs(pearson_r) > 0.8, f"Pearson correlation too low: {pearson_r}"
+
+    def test_goodness_of_fit(self, validator, test_data):
+        """Test goodness of fit metrics."""
+        result = validator.validate_against_dataset(
+            test_data['predictions'],
+            test_data['experimental'],
+            'test_dataset'
+        )
+
+        # Check goodness of fit metrics
+        assert 'goodness_of_fit' in result
+        assert 'r_squared' in result['goodness_of_fit']
+
+        r_squared = result['goodness_of_fit']['r_squared']
+        assert r_squared > 0.8, f"R² too low: {r_squared}"
+
+    def test_uncertainty_analysis(self, validator, test_data):
+        """Test uncertainty analysis."""
+        result = validator.validate_against_dataset(
+            test_data['predictions'],
+            test_data['experimental'],
+            'test_dataset'
+        )
+
+        # Check uncertainty analysis
+        assert 'uncertainty_analysis' in result
+        assert 'bootstrap' in result['uncertainty_analysis']
+
+        bootstrap = result['uncertainty_analysis']['bootstrap']
+        assert 'ci_95' in bootstrap
+        assert len(bootstrap['ci_95']) == 2
+
+    def test_overall_assessment(self, validator, test_data):
+        """Test overall validation assessment."""
+        result = validator.validate_against_dataset(
+            test_data['predictions'],
+            test_data['experimental'],
+            'test_dataset'
+        )
+
+        # Check overall assessment
+        assert 'overall_assessment' in result
+        assessment = result['overall_assessment']
+
+        assert 'passed' in assessment
+        assert 'confidence_level' in assessment
+        assert 'issues' in assessment
+        assert 'recommendations' in assessment
+
+class TestComprehensiveValidation:
+    """Test comprehensive validation workflow."""
+
+    def test_validation_workflow(self):
+        """Test complete validation workflow."""
+        # Mock model
+        class MockModel:
+            def solve(self, inputs):
+                return inputs * 2  # Simple doubling
+
+            def predict(self, inputs):
+                return inputs * 2
+
+            @property
+            def solution_history(self):
+                return [np.array([1.0, 2.0, 3.0])] * 10
+
+        model = MockModel()
+
+        # Test cases
+        test_cases = {
+            'linear': {
+                'inputs': np.array([1.0, 2.0, 3.0]),
+                'analytical_solution': np.array([2.0, 4.0, 6.0])
+            }
+        }
+
+        # Experimental data
+        experimental_data = {
+            'dataset1': {
+                'inputs': np.array([1.0, 2.0, 3.0]),
+                'outputs': np.array([2.1, 3.9, 6.2])
+            }
+        }
+
+        # Run comprehensive validation
+        report = comprehensive_validation_workflow(model, test_cases, experimental_data)
+
+        # Check report structure
+        assert 'validation_results' in report
+        assert 'summary' in report
+        assert 'recommendations' in report
+        assert 'timestamp' in report
+        assert 'model_info' in report
+
+        # Check validation results
+        results = report['validation_results']
+        assert 'mathematical_validation' in results
+        assert 'experimental_validation' in results
+        assert 'numerical_validation' in results
+        assert 'overall_assessment' in results
+
+        # Check summary
+        summary = report['summary']
+        assert 'total_tests' in summary
+        assert 'passed_tests' in summary
+        assert 'success_rate' in summary
+```
+
+This comprehensive validation framework ensures that scientific computing research maintains the highest standards of mathematical accuracy, experimental validation, and numerical reliability.

@@ -1,0 +1,368 @@
+---
+globs: *.py
+description: "Python framework development patterns and scientific computing conventions"
+---
+
+# 🐍 Python Scientific Frameworks - Development Guide
+
+## Scientific Computing Patterns
+
+### Framework Base Classes
+When creating new scientific frameworks, follow this pattern:
+
+```python
+from typing import Dict, List, Optional, Union, Any
+import numpy as np
+from abc import ABC, abstractmethod
+
+class ScientificFramework(ABC):
+    """
+    Base class for scientific computing frameworks.
+
+    Provides common functionality for:
+    - Configuration management
+    - Validation against scientific targets
+    - Performance benchmarking
+    - Result serialization
+    """
+
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        self.config = config or {}
+        self.precision_target = 0.9987  # Standard convergence criterion
+        self.performance_metrics = {}
+
+    @abstractmethod
+    def validate_scientific_target(self) -> bool:
+        """Validate against scientific achievement targets"""
+        pass
+
+    def benchmark_performance(self, test_data: Any) -> Dict[str, float]:
+        """Standard performance benchmarking"""
+        import time
+        start_time = time.time()
+
+        # Framework-specific computation
+        result = self.compute(test_data)
+
+        computation_time = time.time() - start_time
+        self.performance_metrics.update({
+            'computation_time_seconds': computation_time,
+            'timestamp': time.time()
+        })
+
+        return self.performance_metrics
+
+    @abstractmethod
+    def compute(self, data: Any) -> Any:
+        """Main computation method to be implemented by subclasses"""
+        pass
+```
+
+### Precision Validation Pattern
+```python
+def validate_precision_convergence(self,
+                                  computed_value: float,
+                                  expected_value: float,
+                                  tolerance: float = 0.9987) -> Dict[str, Any]:
+    """
+    Validate convergence against precision targets.
+
+    Args:
+        computed_value: Computed result
+        expected_value: Expected/analytical value
+        tolerance: Precision tolerance (default: 0.9987)
+
+    Returns:
+        Validation results dictionary
+    """
+    absolute_error = abs(computed_value - expected_value)
+    relative_error = absolute_error / abs(expected_value) if expected_value != 0 else float('inf')
+
+    precision_achieved = relative_error <= (1 - tolerance)
+
+    return {
+        'precision_achieved': precision_achieved,
+        'absolute_error': absolute_error,
+        'relative_error': relative_error,
+        'tolerance_used': tolerance,
+        'convergence_criterion': 0.9987
+    }
+```
+
+## Framework-Specific Patterns
+
+### Optical Depth Enhancement
+```python
+class OpticalDepthAnalyzer:
+    """3500x depth enhancement framework"""
+
+    def __init__(self, resolution_nm: float = 1.0):
+        self.resolution_nm = resolution_nm
+        self.enhancement_target = 3500.0
+
+    def enhance_depth_profile(self, measured_depth: np.ndarray) -> np.ndarray:
+        """
+        Apply 3500x depth enhancement algorithm.
+
+        Args:
+            measured_depth: Raw depth measurements (meters)
+
+        Returns:
+            Enhanced depth profile with sub-nanometer precision
+        """
+        # Enhancement algorithm implementation
+        enhanced = self._apply_enhancement_algorithm(measured_depth)
+
+        # Validate achievement
+        original_precision = np.std(measured_depth)
+        enhanced_precision = np.std(enhanced)
+        actual_enhancement = original_precision / enhanced_precision
+
+        self._validate_achievement(actual_enhancement)
+        return enhanced
+
+    def _validate_achievement(self, enhancement_factor: float) -> None:
+        """Validate against 3500x enhancement target"""
+        if enhancement_factor >= self.enhancement_target:
+            print(f"✅ 3500x enhancement achieved: {enhancement_factor:.1f}x")
+        else:
+            print(f"⚠️ Enhancement below target: {enhancement_factor:.1f}x < {self.enhancement_target}x")
+```
+
+### Biometric Analysis Framework
+```python
+class BiometricAnalyzer:
+    """85% confidence biometric analysis framework"""
+
+    def __init__(self, confidence_target: float = 0.85):
+        self.confidence_target = confidence_target
+        self.accuracy_history = []
+
+    def identify_subject(self,
+                        test_sample: Dict[str, np.ndarray],
+                        gallery: List[Dict[str, np.ndarray]],
+                        gallery_ids: List[int]) -> Tuple[int, float]:
+        """
+        Perform biometric identification with confidence scoring.
+
+        Args:
+            test_sample: Biometric features of test subject
+            gallery: Gallery of enrolled biometric samples
+            gallery_ids: Corresponding subject IDs
+
+        Returns:
+            Tuple of (predicted_subject_id, confidence_score)
+        """
+        # Identification algorithm
+        scores = []
+        for gallery_sample, subject_id in zip(gallery, gallery_ids):
+            similarity_score = self._compute_similarity(test_sample, gallery_sample)
+            scores.append((subject_id, similarity_score))
+
+        # Select best match
+        best_match_id, best_score = max(scores, key=lambda x: x[1])
+
+        # Convert similarity to confidence
+        confidence = self._similarity_to_confidence(best_score)
+
+        # Track accuracy for validation
+        self.accuracy_history.append(confidence >= self.confidence_target)
+
+        return best_match_id, confidence
+
+    def _similarity_to_confidence(self, similarity: float) -> float:
+        """Convert similarity score to confidence percentage"""
+        # Implementation of confidence calibration
+        return min(1.0, similarity / 0.9)  # Example calibration
+```
+
+## Data Handling Patterns
+
+### Scientific Data Classes
+```python
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class ScientificResult:
+    """Standard result structure for scientific computations"""
+
+    value: Union[float, np.ndarray]
+    uncertainty: Optional[Union[float, np.ndarray]] = None
+    units: str = ""
+    timestamp: float = None
+    computation_metadata: Dict[str, Any] = None
+
+    def __post_init__(self):
+        if self.timestamp is None:
+            import time
+            self.timestamp = time.time()
+        if self.computation_metadata is None:
+            self.computation_metadata = {}
+
+    def validate_scientific_accuracy(self) -> bool:
+        """Validate result against scientific accuracy standards"""
+        if self.uncertainty is not None:
+            relative_uncertainty = self.uncertainty / abs(self.value)
+            return relative_uncertainty <= 0.0013  # 0.9987 precision
+        return True
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize result for storage/reporting"""
+        return {
+            'value': self.value.tolist() if isinstance(self.value, np.ndarray) else self.value,
+            'uncertainty': self.uncertainty.tolist() if isinstance(self.uncertainty, np.ndarray) else self.uncertainty,
+            'units': self.units,
+            'timestamp': self.timestamp,
+            'metadata': self.computation_metadata
+        }
+```
+
+## Testing Patterns
+
+### Scientific Validation Tests
+```python
+import pytest
+import numpy as np
+from scipy import stats
+
+class TestScientificFramework:
+    """Scientific framework testing patterns"""
+
+    def test_precision_convergence(self, framework_instance):
+        """Test 0.9987 precision convergence"""
+        # Generate test data
+        test_data = self.generate_test_data()
+
+        # Run computation
+        result = framework_instance.compute(test_data)
+
+        # Validate precision
+        validation = framework_instance.validate_precision_convergence(
+            result.value, self.expected_value
+        )
+
+        assert validation['precision_achieved'], \
+            f"Precision not achieved: {validation['relative_error']:.6f} > {1-validation['tolerance_used']:.6f}"
+
+    def test_performance_regression(self, framework_instance, benchmark):
+        """Performance regression testing"""
+        test_data = self.generate_performance_test_data()
+
+        # Benchmark computation
+        result = benchmark(framework_instance.compute, test_data)
+
+        # Assert performance targets
+        assert result.stats.mean < 1.0, f"Performance regression: {result.stats.mean:.3f}s > 1.0s"
+
+    @pytest.mark.parametrize("test_case", [
+        "newtonian_flow", "power_law_flow", "herschel_bulkley_flow"
+    ])
+    def test_scientific_validity(self, framework_instance, test_case):
+        """Test scientific validity against analytical solutions"""
+        analytical_result = self.get_analytical_solution(test_case)
+        computed_result = framework_instance.compute_analytical_case(test_case)
+
+        # Statistical validation
+        t_stat, p_value = stats.ttest_1samp(
+            computed_result - analytical_result, 0
+        )
+
+        assert p_value > 0.05, f"Results differ from analytical solution (p={p_value:.4f})"
+```
+
+## Performance Optimization Patterns
+
+### Memory-Efficient Computation
+```python
+class MemoryEfficientFramework:
+    """Framework with memory-efficient computation patterns"""
+
+    def __init__(self, chunk_size: int = 1000):
+        self.chunk_size = chunk_size
+
+    def process_large_dataset(self, data: np.ndarray) -> np.ndarray:
+        """
+        Process large datasets in memory-efficient chunks.
+
+        Args:
+            data: Large input dataset
+
+        Returns:
+            Processed results
+        """
+        results = []
+
+        for i in range(0, len(data), self.chunk_size):
+            chunk = data[i:i + self.chunk_size]
+            chunk_result = self._process_chunk(chunk)
+
+            # Optional: save intermediate results to disk
+            if len(results) > 100:  # Memory management
+                self._save_intermediate_results(results)
+                results = []
+
+            results.append(chunk_result)
+
+        return np.concatenate(results)
+
+    def _process_chunk(self, chunk: np.ndarray) -> np.ndarray:
+        """Process individual data chunk"""
+        # Implementation of chunk processing
+        return chunk ** 2  # Example computation
+```
+
+## Documentation Patterns
+
+### Scientific Documentation
+```python
+def document_scientific_method(method_function):
+    """
+    Decorator for documenting scientific methods with metadata.
+
+    Args:
+        method_function: Function to document
+
+    Returns:
+        Wrapped function with documentation metadata
+    """
+    def wrapper(*args, **kwargs):
+        # Extract scientific metadata
+        scientific_metadata = {
+            'method_name': method_function.__name__,
+            'precision_target': 0.9987,
+            'validation_status': 'pending',
+            'performance_baseline': None,
+            'scientific_domain': getattr(method_function, '_scientific_domain', 'general')
+        }
+
+        # Execute method
+        result = method_function(*args, **kwargs)
+
+        # Update metadata with results
+        scientific_metadata.update({
+            'execution_timestamp': time.time(),
+            'result_validation': validate_scientific_result(result),
+            'computation_time': getattr(result, '_computation_time', None)
+        })
+
+        # Attach metadata to result
+        if hasattr(result, '_metadata'):
+            result._metadata.update(scientific_metadata)
+
+        return result
+
+    # Preserve original function metadata
+    wrapper.__name__ = method_function.__name__
+    wrapper.__doc__ = method_function.__doc__
+
+    return wrapper
+
+# Usage example
+@document_scientific_method
+def solve_inverse_problem(data, parameters):
+    """Solve inverse scientific problem with documentation"""
+    return scientific_solver(data, parameters)
+```
+
+These patterns ensure consistent, scientifically rigorous, and performant Python framework development across the toolkit.

@@ -1,0 +1,770 @@
+---
+globs: *.swift
+description: "Swift iOS framework development patterns and mobile application conventions"
+---
+
+# 📱 Swift iOS Frameworks - Development Guide
+
+## iOS Framework Architecture
+
+### Base Framework Pattern
+```swift
+import Foundation
+
+/**
+ Base framework class providing common iOS functionality.
+
+ Provides common functionality for:
+ - Configuration management
+ - Result validation
+ - Performance monitoring
+ - Data persistence
+ - User interface integration
+ */
+class ScientificFramework: NSObject {
+
+    // MARK: - Properties
+
+    let configuration: FrameworkConfiguration
+    private(set) var performanceMetrics: PerformanceMetrics
+    private(set) var computationResults: [ComputationResult]
+
+    // MARK: - Initialization
+
+    init(configuration: FrameworkConfiguration = .default) {
+        self.configuration = configuration
+        self.performanceMetrics = PerformanceMetrics()
+        self.computationResults = []
+        super.init()
+
+        setupFramework()
+    }
+
+    private func setupFramework() {
+        // Initialize framework components
+        performanceMetrics.startTime = Date()
+
+        // Setup notification observers
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(memoryWarningReceived),
+            name: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil
+        )
+    }
+
+    // MARK: - Abstract Methods
+
+    /**
+     Execute main framework computation.
+     Must be overridden by subclasses.
+     */
+    func executeComputation() async throws {
+        fatalError("executeComputation() must be implemented by subclass")
+    }
+
+    /**
+     Validate computation results against scientific targets.
+     Must be overridden by subclasses.
+     */
+    func validateResults() throws -> ValidationResult {
+        fatalError("validateResults() must be implemented by subclass")
+    }
+
+    // MARK: - Performance Monitoring
+
+    @objc private func memoryWarningReceived() {
+        print("⚠️ Memory warning received - optimizing performance")
+
+        // Implement memory optimization strategies
+        optimizeMemoryUsage()
+    }
+
+    private func optimizeMemoryUsage() {
+        // Clear cached results if memory pressure is high
+        if computationResults.count > configuration.maxCachedResults {
+            computationResults.removeFirst(computationResults.count / 2)
+        }
+
+        // Force garbage collection hint
+        // Note: Swift uses ARC, but we can hint to the system
+    }
+
+    func recordPerformanceMetric(_ metric: PerformanceMetric) {
+        performanceMetrics.addMetric(metric)
+    }
+
+    // MARK: - Data Persistence
+
+    func saveResults(to url: URL) throws {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+
+        let data = try encoder.encode(computationResults)
+        try data.write(to: url)
+    }
+
+    func loadResults(from url: URL) throws {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        let data = try Data(contentsOf: url)
+        computationResults = try decoder.decode([ComputationResult].self, from: data)
+    }
+}
+
+// MARK: - Supporting Types
+
+struct FrameworkConfiguration {
+    let maxCachedResults: Int
+    let enablePerformanceMonitoring: Bool
+    let scientificPrecisionTarget: Double
+
+    static let `default` = FrameworkConfiguration(
+        maxCachedResults: 100,
+        enablePerformanceMonitoring: true,
+        scientificPrecisionTarget: 0.9987
+    )
+}
+
+struct PerformanceMetrics {
+    var startTime: Date?
+    private(set) var metrics: [PerformanceMetric] = []
+
+    mutating func addMetric(_ metric: PerformanceMetric) {
+        metrics.append(metric)
+    }
+
+    var averageComputationTime: TimeInterval {
+        let computationMetrics = metrics.filter { $0.type == .computation }
+        guard !computationMetrics.isEmpty else { return 0 }
+
+        let totalTime = computationMetrics.reduce(0) { $0 + $1.duration }
+        return totalTime / Double(computationMetrics.count)
+    }
+}
+
+struct PerformanceMetric {
+    let type: MetricType
+    let duration: TimeInterval
+    let timestamp: Date
+    let metadata: [String: Any]?
+
+    enum MetricType {
+        case computation
+        case validation
+        case dataProcessing
+        case memoryUsage
+    }
+}
+
+struct ComputationResult: Codable {
+    let id: UUID
+    let timestamp: Date
+    let value: Double
+    let uncertainty: Double?
+    let metadata: [String: String]?
+
+    var isScientificallyValid: Bool {
+        // Validate against scientific precision targets
+        guard let uncertainty = uncertainty else { return true }
+        return uncertainty <= 0.0013 // 0.9987 precision criterion
+    }
+}
+
+struct ValidationResult {
+    let isValid: Bool
+    let confidence: Double
+    let errors: [ValidationError]
+    let warnings: [ValidationWarning]
+
+    var overallScore: Double {
+        if !isValid { return 0.0 }
+        return confidence * (1.0 - Double(errors.count) * 0.1)
+    }
+}
+
+struct ValidationError: Error {
+    let message: String
+    let severity: ValidationSeverity
+}
+
+enum ValidationSeverity {
+    case low, medium, high, critical
+}
+
+struct ValidationWarning {
+    let message: String
+    let suggestion: String?
+}
+```
+
+## iOS-Specific Framework Patterns
+
+### UOIF Core Framework (Unified Optical Iris Framework)
+```swift
+import UIKit
+import CoreImage
+import Vision
+
+/**
+ Unified Optical Iris Framework for iOS.
+
+ Provides comprehensive iris analysis with:
+ - 3D iris structure analysis
+ - Biometric authentication
+ - Cryptographic key generation
+ - Health assessment capabilities
+ */
+class UOIFCoreFramework: ScientificFramework {
+
+    // MARK: - Properties
+
+    private let cameraManager: CameraManager
+    private let irisAnalyzer: IrisAnalyzer
+    private let biometricProcessor: BiometricProcessor
+    private let cryptoGenerator: CryptoGenerator
+
+    private var currentIrisImage: UIImage?
+    private var analysisResults: IrisAnalysisResult?
+
+    // MARK: - Initialization
+
+    override init(configuration: FrameworkConfiguration = .uoifDefault) {
+        self.cameraManager = CameraManager()
+        self.irisAnalyzer = IrisAnalyzer()
+        self.biometricProcessor = BiometricProcessor()
+        self.cryptoGenerator = CryptoGenerator()
+
+        super.init(configuration: configuration)
+
+        setupUOIF()
+    }
+
+    private func setupUOIF() {
+        // Setup camera session
+        cameraManager.delegate = self
+
+        // Configure biometric processor
+        biometricProcessor.confidenceTarget = 0.85
+
+        // Setup crypto generator
+        cryptoGenerator.securityLevel = .quantumResistant
+    }
+
+    // MARK: - Main Computation
+
+    override func executeComputation() async throws {
+        guard let irisImage = currentIrisImage else {
+            throw UOIFError.noIrisImage
+        }
+
+        let startTime = Date()
+
+        // Step 1: Analyze iris structure
+        let structureAnalysis = try await irisAnalyzer.analyzeStructure(irisImage)
+
+        // Step 2: Extract biometric features
+        let biometricFeatures = try await biometricProcessor.extractFeatures(structureAnalysis)
+
+        // Step 3: Generate cryptographic keys
+        let cryptoKeys = try await cryptoGenerator.generateKeys(from: biometricFeatures)
+
+        // Step 4: Perform health assessment
+        let healthAssessment = try await assessIrisHealth(structureAnalysis)
+
+        // Combine results
+        analysisResults = IrisAnalysisResult(
+            structureAnalysis: structureAnalysis,
+            biometricFeatures: biometricFeatures,
+            cryptoKeys: cryptoKeys,
+            healthAssessment: healthAssessment,
+            timestamp: Date(),
+            computationTime: Date().timeIntervalSince(startTime)
+        )
+
+        // Record performance
+        recordPerformanceMetric(PerformanceMetric(
+            type: .computation,
+            duration: analysisResults?.computationTime ?? 0,
+            timestamp: Date(),
+            metadata: ["framework": "UOIF", "success": "true"]
+        ))
+    }
+
+    override func validateResults() throws -> ValidationResult {
+        guard let results = analysisResults else {
+            throw UOIFError.noResults
+        }
+
+        var errors: [ValidationError] = []
+        var warnings: [ValidationWarning] = []
+
+        // Validate biometric confidence
+        if results.biometricFeatures.confidence < 0.85 {
+            errors.append(ValidationError(
+                message: "Biometric confidence below 85% target",
+                severity: .high
+            ))
+        }
+
+        // Validate cryptographic key strength
+        if results.cryptoKeys.securityBits < 256 {
+            errors.append(ValidationError(
+                message: "Cryptographic key strength below 256-bit target",
+                severity: .critical
+            ))
+        }
+
+        // Validate iris health score
+        if results.healthAssessment.overallScore < 0.7 {
+            warnings.append(ValidationWarning(
+                message: "Iris health score indicates potential issues",
+                suggestion: "Recommend professional ophthalmological examination"
+            ))
+        }
+
+        let isValid = errors.isEmpty
+        let confidence = calculateOverallConfidence(results)
+
+        return ValidationResult(
+            isValid: isValid,
+            confidence: confidence,
+            errors: errors,
+            warnings: warnings
+        )
+    }
+
+    // MARK: - Camera Integration
+
+    func startIrisCapture() {
+        cameraManager.startSession()
+    }
+
+    func stopIrisCapture() {
+        cameraManager.stopSession()
+    }
+
+    // MARK: - Health Assessment
+
+    private func assessIrisHealth(_ structure: IrisStructureAnalysis) async throws -> IrisHealthAssessment {
+        // Implement health assessment based on iris structure
+        let cryptsScore = assessCrypts(structure.crypts)
+        let furrowsScore = assessFurrows(structure.furrows)
+        let textureScore = assessTexture(structure.texture)
+
+        let overallScore = (cryptsScore + furrowsScore + textureScore) / 3.0
+
+        return IrisHealthAssessment(
+            cryptsScore: cryptsScore,
+            furrowsScore: furrowsScore,
+            textureScore: textureScore,
+            overallScore: overallScore
+        )
+    }
+
+    private func assessCrypts(_ crypts: [IrisCrypt]) -> Double {
+        // Implement crypts health assessment
+        // This would analyze crypts density, size, distribution
+        return 0.8 // Placeholder
+    }
+
+    private func assessFurrows(_ furrows: [IrisFurrow]) -> Double {
+        // Implement furrows health assessment
+        return 0.75 // Placeholder
+    }
+
+    private func assessTexture(_ texture: IrisTexture) -> Double {
+        // Implement texture health assessment
+        return 0.85 // Placeholder
+    }
+
+    private func calculateOverallConfidence(_ results: IrisAnalysisResult) -> Double {
+        // Calculate overall confidence based on all components
+        let biometricConfidence = results.biometricFeatures.confidence
+        let cryptoStrength = min(1.0, Double(results.cryptoKeys.securityBits) / 256.0)
+        let healthScore = results.healthAssessment.overallScore
+
+        return (biometricConfidence + cryptoStrength + healthScore) / 3.0
+    }
+}
+
+// MARK: - Camera Manager Delegate
+
+extension UOIFCoreFramework: CameraManagerDelegate {
+    func cameraManager(_ manager: CameraManager, didCapture image: UIImage) {
+        currentIrisImage = image
+
+        // Automatically trigger analysis if configured
+        if configuration.enablePerformanceMonitoring {
+            Task {
+                do {
+                    try await executeComputation()
+                    let validation = try validateResults()
+                    print("✅ UOIF Analysis completed with confidence: \(validation.confidence)")
+                } catch {
+                    print("❌ UOIF Analysis failed: \(error)")
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Supporting Types
+
+enum UOIFError: Error {
+    case noIrisImage
+    case analysisFailed
+    case noResults
+    case cameraUnavailable
+}
+
+struct IrisAnalysisResult {
+    let structureAnalysis: IrisStructureAnalysis
+    let biometricFeatures: BiometricFeatures
+    let cryptoKeys: CryptographicKeys
+    let healthAssessment: IrisHealthAssessment
+    let timestamp: Date
+    let computationTime: TimeInterval
+}
+
+// Add additional supporting structures as needed
+struct IrisStructureAnalysis {
+    let crypts: [IrisCrypt]
+    let furrows: [IrisFurrow]
+    let texture: IrisTexture
+}
+
+struct IrisCrypt {
+    let position: CGPoint
+    let size: CGSize
+    let depth: Double
+}
+
+struct IrisFurrow {
+    let startPoint: CGPoint
+    let endPoint: CGPoint
+    let depth: Double
+}
+
+struct IrisTexture {
+    let uniformity: Double
+    let complexity: Double
+    let healthIndicators: [Double]
+}
+
+struct BiometricFeatures {
+    let confidence: Double
+    let features: [Double]
+    let qualityScore: Double
+}
+
+struct CryptographicKeys {
+    let publicKey: Data
+    let privateKey: Data
+    let securityBits: Int
+    let algorithm: String
+}
+
+struct IrisHealthAssessment {
+    let cryptsScore: Double
+    let furrowsScore: Double
+    let textureScore: Double
+    let overallScore: Double
+}
+
+// MARK: - Configuration Extensions
+
+extension FrameworkConfiguration {
+    static let uoifDefault = FrameworkConfiguration(
+        maxCachedResults: 50,  // Iris analysis is memory intensive
+        enablePerformanceMonitoring: true,
+        scientificPrecisionTarget: 0.9987
+    )
+}
+```
+
+## iOS-Specific Patterns
+
+### View Controller Integration
+```swift
+import UIKit
+
+class UOIFViewController: UIViewController {
+
+    // MARK: - Properties
+
+    private let uoifFramework = UOIFCoreFramework()
+    private let cameraPreviewView = UIView()
+    private let resultsView = UIView()
+    private let progressIndicator = UIProgressView()
+
+    // MARK: - Lifecycle
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+        setupUOIF()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        uoifFramework.startIrisCapture()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        uoifFramework.stopIrisCapture()
+    }
+
+    // MARK: - Setup
+
+    private func setupUI() {
+        view.backgroundColor = .systemBackground
+
+        // Setup camera preview
+        cameraPreviewView.translatesAutoresizingMaskIntoConstraints = false
+        cameraPreviewView.backgroundColor = .black
+        cameraPreviewView.layer.cornerRadius = 12
+        view.addSubview(cameraPreviewView)
+
+        // Setup results view
+        resultsView.translatesAutoresizingMaskIntoConstraints = false
+        resultsView.backgroundColor = .secondarySystemBackground
+        resultsView.layer.cornerRadius = 8
+        view.addSubview(resultsView)
+
+        // Setup progress indicator
+        progressIndicator.translatesAutoresizingMaskIntoConstraints = false
+        progressIndicator.progressTintColor = .systemGreen
+        view.addSubview(progressIndicator)
+
+        setupConstraints()
+    }
+
+    private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            cameraPreviewView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            cameraPreviewView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            cameraPreviewView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            cameraPreviewView.heightAnchor.constraint(equalTo: cameraPreviewView.widthAnchor),
+
+            resultsView.topAnchor.constraint(equalTo: cameraPreviewView.bottomAnchor, constant: 20),
+            resultsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            resultsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            resultsView.bottomAnchor.constraint(equalTo: progressIndicator.topAnchor, constant: -20),
+
+            progressIndicator.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            progressIndicator.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            progressIndicator.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            progressIndicator.heightAnchor.constraint(equalToConstant: 4)
+        ])
+    }
+
+    private func setupUOIF() {
+        // Setup UOIF framework integration
+        // This would connect the camera preview to the framework
+    }
+
+    // MARK: - Actions
+
+    @objc private func startAnalysis() {
+        progressIndicator.progress = 0.0
+        progressIndicator.isHidden = false
+
+        Task {
+            do {
+                try await uoifFramework.executeComputation()
+                let validation = try uoifFramework.validateResults()
+
+                await MainActor.run {
+                    updateResultsDisplay(validation)
+                    progressIndicator.isHidden = true
+                }
+            } catch {
+                await MainActor.run {
+                    showError(error.localizedDescription)
+                    progressIndicator.isHidden = true
+                }
+            }
+        }
+    }
+
+    private func updateResultsDisplay(_ validation: ValidationResult) {
+        // Update UI with validation results
+        let confidenceText = String(format: "Confidence: %.1f%%", validation.confidence * 100)
+        let scoreText = String(format: "Overall Score: %.1f%%", validation.overallScore * 100)
+
+        // Update results view with validation information
+        print("✅ Analysis completed: \(confidenceText), \(scoreText)")
+    }
+
+    private func showError(_ message: String) {
+        let alert = UIAlertController(
+            title: "Analysis Error",
+            message: message,
+            preferredStyle: .alert
+        )
+
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+}
+```
+
+## Testing Patterns
+
+### Framework Testing
+```swift
+import XCTest
+@testable import ScientificComputingToolkit
+
+class UOIFCoreFrameworkTests: XCTestCase {
+
+    var framework: UOIFCoreFramework!
+    var mockCameraManager: MockCameraManager!
+
+    override func setUp() {
+        super.setUp()
+        framework = UOIFCoreFramework()
+        mockCameraManager = MockCameraManager()
+    }
+
+    override func tearDown() {
+        framework = nil
+        mockCameraManager = nil
+        super.tearDown()
+    }
+
+    func testIrisAnalysisExecution() async throws {
+        // Given
+        let testImage = createTestIrisImage()
+
+        // When
+        framework.currentIrisImage = testImage
+        try await framework.executeComputation()
+
+        // Then
+        let validation = try framework.validateResults()
+        XCTAssertTrue(validation.isValid, "Analysis should be valid")
+        XCTAssertGreaterThan(validation.confidence, 0.8, "Confidence should be above 80%")
+    }
+
+    func testBiometricConfidenceTarget() async throws {
+        // Given
+        let testImage = createHighQualityIrisImage()
+
+        // When
+        framework.currentIrisImage = testImage
+        try await framework.executeComputation()
+
+        // Then
+        let validation = try framework.validateResults()
+        XCTAssertGreaterThanOrEqual(validation.confidence, 0.85,
+                                   "Should meet 85% biometric confidence target")
+    }
+
+    func testPerformanceMetrics() async throws {
+        // Given
+        let testImage = createTestIrisImage()
+        let startTime = Date()
+
+        // When
+        framework.currentIrisImage = testImage
+        try await framework.executeComputation()
+
+        // Then
+        let metrics = framework.performanceMetrics
+        XCTAssertNotNil(metrics.startTime)
+        XCTAssertGreaterThan(metrics.averageComputationTime, 0)
+        XCTAssertLessThan(metrics.averageComputationTime, 5.0,
+                         "Computation should complete within 5 seconds")
+    }
+
+    func testCryptographicKeyGeneration() async throws {
+        // Given
+        let testImage = createTestIrisImage()
+
+        // When
+        framework.currentIrisImage = testImage
+        try await framework.executeComputation()
+
+        // Then
+        let results = try XCTUnwrap(framework.analysisResults)
+        XCTAssertGreaterThanOrEqual(results.cryptoKeys.securityBits, 256,
+                                   "Should generate 256-bit or stronger keys")
+        XCTAssertEqual(results.cryptoKeys.algorithm, "quantum_resistant")
+    }
+
+    func testHealthAssessment() async throws {
+        // Given
+        let testImage = createHealthyIrisImage()
+
+        // When
+        framework.currentIrisImage = testImage
+        try await framework.executeComputation()
+
+        // Then
+        let results = try XCTUnwrap(framework.analysisResults)
+        XCTAssertGreaterThanOrEqual(results.healthAssessment.overallScore, 0.7,
+                                   "Should provide reasonable health assessment")
+    }
+
+    // MARK: - Helper Methods
+
+    private func createTestIrisImage() -> UIImage {
+        // Create a test iris image for testing
+        let size = CGSize(width: 512, height: 512)
+        UIGraphicsBeginImageContext(size)
+
+        let context = UIGraphicsGetCurrentContext()!
+        context.setFillColor(UIColor.black.cgColor)
+        context.fill(CGRect(origin: .zero, size: size))
+
+        // Draw simple iris pattern
+        context.setFillColor(UIColor.brown.cgColor)
+        context.fillEllipse(in: CGRect(x: 128, y: 128, width: 256, height: 256))
+
+        let image = UIGraphicsGetImageFromCurrentImageContext()!
+        UIGraphicsEndImageContext()
+
+        return image
+    }
+
+    private func createHighQualityIrisImage() -> UIImage {
+        // Create high-quality test image
+        return createTestIrisImage()
+    }
+
+    private func createHealthyIrisImage() -> UIImage {
+        // Create image representing healthy iris
+        return createTestIrisImage()
+    }
+}
+
+// MARK: - Mock Classes
+
+class MockCameraManager: CameraManager {
+    var capturedImage: UIImage?
+
+    override func captureImage() {
+        capturedImage = createMockIrisImage()
+        delegate?.cameraManager(self, didCapture: capturedImage!)
+    }
+
+    private func createMockIrisImage() -> UIImage {
+        let size = CGSize(width: 512, height: 512)
+        UIGraphicsBeginImageContext(size)
+
+        UIColor.black.setFill()
+        UIRectFill(CGRect(origin: .zero, size: size))
+
+        let image = UIGraphicsGetImageFromCurrentImageContext()!
+        UIGraphicsEndImageContext()
+
+        return image
+    }
+}
+```
+
+These patterns ensure consistent, performant, and scientifically rigorous Swift iOS framework development with comprehensive testing and validation capabilities for mobile scientific applications.

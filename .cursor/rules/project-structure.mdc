@@ -1,137 +1,209 @@
 ---
 alwaysApply: true
-description: Comprehensive project structure and navigation guide for the scientific computing toolkit
+description: "Advanced Scientific Computing Toolkit project structure and navigation guide"
 ---
 
-# 🧠 Scientific Computing Toolkit - Project Structure Guide
+# 🔬 Advanced Scientific Computing Toolkit - Project Structure
 
-## Core Architecture
+## Core Architecture Overview
 
-### Primary Research Frameworks
-- **[process_design_framework.py](mdc:process_design_framework.py)** - Complete process design system for flow simulation, scale-up studies, and equipment optimization
-- **[multi_phase_flow_analysis.py](mdc:multi_phase_flow_analysis.py)** - Advanced multi-phase flow analysis with VOF interface tracking
-- **[flower_biological_flow.py](mdc:flower_biological_flow.py)** - Biological flow systems inspired by plant vascular networks
-- **[hbflow/](mdc:hbflow/)** - Herschel-Bulkley fluid dynamics package
-- **[inverse_precision_framework.py](mdc:inverse_precision_framework.py)** - 0.9987 precision convergence framework
+This repository contains a comprehensive scientific computing ecosystem with multiple frameworks, languages, and specialized tools. Understanding the structure is crucial for effective navigation and development.
 
-### Research & Analysis
-- **[advanced_rheology_demo.py](mdc:advanced_rheology_demo.py)** - Viscoelastic, thixotropic, and temperature-dependent rheological models
-- **[prime_interaction_space.py](mdc:prime_interaction_space.py)** - Prime and non-prime number interaction analysis
-- **[cloudfront_reverse_proxy.py](mdc:cloudfront_reverse_proxy.py)** - AWS CloudFront infrastructure automation
+## 📁 Primary Directory Structure
 
-## File Organization Patterns
-
-### Framework Structure
+### Scientific Computing Frameworks
 ```
 scientific-computing-tools/
-├── Core Frameworks/
-│   ├── process_design_framework.py      # Process design & optimization
-│   ├── multi_phase_flow_analysis.py     # Multi-phase flow analysis
-│   └── flower_biological_flow.py       # Biological flow systems
-├── Rheological Models/
-│   ├── hbflow/                         # HB fluid dynamics package
-│   │   ├── models.py                   # Constitutive equations
-│   │   ├── fit.py                      # Parameter fitting
-│   │   ├── duct.py                     # Flow solvers
-│   │   └── viscoelastic.py             # Advanced rheological models
-│   └── advanced_rheology_demo.py      # Comprehensive demos
-├── Analysis Tools/
-│   ├── inverse_precision_framework.py  # Precision convergence
-│   ├── prime_interaction_space.py      # Prime interactions
-│   └── cloudfront_reverse_proxy.py     # Infrastructure
-└── Documentation/
-    ├── images/                         # Visualization outputs
-    └── *.md                            # Documentation files
+├── inverse_precision_framework.py     # 0.9987 convergence system
+├── hbflow/                           # Herschel-Bulkley rheology package
+│   ├── models.py                     # Constitutive equations
+│   ├── fit.py                        # Parameter fitting
+│   └── validation.py                 # Validation against limits
+├── eye_color_optical_system.py       # Ophthalmic analysis
+└── multi_phase_flow_analysis.py      # Advanced flow modeling
 ```
 
-### Naming Conventions
-- **Core Frameworks**: `*_framework.py` - Complete system implementations
-- **Analysis Tools**: `*_analysis.py` - Specific analysis capabilities
-- **Demo Files**: `*_demo.py` - Demonstration and testing
-- **Packages**: `*/` - Modular packages with `__init__.py`
-- **Images**: `images/` - Generated visualizations and plots
+### Optical & Biometric Systems
+```
+optical_depth_enhancement.py          # Sub-nanometer precision (3500x enhancement)
+integrated_eye_depth_system.py        # 3D iris analysis (85% biometric confidence)
+chromostereopsis_model.py             # Visual depth illusion modeling
+```
 
-## Navigation Guide
+### Security & Cryptography
+```
+crypto_key_generation.py              # Post-quantum cryptography (256-bit keys)
+Corpus/qualia/                        # Java security frameworks
+├── JavaPenetrationTesting.java       # Penetration testing
+├── ReverseKoopmanOperator.java       # Advanced security analysis
+└── SecurityFinding.java             # Security assessment
+```
 
-### Entry Points
-1. **Process Design**: Start with [process_design_framework.py](mdc:process_design_framework.py)
-2. **Multi-Phase Flow**: Use [multi_phase_flow_analysis.py](mdc:multi_phase_flow_analysis.py)
-3. **Biological Flows**: Explore [flower_biological_flow.py](mdc:flower_biological_flow.py)
-4. **Rheological Models**: Access via [hbflow/](mdc:hbflow/)
+### Process & Biological Systems
+```
+process_design_framework.py           # Industrial flow simulation
+plant_biology_model.py               # Lorenz-based maturation dynamics
+biological_flow_system.py            # Vascular network modeling
+```
 
-### Key Classes and Functions
+### Development & Testing
+```
+.github/workflows/                   # CI/CD pipelines
+├── ci.yml                          # Multi-language testing
+├── scientific-validation.yml       # Scientific validation
+└── pages.yml                       # Documentation deployment
 
-#### Process Design Framework
+performance_showcase.py             # Achievement demonstrations
+interactive_showcase.py             # Interactive demos
+benchmark_dashboard.py              # Performance monitoring
+```
+
+## 🏗️ Framework Entry Points
+
+### Quick Start Guide
+1. **Scientific Computing**: Start with [scientific_computing_tools/](mdc:scientific-computing-tools/)
+2. **Optical Systems**: Use [optical_depth_enhancement.py](mdc:optical_depth_enhancement.py)
+3. **Biometric Analysis**: Access [integrated_eye_depth_system.py](mdc:integrated_eye_depth_system.py)
+4. **Security Research**: Explore [Corpus/qualia/](mdc:Corpus/qualia/)
+5. **Process Design**: Use [process_design_framework.py](mdc:process_design_framework.py)
+
+### Language-Specific Entry Points
+- **Python**: [scientific_computing_tools/](mdc:scientific-computing-tools/) (primary interface)
+- **Java**: [Corpus/qualia/](mdc:Corpus/qualia/) (security frameworks)
+- **Mojo**: High-performance implementations in framework modules
+- **Swift**: iOS frameworks in [Farmer/](mdc:Farmer/) directory
+
+## 🔧 Key Configuration Files
+
+### Build & Dependencies
+- [requirements.txt](mdc:requirements.txt) - Python dependencies
+- [pyproject.toml](mdc:pyproject.toml) - Python project configuration
+- [Makefile](mdc:Makefile) - Build automation
+- [pixi.toml](mdc:pixi.toml) - Environment management
+
+### Development Environment
+- [.github/workflows/](mdc:.github/workflows/) - CI/CD pipelines
+- [docs/](mdc:docs/) - Documentation and GitHub Pages
+- [tests/](mdc:tests/) - Test suites
+- [scripts/](mdc:scripts/) - Utility scripts
+
+## 🎯 Framework Selection Guide
+
+### For Fluid Dynamics Research
 ```python
-# Main framework class
-framework = ProcessDesignFramework()
-
-# Add materials and geometries
-framework.add_material(material_properties)
-framework.create_geometry(name, geometry)
-
-# Simulate processes
-framework.simulate_process(name, geom_name, mat_name, conditions)
-
-# Scale-up studies
-framework.perform_scale_up_study(name, scale_params)
-
-# Equipment optimization
-framework.optimize_equipment(name, geom_name, mat_name, conditions, constraints)
+# Use these frameworks:
+from scientific_computing_tools.hbflow.models import hb_tau_from_gamma
+from multi_phase_flow_analysis import MultiPhaseFlowAnalyzer
 ```
 
-#### Flow Analysis Classes
+### For Optical Precision Work
 ```python
-# Multi-phase flow analyzer
-analyzer = MultiPhaseFlowAnalyzer(config)
-analyzer.add_phase(phase_properties)
-analyzer.initialize_droplet(center, radius, cont_phase, drop_phase)
-solution = analyzer.solve_flow(conditions)
-
-# Biological flow systems
-bio_system = BiologicalFlowSystem()
-bio_system.create_plant_stem_model()
-bio_system.simulate_biological_transport(analyzer, system_type, velocity)
+# Use these frameworks:
+from optical_depth_enhancement import OpticalDepthAnalyzer
+from chromostereopsis_model import ChromostereopsisModel
 ```
 
-### Data Flow Architecture
-
-```
-Input Data → Material Properties → Geometry Definition → Flow Simulation
-    ↓              ↓                    ↓                    ↓
-Process Design → Rheological Models → Scale-up Analysis → Equipment Optimization
-    ↓              ↓                    ↓                    ↓
-Visualization → Performance Metrics → Process Reports → Industrial Implementation
+### For Biometric Security
+```python
+# Use these frameworks:
+from integrated_eye_depth_system import IntegratedEyeDepthAnalyzer
+from crypto_key_generation import PostQuantumKeyGenerator
 ```
 
-## Development Workflow
+### For Process Engineering
+```python
+# Use these frameworks:
+from process_design_framework import ProcessDesignFramework
+from inverse_precision_framework import InversePrecisionFramework
+```
 
-### Research to Implementation
-1. **Theoretical Development** → Mathematical formulation
-2. **Algorithm Design** → Numerical methods and solvers
-3. **Implementation** → Python classes and functions
-4. **Validation** → Testing and case studies
-5. **Documentation** → Examples and tutorials
+## 📊 Performance Benchmarks
 
-### Code Organization
-- **Imports**: Group by standard library, third-party, local
-- **Classes**: Main functionality with clear interfaces
-- **Functions**: Specific analysis capabilities
-- **Constants**: Physical constants and default parameters
-- **Documentation**: Comprehensive docstrings with examples
+### Achievement Targets
+- **3500x Depth Enhancement**: Optical precision validation
+- **85% Biometric Confidence**: 3D iris recognition accuracy
+- **0.9987 Precision Convergence**: Guaranteed convergence criterion
+- **256-bit Quantum Security**: Post-quantum cryptographic strength
+- **4-Language Support**: Cross-platform compatibility
 
-## Integration Points
+### Benchmark Commands
+```bash
+# Run performance showcase
+python performance_showcase.py
 
-### External Frameworks
-- **HB Flow Package**: [hbflow/](mdc:hbflow/) for rheological modeling
-- **Multi-Phase Analysis**: Interface tracking and complex flows
-- **Biological Systems**: Plant vascular and flower dynamics
-- **AWS Integration**: Cloud infrastructure automation
+# Interactive demonstrations
+python interactive_showcase.py
 
-### Research Methodologies
-- **Scale-up Criteria**: Constant shear rate, residence time, power
-- **Optimization Methods**: Gradient-based, constraint handling
-- **Validation Approaches**: Analytical benchmarks, experimental correlation
-- **Performance Metrics**: Efficiency, power consumption, product quality
+# Benchmark dashboard
+python benchmark_dashboard.py --iterations 10 --export-results
+```
 
-This comprehensive toolkit integrates advanced fluid dynamics, process engineering, and scientific computing for industrial applications across multiple domains.
+## 🚀 Development Workflows
+
+### Adding New Frameworks
+1. Create framework module in appropriate directory
+2. Add to [requirements.txt](mdc:requirements.txt) if needed
+3. Create tests in [tests/](mdc:tests/)
+4. Update documentation in [docs/](mdc:docs/)
+5. Add to CI/CD pipeline in [.github/workflows/](mdc:.github/workflows/)
+
+### Framework Integration Pattern
+```python
+# Standard integration pattern
+from scientific_computing_tools.base_framework import BaseFramework
+
+class NewScientificFramework(BaseFramework):
+    """New framework following toolkit conventions"""
+
+    def __init__(self, config=None):
+        super().__init__(config)
+        self.precision_target = 0.9987  # Standard convergence criterion
+
+    def validate_achievement(self):
+        """Validate against scientific targets"""
+        return self.validate_precision_target()
+```
+
+## 🔗 Cross-Framework Dependencies
+
+### Core Dependencies
+- **NumPy**: Numerical computing foundation
+- **SciPy**: Scientific computing algorithms
+- **Matplotlib**: Visualization and plotting
+- **Pandas**: Data manipulation and analysis
+
+### Framework Interconnections
+```
+Optical Depth ↔ Biometric Analysis (3D iris structure)
+Inverse Precision ↔ All Frameworks (parameter extraction)
+Cryptography ↔ Biometric (key generation)
+Multi-Phase Flow ↔ Process Design (industrial applications)
+```
+
+## 📚 Documentation Structure
+
+### User Documentation
+- [docs/achievements-showcase.md](mdc:docs/achievements-showcase.md) - Achievement demonstrations
+- [docs/frameworks/](mdc:docs/frameworks/) - Framework-specific guides
+- [README.md](mdc:README.md) - Main repository overview
+
+### Developer Documentation
+- [.cursor/rules/](mdc:.cursor/rules/) - AI assistant rules
+- [docs/api/](mdc:docs/api/) - API reference
+- [docs/development/](mdc:docs/development/) - Development guides
+
+## 🎯 Quick Reference
+
+### Most Important Files
+- [performance_showcase.py](mdc:performance_showcase.py) - Achievement demonstrations
+- [inverse_precision_framework.py](mdc:inverse_precision_framework.py) - Core convergence system
+- [optical_depth_enhancement.py](mdc:optical_depth_enhancement.py) - Precision optical system
+- [integrated_eye_depth_system.py](mdc:integrated_eye_depth_system.py) - Biometric analysis
+
+### Most Important Directories
+- [scientific-computing-tools/](mdc:scientific-computing-tools/) - Core frameworks
+- [.github/workflows/](mdc:.github/workflows/) - CI/CD pipelines
+- [docs/](mdc:docs/) - Documentation
+- [Corpus/qualia/](mdc:Corpus/qualia/) - Security frameworks
+
+This structure provides a comprehensive foundation for advanced scientific computing research and development across multiple domains and programming languages.

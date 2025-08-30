@@ -1,0 +1,822 @@
+---
+globs: *assembly*,*consciousness*,*information*,*complexity*
+description: "Assembly Theory integration with consciousness frameworks"
+---
+# 🧬 Assembly Theory & Consciousness Integration
+
+## Mathematical Foundation
+
+### Assembly Theory (Sara Imari Walker)
+
+**Core Concept**: Assembly Theory quantifies complexity emergence through minimal construction steps required to build objects from basic components.
+
+```
+A(x) = Minimal construction steps to build object x
+N(x) = Abundance of similar objects in the system
+```
+
+**Assembly Index A(x)**:
+- Measures how many steps are required to construct an object
+- Lower A(x) = simpler construction
+- Higher A(x) = more complex construction requiring more assembly operations
+
+**Copy Number N(x)**:
+- Measures how abundant similar objects are in the system
+- High N(x) suggests natural selection or frequent construction
+- Low N(x) suggests rare or unique construction
+
+### Consciousness Quantification Ψ(x)
+
+**Hierarchical Bayesian Model**:
+```
+Ψ(x) = P(consciousness | evidence, model)
+```
+
+**Multiplicative Penalties**:
+```
+Ψ(x) = g⁻¹(η(x)) · π(x)
+```
+
+Where:
+- g⁻¹(η(x)): Base logistic function
+- π(x): Penalty function for uncertainty/confidence
+- η(x): Linear predictor from hierarchical model
+
+### Hybrid Framework Integration
+
+**Consciousness-Complexity Coupling**:
+```
+Ψₕybrid(x) = Ψ(x) × f(A(x), N(x))
+```
+
+Where f(A(x), N(x)) represents complexity emergence factor.
+
+## Implementation Framework
+
+### Assembly Theory Framework Class
+
+```python
+import numpy as np
+from typing import Dict, List, Tuple, Optional, Any, Union
+from dataclasses import dataclass
+from scipy.optimize import minimize
+from collections import defaultdict
+import networkx as nx
+import warnings
+
+@dataclass
+class AssemblyMetrics:
+    """Comprehensive assembly theory metrics."""
+    assembly_index: float = 0.0
+    copy_number: int = 1
+    assembly_complexity: float = 0.0
+    reuse_efficiency: float = 0.0
+    emergence_score: float = 0.0
+    minimal_assembly_path: List[str] = None
+    sub_assembly_graph: Dict[str, List[str]] = None
+
+    def __post_init__(self):
+        if self.minimal_assembly_path is None:
+            self.minimal_assembly_path = []
+        if self.sub_assembly_graph is None:
+            self.sub_assembly_graph = {}
+
+@dataclass
+class ConsciousnessMetrics:
+    """Consciousness quantification metrics."""
+    psi_score: float = 0.0
+    confidence_level: float = 0.0
+    evidence_strength: float = 0.0
+    hierarchical_depth: int = 1
+    penalty_factor: float = 1.0
+
+class AssemblyTheoryFramework:
+    """
+    Advanced Assembly Theory implementation with consciousness integration.
+
+    This framework provides quantitative tools for measuring complexity emergence
+    and integrating with consciousness quantification frameworks.
+    """
+
+    def __init__(self, max_assembly_depth: int = 10):
+        """
+        Initialize Assembly Theory framework.
+
+        Args:
+            max_assembly_depth: Maximum depth for assembly pathway exploration
+        """
+        self.max_assembly_depth = max_assembly_depth
+        self.assembly_database: Dict[str, AssemblyMetrics] = {}
+        self.consciousness_models: Dict[str, Any] = {}
+        self.complexity_cache: Dict[str, float] = {}
+
+    def calculate_assembly_metrics(self, object_representation: Union[str, List[str], np.ndarray],
+                                 observation_context: Optional[Dict[str, Any]] = None) -> AssemblyMetrics:
+        """
+        Calculate comprehensive assembly theory metrics.
+
+        Args:
+            object_representation: Representation of object to analyze
+            observation_context: Contextual information about observations
+
+        Returns:
+            Complete assembly analysis results
+        """
+        print(f"🔬 Calculating assembly metrics for: {type(object_representation)}")
+
+        # Convert input to standardized format
+        components = self._decompose_object(object_representation)
+
+        # Find minimal assembly pathway
+        minimal_pathway = self._find_minimal_assembly_pathway(components)
+
+        # Calculate assembly index A(x)
+        assembly_index = len(minimal_pathway)
+
+        # Calculate copy number N(x)
+        copy_number = self._calculate_copy_number(object_representation, observation_context)
+
+        # Build sub-assembly graph
+        sub_assembly_graph = self._build_sub_assembly_graph(components, minimal_pathway)
+
+        # Calculate complexity metrics
+        assembly_complexity = self._calculate_assembly_complexity(minimal_pathway, sub_assembly_graph)
+        reuse_efficiency = self._calculate_reuse_efficiency(sub_assembly_graph)
+        emergence_score = self._calculate_emergence_score(components, minimal_pathway)
+
+        metrics = AssemblyMetrics(
+            assembly_index=assembly_index,
+            copy_number=copy_number,
+            assembly_complexity=assembly_complexity,
+            reuse_efficiency=reuse_efficiency,
+            emergence_score=emergence_score,
+            minimal_assembly_path=minimal_pathway,
+            sub_assembly_graph=sub_assembly_graph
+        )
+
+        # Cache results
+        cache_key = str(hash(str(object_representation)))
+        self.assembly_database[cache_key] = metrics
+
+        print(f"📊 A(x) = {assembly_index}, N(x) = {copy_number}")
+        print(".3f"
+        return metrics
+
+    def integrate_with_consciousness(self, consciousness_metrics: ConsciousnessMetrics,
+                                   assembly_metrics: AssemblyMetrics) -> Dict[str, Any]:
+        """
+        Integrate assembly theory with consciousness quantification.
+
+        Args:
+            consciousness_metrics: Ψ(x) consciousness metrics
+            assembly_metrics: Assembly theory metrics
+
+        Returns:
+            Hybrid consciousness-complexity analysis
+        """
+        print("🔗 Integrating Assembly Theory with consciousness framework")
+
+        # Calculate complexity emergence factor
+        complexity_factor = self._calculate_complexity_emergence_factor(assembly_metrics)
+
+        # Modulate consciousness by complexity
+        complexity_modulation = 1.0 + (complexity_factor - 0.5) * 0.3
+
+        # Hybrid consciousness score
+        hybrid_psi = min(1.0, consciousness_metrics.psi_score * complexity_modulation)
+
+        # Calculate confidence bounds
+        emergence_confidence = assembly_metrics.emergence_score * consciousness_metrics.confidence_level
+        lower_bound = max(0, hybrid_psi - 0.1 * (1 - emergence_confidence))
+        upper_bound = min(1, hybrid_psi + 0.1 * assembly_metrics.emergence_score)
+
+        integration_results = {
+            'hybrid_consciousness_score': hybrid_psi,
+            'complexity_emergence_factor': complexity_factor,
+            'complexity_modulation': complexity_modulation,
+            'consciousness_bounds': (lower_bound, upper_bound),
+            'emergence_confidence': emergence_confidence,
+            'integration_strength': assembly_metrics.reuse_efficiency * consciousness_metrics.evidence_strength,
+            'hierarchical_consistency': self._assess_hierarchical_consistency(
+                consciousness_metrics, assembly_metrics
+            )
+        }
+
+        print(".3f"        print(".3f"
+        return integration_results
+
+    def analyze_biological_system(self, system_description: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Analyze biological system using integrated assembly-consciousness framework.
+
+        Args:
+            system_description: Biological system description
+
+        Returns:
+            Complete biological analysis
+        """
+        print("🧬 Analyzing biological system with integrated framework")
+
+        # Extract system components
+        components = system_description.get('components', [])
+        structures = system_description.get('structures', [])
+        functions = system_description.get('functions', [])
+
+        # Analyze each component
+        component_analyses = {}
+        for comp in components:
+            metrics = self.calculate_assembly_metrics(comp, system_description)
+            component_analyses[str(comp)] = {
+                'assembly_metrics': metrics,
+                'consciousness_potential': self._estimate_consciousness_potential(metrics)
+            }
+
+        # System-level analysis
+        system_representation = f"system_{'_'.join(str(c) for c in components)}"
+        system_metrics = self.calculate_assembly_metrics(system_representation, system_description)
+
+        # Biological emergence analysis
+        biological_emergence = self._calculate_biological_emergence(
+            component_analyses, system_metrics, structures, functions
+        )
+
+        # Consciousness assessment
+        system_consciousness = self._assess_system_consciousness(
+            system_metrics, biological_emergence
+        )
+
+        analysis_results = {
+            'component_analyses': component_analyses,
+            'system_assembly_metrics': system_metrics,
+            'biological_emergence_score': biological_emergence,
+            'system_consciousness_assessment': system_consciousness,
+            'emergence_pathways': system_metrics.minimal_assembly_path,
+            'complexity_network': system_metrics.sub_assembly_graph,
+            'recommendations': self._generate_research_recommendations(system_metrics, system_consciousness)
+        }
+
+        print(".3f"        print(".3f"
+        return analysis_results
+
+    def _decompose_object(self, obj: Union[str, List[str], np.ndarray]) -> List[str]:
+        """Decompose object into basic components."""
+        if isinstance(obj, str):
+            return list(obj)  # Character-level decomposition
+        elif isinstance(obj, list):
+            return obj
+        elif isinstance(obj, np.ndarray):
+            return [f"elem_{i}_{val}" for i, val in enumerate(obj.flatten())]
+        else:
+            raise ValueError(f"Unsupported object type: {type(obj)}")
+
+    def _find_minimal_assembly_pathway(self, components: List[str]) -> List[str]:
+        """Find minimal assembly pathway using graph-based search."""
+        if len(components) <= 2:
+            return ["combine"] * max(1, len(components) - 1)
+
+        # Build assembly graph
+        G = nx.DiGraph()
+
+        # Add basic components
+        for i, comp in enumerate(components):
+            G.add_node(f"basic_{i}", component=comp, level=0)
+
+        # Generate assembly operations
+        current_level = 0
+        while current_level < self.max_assembly_depth:
+            current_nodes = [n for n, d in G.nodes(data=True) if d.get('level', 0) == current_level]
+
+            for i in range(len(current_nodes)):
+                for j in range(i + 1, len(current_nodes)):
+                    new_node = f"assembly_{current_level}_{i}_{j}"
+                    G.add_node(new_node, level=current_level + 1)
+                    G.add_edge(current_nodes[i], new_node, operation="combine")
+                    G.add_edge(current_nodes[j], new_node, operation="combine")
+
+            current_level += 1
+
+        # Find shortest path to target complexity
+        target_complexity = len(components)
+        operations = []
+
+        for node in G.nodes():
+            if G.nodes[node].get('level', 0) >= target_complexity - 1:
+                # Count operations
+                for edge in G.edges():
+                    if edge[1] == node:
+                        operations.append(G.edges[edge].get('operation', 'combine'))
+
+        return operations or ["combine"] * max(1, target_complexity - 1)
+
+    def _calculate_copy_number(self, obj: Any, context: Optional[Dict[str, Any]]) -> int:
+        """Calculate copy number N(x)."""
+        if context and 'observation_frequency' in context:
+            return max(1, context['observation_frequency'])
+        return 1
+
+    def _build_sub_assembly_graph(self, components: List[str], pathway: List[str]) -> Dict[str, List[str]]:
+        """Build graph of sub-assembly relationships."""
+        graph = defaultdict(list)
+        current_components = components.copy()
+
+        for operation in pathway:
+            if len(current_components) >= 2:
+                comp1, comp2 = current_components[:2]
+                new_comp = f"{comp1}_{operation}_{comp2}"
+                graph[new_comp] = [comp1, comp2]
+                current_components = [new_comp] + current_components[2:]
+
+        return dict(graph)
+
+    def _calculate_assembly_complexity(self, pathway: List[str], sub_graph: Dict[str, List[str]]) -> float:
+        """Calculate assembly complexity metric."""
+        base_complexity = len(pathway)
+        reuse_factor = len(sub_graph) / max(1, len(pathway))
+        max_depth = max([len(path.split('_')) for path in sub_graph.keys()], default=1)
+
+        return base_complexity * (1 + reuse_factor) * (max_depth ** 0.5)
+
+    def _calculate_reuse_efficiency(self, sub_graph: Dict[str, List[str]]) -> float:
+        """Calculate sub-assembly reuse efficiency."""
+        if not sub_graph:
+            return 0.0
+
+        sub_assembly_counts = {}
+        for subs in sub_graph.values():
+            for sub in subs:
+                if '_' in sub:
+                    sub_assembly_counts[sub] = sub_assembly_counts.get(sub, 0) + 1
+
+        if not sub_assembly_counts:
+            return 0.0
+
+        total_subs = sum(sub_assembly_counts.values())
+        unique_subs = len(sub_assembly_counts)
+        avg_reuse = total_subs / unique_subs
+
+        return min(1.0, (avg_reuse - 1) / 5.0)
+
+    def _calculate_emergence_score(self, components: List[str], pathway: List[str]) -> float:
+        """Calculate complexity emergence score."""
+        individual_complexity = sum(len(str(comp)) for comp in components)
+        whole_complexity = len(pathway) * 0.2
+
+        emergence = max(0, whole_complexity - individual_complexity)
+        return min(1.0, emergence / max(1, whole_complexity))
+
+    def _calculate_complexity_emergence_factor(self, metrics: AssemblyMetrics) -> float:
+        """Calculate complexity emergence factor for consciousness modulation."""
+        base_factor = metrics.emergence_score
+        reuse_bonus = metrics.reuse_efficiency * 0.3
+        complexity_penalty = metrics.assembly_complexity / 100.0
+
+        return min(1.0, base_factor + reuse_bonus - complexity_penalty)
+
+    def _assess_hierarchical_consistency(self, consciousness: ConsciousnessMetrics,
+                                       assembly: AssemblyMetrics) -> float:
+        """Assess consistency between hierarchical consciousness and assembly models."""
+        # Compare hierarchical depth with assembly complexity
+        depth_factor = min(1.0, consciousness.hierarchical_depth / 10.0)
+        complexity_factor = min(1.0, assembly.assembly_complexity / 50.0)
+
+        return 1.0 - abs(depth_factor - complexity_factor)
+
+    def _estimate_consciousness_potential(self, metrics: AssemblyMetrics) -> Dict[str, float]:
+        """Estimate consciousness potential from assembly metrics."""
+        # Simplified consciousness potential estimation
+        emergence_factor = metrics.emergence_score
+        complexity_factor = min(1.0, metrics.assembly_complexity / 20.0)
+        reuse_factor = metrics.reuse_efficiency
+
+        potential_score = (emergence_factor * 0.5 + complexity_factor * 0.3 + reuse_factor * 0.2)
+
+        return {
+            'potential_score': potential_score,
+            'emergence_contribution': emergence_factor,
+            'complexity_contribution': complexity_factor,
+            'reuse_contribution': reuse_factor
+        }
+
+    def _calculate_biological_emergence(self, component_analyses: Dict[str, Dict],
+                                      system_metrics: AssemblyMetrics,
+                                      structures: List[str], functions: List[str]) -> float:
+        """Calculate biological emergence for the system."""
+        component_complexity = np.mean([
+            analysis['assembly_metrics'].assembly_complexity
+            for analysis in component_analyses.values()
+        ])
+
+        structure_complexity = len(structures) * 0.1
+        function_complexity = len(functions) * 0.15
+
+        emergence = max(0, system_metrics.assembly_complexity -
+                       (component_complexity + structure_complexity + function_complexity))
+
+        return min(1.0, emergence / max(1, system_metrics.assembly_complexity))
+
+    def _assess_system_consciousness(self, system_metrics: AssemblyMetrics,
+                                   biological_emergence: float) -> Dict[str, Any]:
+        """Assess system-level consciousness."""
+        # Simplified consciousness assessment
+        emergence_score = biological_emergence
+        complexity_score = min(1.0, system_metrics.assembly_complexity / 30.0)
+        integration_score = system_metrics.reuse_efficiency
+
+        overall_score = (emergence_score * 0.4 + complexity_score * 0.4 + integration_score * 0.2)
+
+        consciousness_level = "none"
+        if overall_score > 0.7:
+            consciousness_level = "high"
+        elif overall_score > 0.4:
+            consciousness_level = "moderate"
+        elif overall_score > 0.2:
+            consciousness_level = "low"
+
+        return {
+            'overall_score': overall_score,
+            'consciousness_level': consciousness_level,
+            'emergence_score': emergence_score,
+            'complexity_score': complexity_score,
+            'integration_score': integration_score,
+            'confidence': min(1.0, system_metrics.copy_number / 100.0)
+        }
+
+    def _generate_research_recommendations(self, system_metrics: AssemblyMetrics,
+                                         consciousness_assessment: Dict[str, Any]) -> List[str]:
+        """Generate research recommendations."""
+        recommendations = []
+
+        if system_metrics.emergence_score < 0.5:
+            recommendations.append("Consider investigating emergence mechanisms in the system")
+
+        if consciousness_assessment['overall_score'] < 0.3:
+            recommendations.append("Low consciousness indicators - may require different analytical approach")
+
+        if system_metrics.reuse_efficiency < 0.3:
+            recommendations.append("Low sub-assembly reuse suggests inefficient complexity utilization")
+
+        if system_metrics.assembly_complexity > 20:
+            recommendations.append("High assembly complexity - consider hierarchical decomposition")
+
+        return recommendations
+
+    def generate_assembly_report(self, metrics: AssemblyMetrics,
+                               system_name: str = "Unknown System") -> str:
+        """Generate comprehensive assembly analysis report."""
+        report = []
+        report.append("🧬 ASSEMBLY THEORY ANALYSIS REPORT")
+        report.append("=" * 50)
+        report.append("")
+        report.append(f"System: {system_name}")
+        report.append("")
+
+        report.append("📊 ASSEMBLY METRICS")
+        report.append("-" * 25)
+        report.append(f"Assembly Index A(x): {metrics.assembly_index}")
+        report.append(f"Copy Number N(x): {metrics.copy_number}")
+        report.append(".4f"        report.append(".4f"        report.append(".4f"        report.append("")
+
+        report.append("🔧 ASSEMBLY PATHWAY")
+        report.append("-" * 22)
+        if metrics.minimal_assembly_path:
+            for i, op in enumerate(metrics.minimal_assembly_path, 1):
+                report.append(f"{i:2d}. {op}")
+        else:
+            report.append("No assembly pathway found")
+        report.append("")
+
+        report.append("🌐 SUB-ASSEMBLY NETWORK")
+        report.append("-" * 25)
+        if metrics.sub_assembly_graph:
+            for parent, children in metrics.sub_assembly_graph.items():
+                report.append(f"  {parent}")
+                for child in children:
+                    report.append(f"    └─ {child}")
+        else:
+            report.append("No sub-assembly relationships found")
+        report.append("")
+
+        report.append("🎯 INTERPRETATION")
+        report.append("-" * 18)
+        if metrics.emergence_score > 0.7:
+            report.append("High emergence: Strong complexity emergence detected")
+        elif metrics.emergence_score > 0.4:
+            report.append("Moderate emergence: Some complexity beyond components")
+        else:
+            report.append("Low emergence: Complexity mostly explained by components")
+
+        if metrics.reuse_efficiency > 0.6:
+            report.append("High reuse efficiency: Efficient sub-assembly utilization")
+        elif metrics.reuse_efficiency > 0.3:
+            report.append("Moderate reuse: Some sub-assembly sharing")
+        else:
+            report.append("Low reuse: Limited sub-assembly optimization")
+
+        return "\n".join(report)
+```
+
+## Research Applications
+
+### Consciousness Emergence Analysis
+
+```python
+def analyze_consciousness_emergence(assembly_framework, consciousness_model,
+                                  biological_system):
+    """
+    Analyze consciousness emergence using integrated assembly-consciousness framework.
+
+    This demonstrates how assembly theory can quantify the emergence of consciousness
+    in biological systems through minimal construction steps and complexity metrics.
+    """
+    # Calculate assembly metrics
+    assembly_metrics = assembly_framework.calculate_assembly_metrics(biological_system)
+
+    # Get consciousness metrics
+    consciousness_metrics = consciousness_model.quantify_consciousness(biological_system)
+
+    # Integrate frameworks
+    integrated_analysis = assembly_framework.integrate_with_consciousness(
+        consciousness_metrics, assembly_metrics
+    )
+
+    # Analyze emergence
+    emergence_analysis = {
+        'assembly_emergence': assembly_metrics.emergence_score,
+        'consciousness_emergence': integrated_analysis['hybrid_consciousness_score'],
+        'complexity_modulation': integrated_analysis['complexity_modulation'],
+        'emergence_correlation': np.corrcoef(
+            [assembly_metrics.emergence_score],
+            [integrated_analysis['hybrid_consciousness_score']]
+        )[0,1]
+    }
+
+    return emergence_analysis
+```
+
+### Information Theory Integration
+
+```python
+def calculate_information_emergence(assembly_metrics, information_metrics):
+    """
+    Calculate information emergence using assembly theory metrics.
+
+    This integrates Shannon information theory with assembly theory to
+    quantify information emergence in complex systems.
+    """
+    # Calculate assembly information
+    assembly_information = assembly_metrics.assembly_complexity * np.log2(assembly_metrics.copy_number + 1)
+
+    # Calculate emergence information
+    emergence_information = assembly_metrics.emergence_score * assembly_information
+
+    # Calculate information efficiency
+    information_efficiency = emergence_information / (assembly_information + 1e-10)
+
+    return {
+        'assembly_information': assembly_information,
+        'emergence_information': emergence_information,
+        'information_efficiency': information_efficiency,
+        'complexity_efficiency': assembly_metrics.reuse_efficiency * information_efficiency
+    }
+```
+
+## Testing Standards
+
+### Comprehensive Framework Tests
+
+```python
+class TestAssemblyConsciousnessIntegration(unittest.TestCase):
+    """Test suite for assembly theory - consciousness integration."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.assembly_framework = AssemblyTheoryFramework(max_assembly_depth=5)
+
+        # Mock consciousness model
+        self.consciousness_model = MockConsciousnessModel()
+
+    def test_assembly_metrics_calculation(self):
+        """Test basic assembly metrics calculation."""
+        # Simple string object
+        test_object = "consciousness"
+        metrics = self.assembly_framework.calculate_assembly_metrics(test_object)
+
+        self.assertIsInstance(metrics, AssemblyMetrics)
+        self.assertGreater(metrics.assembly_index, 0)
+        self.assertGreaterEqual(metrics.copy_number, 1)
+
+    def test_consciousness_integration(self):
+        """Test integration with consciousness framework."""
+        # Test biological system
+        biological_system = {
+            'components': ['neurons', 'synapses', 'glial_cells'],
+            'structures': ['cortex', 'hippocampus', 'thalamus'],
+            'functions': ['perception', 'memory', 'decision_making'],
+            'observation_frequency': 1000
+        }
+
+        assembly_metrics = self.assembly_framework.calculate_assembly_metrics(biological_system)
+        consciousness_metrics = self.consciousness_model.quantify_consciousness(biological_system)
+
+        integrated = self.assembly_framework.integrate_with_consciousness(
+            consciousness_metrics, assembly_metrics
+        )
+
+        self.assertIn('hybrid_consciousness_score', integrated)
+        self.assertIn('consciousness_bounds', integrated)
+
+        # Hybrid score should be reasonable
+        self.assertGreaterEqual(integrated['hybrid_consciousness_score'], 0.0)
+        self.assertLessEqual(integrated['hybrid_consciousness_score'], 1.0)
+
+    def test_biological_system_analysis(self):
+        """Test biological system analysis."""
+        system_description = {
+            'components': ['proteins', 'dna', 'rna', 'lipids'],
+            'structures': ['cell_membrane', 'nucleus', 'mitochondria'],
+            'functions': ['transcription', 'translation', 'metabolism'],
+            'observation_frequency': 500
+        }
+
+        analysis = self.assembly_framework.analyze_biological_system(system_description)
+
+        self.assertIn('biological_emergence_score', analysis)
+        self.assertIn('system_consciousness_assessment', analysis)
+
+        # Emergence score should be reasonable
+        emergence = analysis['biological_emergence_score']
+        self.assertGreaterEqual(emergence, 0.0)
+        self.assertLessEqual(emergence, 1.0)
+
+    def test_emergence_correlation(self):
+        """Test correlation between assembly emergence and consciousness."""
+        # Create systems with varying complexity
+        simple_system = "atom"
+        complex_system = "neural_network_with_memory_and_learning"
+
+        simple_metrics = self.assembly_framework.calculate_assembly_metrics(simple_system)
+        complex_metrics = self.assembly_framework.calculate_assembly_metrics(complex_system)
+
+        # Complex system should have higher emergence
+        self.assertGreater(complex_metrics.emergence_score, simple_metrics.emergence_score)
+
+        # Complex system should have higher assembly complexity
+        self.assertGreater(complex_metrics.assembly_complexity, simple_metrics.assembly_complexity)
+
+    def test_reuse_efficiency_calculation(self):
+        """Test sub-assembly reuse efficiency calculation."""
+        # Create system with reusable components
+        reusable_system = {
+            'components': ['carbon', 'hydrogen', 'oxygen', 'nitrogen'],
+            'structures': ['amino_acid', 'peptide_bond', 'protein_fold'],
+            'observation_frequency': 10000
+        }
+
+        metrics = self.assembly_framework.calculate_assembly_metrics(reusable_system)
+
+        # Should have some reuse efficiency
+        self.assertGreaterEqual(metrics.reuse_efficiency, 0.0)
+        self.assertLessEqual(metrics.reuse_efficiency, 1.0)
+
+    def test_minimal_assembly_pathway(self):
+        """Test minimal assembly pathway finding."""
+        components = ['proton', 'neutron', 'electron']
+        pathway = self.assembly_framework._find_minimal_assembly_pathway(components)
+
+        # Should have assembly operations
+        self.assertGreater(len(pathway), 0)
+        self.assertEqual(pathway[0], "combine")  # Basic combination operation
+
+    def test_hierarchical_consistency(self):
+        """Test hierarchical consistency assessment."""
+        consciousness = ConsciousnessMetrics(
+            psi_score=0.8,
+            confidence_level=0.9,
+            hierarchical_depth=3
+        )
+
+        assembly = AssemblyMetrics(
+            assembly_index=5,
+            copy_number=100,
+            assembly_complexity=15.0,
+            reuse_efficiency=0.7,
+            emergence_score=0.6
+        )
+
+        consistency = self.assembly_framework._assess_hierarchical_consistency(consciousness, assembly)
+
+        # Should return reasonable consistency score
+        self.assertGreaterEqual(consistency, 0.0)
+        self.assertLessEqual(consistency, 1.0)
+
+    def test_information_emergence(self):
+        """Test information emergence calculation."""
+        assembly_metrics = AssemblyMetrics(
+            assembly_complexity=10.0,
+            copy_number=50,
+            emergence_score=0.8
+        )
+
+        information_metrics = {'shannon_entropy': 5.0, 'mutual_information': 2.0}
+
+        emergence_info = calculate_information_emergence(assembly_metrics, information_metrics)
+
+        self.assertIn('emergence_information', emergence_info)
+        self.assertIn('information_efficiency', emergence_info)
+
+        # Emergence information should be positive
+        self.assertGreater(emergence_info['emergence_information'], 0)
+
+    def test_performance_with_complex_systems(self):
+        """Test performance with complex biological systems."""
+        complex_system = {
+            'components': [f'component_{i}' for i in range(20)],
+            'structures': [f'structure_{i}' for i in range(10)],
+            'functions': [f'function_{i}' for i in range(15)],
+            'observation_frequency': 1000
+        }
+
+        import time
+        start_time = time.time()
+
+        analysis = self.assembly_framework.analyze_biological_system(complex_system)
+
+        computation_time = time.time() - start_time
+
+        # Should complete in reasonable time
+        self.assertLess(computation_time, 10.0)  # Less than 10 seconds
+
+        # Should produce valid results
+        self.assertIn('biological_emergence_score', analysis)
+        self.assertIn('component_analyses', analysis)
+```
+
+## Documentation Standards
+
+### Research Paper Integration
+
+```python
+"""
+Assembly Theory and Consciousness Integration Framework
+
+This framework integrates Assembly Theory (Walker et al.) with consciousness
+quantification to provide quantitative measures of complexity emergence
+and consciousness potential in biological and artificial systems.
+
+Mathematical Framework:
+    Assembly Theory: A(x) = min construction steps, N(x) = copy number
+    Consciousness: Ψ(x) = P(consciousness|evidence)
+    Hybrid: Ψ_hybrid(x) = Ψ(x) × f(A(x), N(x))
+
+Key Contributions:
+    1. Quantitative measurement of complexity emergence
+    2. Integration of information theory with consciousness
+    3. Hierarchical consistency assessment
+    4. Biological system analysis framework
+
+Applications:
+    - Consciousness emergence in neural systems
+    - Complexity analysis of biological evolution
+    - Artificial intelligence consciousness assessment
+    - Information-theoretic measures of emergence
+
+Implementation:
+    - Graph-based assembly pathway optimization
+    - Hierarchical consciousness modeling
+    - Statistical validation and confidence intervals
+    - Performance optimization for large systems
+
+Author: [Research Team]
+Date: [Current Date]
+Version: 1.0
+License: [License]
+"""
+```
+
+## Best Practices
+
+### 1. Scientific Rigor
+- Validate assembly pathways against known chemical/physical processes
+- Use statistically significant observation frequencies for N(x)
+- Document all assumptions in mathematical derivations
+- Provide uncertainty quantification for all metrics
+
+### 2. Consciousness Assessment
+- Use multiple consciousness models for validation
+- Assess hierarchical consistency across different frameworks
+- Consider evolutionary and developmental context
+- Avoid over-interpretation of quantitative metrics
+
+### 3. Performance Optimization
+- Cache assembly calculations for repeated analyses
+- Use graph algorithms for large assembly networks
+- Implement parallel processing for complex systems
+- Optimize memory usage for biological network analysis
+
+### 4. Research Ethics
+- Clearly distinguish between correlation and causation
+- Acknowledge limitations of quantitative approaches
+- Consider philosophical implications of consciousness metrics
+- Promote interdisciplinary collaboration and validation
+
+This framework provides a rigorous mathematical foundation for understanding the relationship between complexity emergence and consciousness, with applications across biological systems, artificial intelligence, and fundamental research questions in information and complexity theory. 🚀🧬⚗️

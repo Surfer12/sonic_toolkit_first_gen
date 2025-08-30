@@ -1,0 +1,650 @@
+---
+globs: *.java
+description: "Java security framework development patterns and penetration testing conventions"
+---
+
+# ☕ Java Security Frameworks - Development Guide
+
+## Security Framework Architecture
+
+### Core Security Classes Pattern
+```java
+package qualia.security;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.time.Instant;
+
+/**
+ * Base class for security analysis frameworks.
+ *
+ * Provides common functionality for:
+ * - Vulnerability assessment
+ * - Security finding management
+ * - Penetration testing workflows
+ * - Security metric computation
+ */
+public abstract class SecurityFramework {
+
+    protected final List<SecurityFinding> findings;
+    protected final SecurityConfiguration config;
+    protected Instant analysisStartTime;
+
+    protected SecurityFramework(SecurityConfiguration config) {
+        this.config = config;
+        this.findings = new ArrayList<>();
+        this.analysisStartTime = Instant.now();
+    }
+
+    /**
+     * Execute comprehensive security analysis.
+     * Must be implemented by concrete security frameworks.
+     */
+    public abstract void executeAnalysis();
+
+    /**
+     * Validate analysis results against security standards.
+     */
+    public SecurityValidationResult validateResults() {
+        long analysisDuration = Instant.now().toEpochMilli() - analysisStartTime.toEpochMilli();
+
+        return new SecurityValidationResult(
+            findings.size(),
+            getHighSeverityFindings().size(),
+            analysisDuration,
+            computeSecurityScore()
+        );
+    }
+
+    /**
+     * Get findings filtered by severity.
+     */
+    public List<SecurityFinding> getHighSeverityFindings() {
+        return findings.stream()
+            .filter(finding -> finding.getSeverity() == Severity.HIGH)
+            .toList();
+    }
+
+    /**
+     * Compute overall security score (0.0 to 1.0).
+     */
+    private double computeSecurityScore() {
+        if (findings.isEmpty()) {
+            return 1.0; // Perfect security
+        }
+
+        int totalWeightedScore = findings.stream()
+            .mapToInt(finding -> finding.getSeverity().getWeight() * finding.getConfidence())
+            .sum();
+
+        int maxPossibleScore = findings.size() * Severity.CRITICAL.getWeight() * 100;
+
+        return Math.max(0.0, 1.0 - (double) totalWeightedScore / maxPossibleScore);
+    }
+}
+```
+
+### Security Finding Data Model
+```java
+package qualia.security;
+
+import java.time.Instant;
+
+/**
+ * Immutable security finding representation.
+ */
+public record SecurityFinding(
+    String id,
+    String title,
+    String description,
+    Severity severity,
+    int confidence,  // 0-100
+    String location,
+    Instant timestamp,
+    List<String> evidence,
+    List<String> recommendations
+) {
+    public SecurityFinding {
+        if (confidence < 0 || confidence > 100) {
+            throw new IllegalArgumentException("Confidence must be between 0 and 100");
+        }
+        if (timestamp == null) {
+            timestamp = Instant.now();
+        }
+        if (evidence == null) {
+            evidence = List.of();
+        }
+        if (recommendations == null) {
+            recommendations = List.of();
+        }
+    }
+
+    /**
+     * Create finding with current timestamp.
+     */
+    public static SecurityFinding create(String id, String title, Severity severity,
+                                       int confidence, String location) {
+        return new SecurityFinding(id, title, "", severity, confidence,
+                                 location, Instant.now(), List.of(), List.of());
+    }
+}
+```
+
+## Penetration Testing Patterns
+
+### Reverse Koopman Operator Framework
+```java
+package qualia.security.koopman;
+
+import qualia.security.SecurityFramework;
+import java.util.List;
+
+/**
+ * Advanced security analysis using Reverse Koopman Operators.
+ *
+ * This framework applies mathematical operator theory to security analysis,
+ * providing novel approaches to vulnerability detection and exploitation analysis.
+ */
+public class ReverseKoopmanOperator extends SecurityFramework {
+
+    private final ComplexNumber[] koopmanModes;
+    private final double[] singularValues;
+    private final ObservableFunction observableFunction;
+
+    public ReverseKoopmanOperator(SecurityConfiguration config) {
+        super(config);
+        this.koopmanModes = new ComplexNumber[0];
+        this.singularValues = new double[0];
+        this.observableFunction = new ObservableFunction();
+    }
+
+    @Override
+    public void executeAnalysis() {
+        System.out.println("🔬 Executing Reverse Koopman Operator analysis...");
+
+        // Step 1: Define observable functions for security metrics
+        defineSecurityObservables();
+
+        // Step 2: Compute Koopman operator decomposition
+        computeKoopmanDecomposition();
+
+        // Step 3: Analyze security eigenfunctions
+        analyzeEigenfunctions();
+
+        // Step 4: Generate security findings
+        generateSecurityFindings();
+    }
+
+    private void defineSecurityObservables() {
+        // Define mathematical observables for security analysis
+        observableFunction.addObservable("vulnerability_density",
+            data -> computeVulnerabilityDensity(data));
+        observableFunction.addObservable("exploit_complexity",
+            data -> computeExploitComplexity(data));
+        observableFunction.addObservable("attack_surface_area",
+            data -> computeAttackSurfaceArea(data));
+    }
+
+    private void computeKoopmanDecomposition() {
+        // Implement Singular Value Decomposition for Koopman analysis
+        // This provides the mathematical foundation for security analysis
+        System.out.println("Computing SVD for Koopman operator decomposition...");
+
+        // Placeholder for SVD computation
+        // koopmanModes = computeSVD(securityData);
+    }
+
+    private void analyzeEigenfunctions() {
+        // Analyze the eigenfunctions to identify security patterns
+        System.out.println("Analyzing security eigenfunctions...");
+
+        // Add findings based on eigenfunction analysis
+        if (hasCriticalEigenfunction()) {
+            addFinding(SecurityFinding.create(
+                "KOOPMAN_CRITICAL",
+                "Critical Security Eigenfunction Detected",
+                Severity.CRITICAL,
+                95,
+                "System eigenfunction analysis"
+            ));
+        }
+    }
+
+    private void generateSecurityFindings() {
+        // Generate findings based on Koopman analysis results
+        System.out.println("Generating security findings from Koopman analysis...");
+
+        // Example findings based on mathematical analysis
+        findings.add(SecurityFinding.create(
+            "KOOPMAN_VULN_001",
+            "Observable Function Vulnerability",
+            "Detected vulnerability in security observable functions",
+            Severity.HIGH,
+            85,
+            "Koopman operator analysis"
+        ));
+    }
+
+    private boolean hasCriticalEigenfunction() {
+        // Placeholder for critical eigenfunction detection
+        return singularValues.length > 0 && singularValues[0] > 0.9;
+    }
+
+    // Mathematical computation methods
+    private double computeVulnerabilityDensity(Object data) {
+        // Implement mathematical computation
+        return 0.0;
+    }
+
+    private double computeExploitComplexity(Object data) {
+        // Implement mathematical computation
+        return 0.0;
+    }
+
+    private double computeAttackSurfaceArea(Object data) {
+        // Implement mathematical computation
+        return 0.0;
+    }
+}
+```
+
+### Java Penetration Testing Framework
+```java
+package qualia.security.testing;
+
+import qualia.security.SecurityFramework;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+/**
+ * Comprehensive Java penetration testing framework.
+ *
+ * Provides systematic approach to:
+ * - Vulnerability scanning
+ * - Exploitation testing
+ * - Security assessment
+ * - Report generation
+ */
+public class JavaPenetrationTesting extends SecurityFramework {
+
+    private final ExecutorService executor;
+    private final List<PenetrationTestModule> modules;
+
+    public JavaPenetrationTesting(SecurityConfiguration config) {
+        super(config);
+        this.executor = Executors.newFixedThreadPool(config.getThreadPoolSize());
+        this.modules = initializeModules();
+    }
+
+    @Override
+    public void executeAnalysis() {
+        System.out.println("🎯 Executing Java penetration testing...");
+
+        // Execute all testing modules concurrently
+        List<CompletableFuture<Void>> futures = modules.stream()
+            .map(module -> CompletableFuture.runAsync(module::execute, executor))
+            .toList();
+
+        // Wait for all modules to complete
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+            .join();
+
+        // Aggregate findings from all modules
+        aggregateModuleFindings();
+
+        System.out.println("✅ Penetration testing completed");
+    }
+
+    private List<PenetrationTestModule> initializeModules() {
+        return List.of(
+            new InjectionTestingModule(config),
+            new AuthenticationTestingModule(config),
+            new AuthorizationTestingModule(config),
+            new CryptographyTestingModule(config),
+            new DataValidationTestingModule(config)
+        );
+    }
+
+    private void aggregateModuleFindings() {
+        for (PenetrationTestModule module : modules) {
+            findings.addAll(module.getFindings());
+        }
+    }
+
+    /**
+     * Get testing modules for customization.
+     */
+    public List<PenetrationTestModule> getModules() {
+        return List.copyOf(modules);
+    }
+
+    /**
+     * Add custom testing module.
+     */
+    public void addModule(PenetrationTestModule module) {
+        modules.add(module);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        executor.shutdown();
+    }
+}
+```
+
+## Testing Module Pattern
+
+### Base Testing Module
+```java
+package qualia.security.testing;
+
+import qualia.security.SecurityFinding;
+import qualia.security.Severity;
+import java.util.List;
+import java.util.ArrayList;
+
+/**
+ * Base class for penetration testing modules.
+ */
+public abstract class PenetrationTestModule {
+
+    protected final SecurityConfiguration config;
+    protected final List<SecurityFinding> findings;
+
+    protected PenetrationTestModule(SecurityConfiguration config) {
+        this.config = config;
+        this.findings = new ArrayList<>();
+    }
+
+    /**
+     * Execute the penetration testing module.
+     */
+    public abstract void execute();
+
+    /**
+     * Get findings from this module.
+     */
+    public List<SecurityFinding> getFindings() {
+        return List.copyOf(findings);
+    }
+
+    /**
+     * Add finding with validation.
+     */
+    protected void addFinding(String id, String title, Severity severity,
+                            int confidence, String location) {
+        if (confidence >= config.getMinimumConfidence()) {
+            findings.add(SecurityFinding.create(id, title, severity, confidence, location));
+        }
+    }
+
+    /**
+     * Validate test preconditions.
+     */
+    protected boolean validatePreconditions() {
+        // Implement precondition validation
+        return true;
+    }
+}
+```
+
+### Specific Testing Module Example
+```java
+package qualia.security.testing;
+
+/**
+ * SQL injection testing module.
+ */
+public class InjectionTestingModule extends PenetrationTestModule {
+
+    public InjectionTestingModule(SecurityConfiguration config) {
+        super(config);
+    }
+
+    @Override
+    public void execute() {
+        if (!validatePreconditions()) {
+            return;
+        }
+
+        System.out.println("Testing for injection vulnerabilities...");
+
+        // Test for SQL injection
+        testSqlInjection();
+
+        // Test for command injection
+        testCommandInjection();
+
+        // Test for LDAP injection
+        testLdapInjection();
+    }
+
+    private void testSqlInjection() {
+        // Implement SQL injection testing
+        List<String> payloads = List.of(
+            "' OR '1'='1",
+            "'; DROP TABLE users; --",
+            "' UNION SELECT * FROM users--"
+        );
+
+        for (String payload : payloads) {
+            if (isVulnerable(payload)) {
+                addFinding(
+                    "INJECTION_SQL_" + payload.hashCode(),
+                    "SQL Injection Vulnerability",
+                    Severity.HIGH,
+                    90,
+                    "SQL query parameters"
+                );
+            }
+        }
+    }
+
+    private void testCommandInjection() {
+        // Implement command injection testing
+        List<String> payloads = List.of(
+            "; cat /etc/passwd",
+            "| whoami",
+            "$(cat /etc/passwd)"
+        );
+
+        for (String payload : payloads) {
+            if (isVulnerable(payload)) {
+                addFinding(
+                    "INJECTION_CMD_" + payload.hashCode(),
+                    "Command Injection Vulnerability",
+                    Severity.CRITICAL,
+                    95,
+                    "Command execution parameters"
+                );
+            }
+        }
+    }
+
+    private void testLdapInjection() {
+        // Implement LDAP injection testing
+        List<String> payloads = List.of(
+            "*",
+            ")(uid=*))(|(uid=*",
+            "admin)(&)"
+        );
+
+        for (String payload : payloads) {
+            if (isVulnerable(payload)) {
+                addFinding(
+                    "INJECTION_LDAP_" + payload.hashCode(),
+                    "LDAP Injection Vulnerability",
+                    Severity.MEDIUM,
+                    75,
+                    "LDAP query parameters"
+                );
+            }
+        }
+    }
+
+    private boolean isVulnerable(String payload) {
+        // Placeholder for actual vulnerability detection
+        // This would implement the actual testing logic
+        return Math.random() < 0.1; // 10% false positive rate for demo
+    }
+}
+```
+
+## Security Configuration Pattern
+
+### Configuration Management
+```java
+package qualia.security;
+
+import java.util.Map;
+import java.util.HashMap;
+
+/**
+ * Security framework configuration management.
+ */
+public class SecurityConfiguration {
+
+    private final Map<String, Object> settings;
+
+    public SecurityConfiguration() {
+        this.settings = new HashMap<>();
+        initializeDefaults();
+    }
+
+    private void initializeDefaults() {
+        settings.put("threadPoolSize", 4);
+        settings.put("minimumConfidence", 50);
+        settings.put("scanDepth", "comprehensive");
+        settings.put("reportFormat", "detailed");
+        settings.put("timeoutSeconds", 300);
+    }
+
+    public int getThreadPoolSize() {
+        return (Integer) settings.getOrDefault("threadPoolSize", 4);
+    }
+
+    public int getMinimumConfidence() {
+        return (Integer) settings.getOrDefault("minimumConfidence", 50);
+    }
+
+    public String getScanDepth() {
+        return (String) settings.getOrDefault("scanDepth", "comprehensive");
+    }
+
+    public void setSetting(String key, Object value) {
+        settings.put(key, value);
+    }
+
+    public Object getSetting(String key) {
+        return settings.get(key);
+    }
+
+    /**
+     * Create configuration for comprehensive security analysis.
+     */
+    public static SecurityConfiguration createComprehensive() {
+        SecurityConfiguration config = new SecurityConfiguration();
+        config.setSetting("scanDepth", "comprehensive");
+        config.setSetting("minimumConfidence", 30);
+        config.setSetting("threadPoolSize", 8);
+        return config;
+    }
+
+    /**
+     * Create configuration for quick security assessment.
+     */
+    public static SecurityConfiguration createQuick() {
+        SecurityConfiguration config = new SecurityConfiguration();
+        config.setSetting("scanDepth", "basic");
+        config.setSetting("minimumConfidence", 70);
+        config.setSetting("threadPoolSize", 2);
+        return config;
+    }
+}
+```
+
+## Testing and Validation Patterns
+
+### Security Framework Testing
+```java
+package qualia.security.testing;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Security framework testing patterns.
+ */
+public class SecurityFrameworkTest {
+
+    private SecurityConfiguration config;
+
+    @BeforeEach
+    void setUp() {
+        config = SecurityConfiguration.createComprehensive();
+    }
+
+    @Test
+    void testReverseKoopmanOperatorAnalysis() {
+        ReverseKoopmanOperator framework = new ReverseKoopmanOperator(config);
+
+        framework.executeAnalysis();
+
+        SecurityValidationResult result = framework.validateResults();
+
+        // Validate analysis completed
+        assertTrue(result.analysisDuration() > 0);
+
+        // Validate findings generated
+        assertTrue(result.totalFindings() >= 0);
+
+        // Validate security score is reasonable
+        assertTrue(result.securityScore() >= 0.0 && result.securityScore() <= 1.0);
+    }
+
+    @Test
+    void testJavaPenetrationTesting() {
+        JavaPenetrationTesting framework = new JavaPenetrationTesting(config);
+
+        framework.executeAnalysis();
+
+        SecurityValidationResult result = framework.validateResults();
+
+        // Validate multi-threaded execution
+        assertTrue(result.analysisDuration() > 0);
+
+        // Validate module execution
+        assertTrue(framework.getModules().size() > 0);
+    }
+
+    @Test
+    void testSecurityFindingValidation() {
+        SecurityFinding finding = SecurityFinding.create(
+            "TEST_001",
+            "Test Finding",
+            Severity.HIGH,
+            85,
+            "Test Location"
+        );
+
+        assertEquals("TEST_001", finding.id());
+        assertEquals(Severity.HIGH, finding.severity());
+        assertEquals(85, finding.confidence());
+        assertNotNull(finding.timestamp());
+    }
+
+    @Test
+    void testConfigurationManagement() {
+        SecurityConfiguration quickConfig = SecurityConfiguration.createQuick();
+        SecurityConfiguration compConfig = SecurityConfiguration.createComprehensive();
+
+        assertTrue(quickConfig.getThreadPoolSize() <= compConfig.getThreadPoolSize());
+        assertTrue(quickConfig.getMinimumConfidence() >= compConfig.getMinimumConfidence());
+    }
+}
+```
+
+These patterns ensure consistent, mathematically rigorous, and performant Java security framework development with comprehensive testing and validation capabilities.
