@@ -51,6 +51,19 @@
             <version>${jackson.version}</version>
         </dependency>
 
+        <!-- JavaFX for visualization -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>17.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>17.0.2</version>
+        </dependency>
+
         <!-- SLF4J Logging API -->
         <dependency>
             <groupId>org.slf4j</groupId>
