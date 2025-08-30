@@ -1,0 +1,483 @@
+---
+globs: *.py
+description: Price class optimization for CloudFront distributions in scientific computing
+---
+
+# 💰 CloudFront Price Class Optimization
+
+## Cost Optimization Strategy
+
+### Price Class Options and Use Cases
+
+#### PriceClass_All - Global Distribution
+**Cost**: 1.0x baseline ($185/month for 1M requests)
+**Performance**: 100% (global edge locations)
+**Security**: 100% (maximum distribution)
+**Best For**: Worldwide post-quantum cryptographic access
+
+**Use Cases:**
+- Global Rainbow cryptographic API access
+- International research collaboration platforms
+- Worldwide scientific data distribution
+- Multi-region high availability requirements
+
+#### PriceClass_100 - Academic Distribution
+**Cost**: 0.6x baseline ($111/month - 40% savings)
+**Performance**: 85% (continental optimization)
+**Security**: 90% (continental compliance)
+**Best For**: Academic manuscript sharing and European collaboration
+
+**Use Cases:**
+- European academic research networks
+- International scientific publication distribution
+- Cost-effective academic conference platforms
+- Research collaboration tools
+
+#### PriceClass_200 - Regional Security
+**Cost**: 0.8x baseline ($148/month - 20% savings)
+**Performance**: 95% (regional optimization)
+**Security**: 95% (regional security controls)
+**Best For**: Sensitive cryptographic operations with Asian markets
+
+**Use Cases:**
+- Regional security services with Asian market access
+- Compliance-bound geographic restrictions
+- Multi-region cryptographic operations
+- Regional data sovereignty requirements
+
+#### PriceClass_None - Development/Testing
+**Cost**: 0.1x baseline ($18.50/month - 90% savings)
+**Performance**: 30% (single region limitation)
+**Security**: 50% (minimal distribution controls)
+**Best For**: Development, testing, and local deployments
+
+**Use Cases:**
+- Development and staging environments
+- Local testing of cryptographic services
+- Proof-of-concept deployments
+- Cost-sensitive pilot programs
+
+## Cost-Benefit Analysis Framework
+
+### Cost Estimation Formula
+```python
+def calculate_monthly_cost(requests_per_month: int,
+                          data_transfer_gb: int,
+                          price_class: str) -> float:
+    """
+    Calculate estimated monthly CloudFront costs.
+
+    Parameters:
+    -----------
+    requests_per_month : int
+        Expected monthly request volume
+    data_transfer_gb : int
+        Expected monthly data transfer in GB
+    price_class : str
+        CloudFront price class
+
+    Returns:
+    --------
+    float: Estimated monthly cost in USD
+    """
+    # Base pricing (approximate AWS rates)
+    cost_per_million_requests = 0.40  # $0.40 per million requests
+    cost_per_gb = 0.085               # $0.085 per GB data transfer
+
+    base_cost = (requests_per_month * cost_per_million_requests / 1000000) + \
+                (data_transfer_gb * cost_per_gb)
+
+    # Apply price class multipliers
+    price_multipliers = {
+        "PriceClass_All": 1.0,   # Global distribution
+        "PriceClass_200": 0.8,   # Regional with Asia
+        "PriceClass_100": 0.6,   # Europe-focused
+        "PriceClass_None": 0.1    # US-only
+    }
+
+    return base_cost * price_multipliers.get(price_class, 1.0)
+```
+
+### Example Cost Analysis (1M requests/month, 100GB data)
+```
+PriceClass_All:   $185.00/month (global access, maximum performance)
+PriceClass_200:   $148.00/month (20% savings, regional security)
+PriceClass_100:   $111.00/month (40% savings, academic focus)
+PriceClass_None:  $18.50/month (90% savings, development)
+```
+
+## Cryptographic Service Optimization
+
+### Global Cryptographic Access Strategy
+```python
+# Optimal configuration for worldwide crypto access
+global_crypto_config = {
+    "price_class": "PriceClass_All",
+    "regions": ["us-east-1", "eu-west-1", "ap-southeast-1", "sa-east-1"],
+    "use_case": "Post-quantum cryptographic services",
+    "ipv6_enabled": True,
+    "origin_shield": "us-east-1",
+    "waf_enabled": True,
+    "compression_enabled": True,
+    "real_time_logs": True,
+    "estimated_cost": 185.00,
+    "performance_score": 1.0,
+    "security_score": 1.0
+}
+```
+
+### Academic Research Distribution Strategy
+```python
+# Cost-effective configuration for research distribution
+academic_config = {
+    "price_class": "PriceClass_100",
+    "regions": ["us-east-1", "eu-west-1", "eu-central-1"],
+    "use_case": "Academic manuscript sharing",
+    "long_ttl_enabled": True,
+    "compression_enabled": True,
+    "access_logging": True,
+    "estimated_cost": 111.00,
+    "performance_score": 0.85,
+    "security_score": 0.9
+}
+```
+
+### Regional Security Services Strategy
+```python
+# Security-focused configuration for sensitive operations
+regional_config = {
+    "price_class": "PriceClass_200",
+    "regions": ["us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1"],
+    "use_case": "Regional sensitive cryptographic operations",
+    "geo_restrictions": "compliance-required",
+    "waf_integration": True,
+    "custom_ssl_certificates": True,
+    "estimated_cost": 148.00,
+    "performance_score": 0.95,
+    "security_score": 0.95
+}
+```
+
+### Development Testing Strategy
+```python
+# Cost-minimized configuration for development
+development_config = {
+    "price_class": "PriceClass_None",
+    "regions": ["us-east-1"],
+    "use_case": "Development and testing environment",
+    "short_ttl_enabled": True,
+    "minimal_features": True,
+    "estimated_cost": 18.50,
+    "performance_score": 0.3,
+    "security_score": 0.5
+}
+```
+
+## CLI Commands for Price Optimization
+
+### Cost Analysis Commands
+```bash
+# Analyze optimal price class for global crypto access
+python3 cloudfront_reverse_proxy.py analyze-price \
+  --use-case global_cryptographic_access \
+  --requests 1000000 \
+  --data-transfer 100
+
+# Analyze for academic research distribution
+python3 cloudfront_reverse_proxy.py analyze-price \
+  --use-case academic_research_distribution \
+  --requests 500000 \
+  --data-transfer 50
+
+# Analyze for regional security services
+python3 cloudfront_reverse_proxy.py analyze-price \
+  --use-case regional_security_services \
+  --requests 750000 \
+  --data-transfer 75
+
+# Analyze for development testing
+python3 cloudfront_reverse_proxy.py analyze-price \
+  --use-case development_testing \
+  --requests 100000 \
+  --data-transfer 10
+```
+
+### Optimized Distribution Creation
+```bash
+# Create global cryptographic distribution
+python3 cloudfront_reverse_proxy.py cost-optimized-crypto \
+  --origin-domain crypto-api.example.com \
+  --use-case global_cryptographic_access \
+  --requests 1000000 \
+  --data-transfer 100 \
+  --kinesis-stream-arn arn:aws:kinesis:us-east-1:123456789012:stream/crypto-logs
+
+# Create academic research distribution
+python3 cloudfront_reverse_proxy.py cost-optimized-crypto \
+  --origin-domain research.example.com \
+  --use-case academic_research_distribution \
+  --requests 500000 \
+  --data-transfer 50
+
+# Create regional security distribution
+python3 cloudfront_reverse_proxy.py cost-optimized-crypto \
+  --origin-domain secure-api.example.com \
+  --use-case regional_security_services \
+  --requests 750000 \
+  --data-transfer 75
+```
+
+### Comparative Analysis
+```bash
+# Compare all price class options
+python3 cloudfront_reverse_proxy.py compare-price-classes \
+  --origin-domain crypto-api.example.com \
+  --requests 1000000 \
+  --data-transfer 100
+```
+
+## Performance vs Cost Trade-offs
+
+### Performance Impact by Price Class
+```
+PriceClass_All:   100% performance (global edge locations)
+PriceClass_200:   95% performance (regional optimization)
+PriceClass_100:   85% performance (continental optimization)
+PriceClass_None:  30% performance (single region limitation)
+```
+
+### Security Impact by Price Class
+```
+PriceClass_All:   100% security (maximum distribution)
+PriceClass_200:   95% security (regional security controls)
+PriceClass_100:   90% security (continental compliance)
+PriceClass_None:  50% security (minimal distribution controls)
+```
+
+### Cost Savings by Price Class
+```
+PriceClass_All:   0% savings (baseline)
+PriceClass_200:   20% savings (regional optimization)
+PriceClass_100:   40% savings (continental optimization)
+PriceClass_None:  90% savings (single region)
+```
+
+## Rainbow Cryptography-Specific Optimizations
+
+### Cache Behavior Configuration
+```yaml
+# Never cache cryptographic operations
+/api/crypto/generate-key:
+  ttl: 0
+  cachePolicy: Crypto-NoCache
+  originRequestPolicy: Crypto-AllHeaders
+
+# Short cache for signature verification
+/api/crypto/verify:
+  ttl: 300  # 5 minutes
+  cachePolicy: Crypto-ShortCache
+  originRequestPolicy: Crypto-SignatureHeaders
+
+# Long cache for public keys
+/api/crypto/public-key/*:
+  ttl: 3600  # 1 hour
+  cachePolicy: Crypto-LongCache
+  originRequestPolicy: Crypto-PublicKeyHeaders
+
+# Medium cache for research manuscripts
+/manuscripts/*:
+  ttl: 86400  # 24 hours
+  cachePolicy: Research-Manuscript
+  originRequestPolicy: Research-Headers
+```
+
+### Geographic Distribution Strategy
+```python
+def select_optimal_price_class(use_case: str, expected_load: Dict[str, int]) -> Dict[str, Any]:
+    """
+    Automatically select optimal price class based on use case and load.
+
+    Parameters:
+    -----------
+    use_case : str
+        Type of cryptographic service
+    expected_load : Dict[str, int]
+        Expected traffic parameters
+
+    Returns:
+    --------
+    Dict[str, Any]: Optimal configuration
+    """
+
+    if use_case == "global_cryptographic_access":
+        return {
+            "price_class": "PriceClass_All",
+            "regions": ["us-east-1", "eu-west-1", "ap-southeast-1", "sa-east-1"],
+            "cost_multiplier": 1.0,
+            "performance_score": 1.0,
+            "security_score": 1.0
+        }
+    elif use_case == "academic_research_distribution":
+        return {
+            "price_class": "PriceClass_100",
+            "regions": ["us-east-1", "eu-west-1", "eu-central-1"],
+            "cost_multiplier": 0.6,
+            "performance_score": 0.85,
+            "security_score": 0.9
+        }
+    elif use_case == "regional_security_services":
+        return {
+            "price_class": "PriceClass_200",
+            "regions": ["us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1"],
+            "cost_multiplier": 0.8,
+            "performance_score": 0.95,
+            "security_score": 0.95
+        }
+    else:  # development_testing
+        return {
+            "price_class": "PriceClass_None",
+            "regions": ["us-east-1"],
+            "cost_multiplier": 0.1,
+            "performance_score": 0.3,
+            "security_score": 0.5
+        }
+```
+
+## Migration Strategies
+
+### Gradual Migration from PriceClass_All
+1. **Phase 1**: Analyze current traffic patterns and geographic distribution
+2. **Phase 2**: Test PriceClass_200 for 30 days to monitor performance impact
+3. **Phase 3**: Evaluate cost savings and user experience
+4. **Phase 4**: Migrate to PriceClass_100 if academic-focused or PriceClass_200 if regional
+5. **Phase 5**: Full migration with rollback plan
+
+### Geographic Traffic Analysis
+```bash
+# Analyze current geographic distribution
+aws cloudfront get-distribution-config --id DISTRIBUTION_ID \
+  --query 'Distribution.DistributionConfig.PriceClass'
+
+# Monitor geographic performance metrics
+aws cloudwatch get-metric-statistics \
+  --namespace AWS/CloudFront \
+  --metric-name Requests \
+  --dimensions Name=DistributionId,Value=DISTRIBUTION_ID \
+  --start-time 2024-01-01T00:00:00Z \
+  --end-time 2024-01-31T23:59:59Z \
+  --period 86400 \
+  --statistics Sum
+```
+
+## Cost Monitoring and Optimization
+
+### Automated Cost Alerts
+```python
+def setup_cost_monitoring(distribution_id: str, budget_threshold: float) -> bool:
+    """
+    Setup automated cost monitoring and alerts.
+
+    Parameters:
+    -----------
+    distribution_id : str
+        CloudFront distribution ID
+    budget_threshold : float
+        Monthly budget threshold in USD
+
+    Returns:
+    --------
+    bool: Success status
+    """
+    # Configure AWS Budgets for CloudFront costs
+    budget_config = {
+        "BudgetName": f"CloudFront-{distribution_id}",
+        "BudgetLimit": {
+            "Amount": str(budget_threshold),
+            "Unit": "USD"
+        },
+        "CostFilters": {
+            "Service": ["Amazon CloudFront"]
+        },
+        "TimeUnit": "MONTHLY"
+    }
+
+    # Create CloudWatch alarms for cost thresholds
+    alarms = [
+        {
+            "AlarmName": f"CloudFront-HighCost-{distribution_id}",
+            "MetricName": "EstimatedCharges",
+            "Namespace": "AWS/Billing",
+            "Statistic": "Maximum",
+            "ComparisonOperator": "GreaterThanThreshold",
+            "Threshold": budget_threshold * 0.8,  # Alert at 80% of budget
+            "EvaluationPeriods": 1
+        }
+    ]
+
+    return self._create_aws_budget_and_alarms(budget_config, alarms)
+```
+
+### Performance Tracking
+```python
+def monitor_price_class_performance(distribution_id: str) -> Dict[str, Any]:
+    """
+    Monitor performance metrics for price class optimization.
+
+    Parameters:
+    -----------
+    distribution_id : str
+        CloudFront distribution ID
+
+    Returns:
+    --------
+    Dict[str, Any]: Performance metrics and optimization recommendations
+    """
+    metrics = {
+        "cache_hit_rate": self._get_cache_hit_rate(distribution_id),
+        "origin_latency": self._get_origin_latency(distribution_id),
+        "error_rate": self._get_error_rate(distribution_id),
+        "data_transfer_cost": self._get_data_transfer_cost(distribution_id),
+        "request_cost": self._get_request_cost(distribution_id)
+    }
+
+    # Calculate cost-benefit ratio
+    total_cost = metrics["data_transfer_cost"] + metrics["request_cost"]
+    performance_score = (metrics["cache_hit_rate"] * 0.4 +
+                        (1 - metrics["error_rate"]) * 0.4 +
+                        (1 - metrics["origin_latency"]/1000) * 0.2)
+
+    cost_benefit_ratio = performance_score / total_cost if total_cost > 0 else float('inf')
+
+    return {
+        "metrics": metrics,
+        "performance_score": performance_score,
+        "total_cost": total_cost,
+        "cost_benefit_ratio": cost_benefit_ratio,
+        "recommendations": self._generate_optimization_recommendations(metrics)
+    }
+```
+
+## Best Practices for Cost Optimization
+
+### Selection Criteria
+- **Global Services**: Use PriceClass_All when worldwide access is critical
+- **Research Distribution**: Use PriceClass_100 for cost-effective academic sharing
+- **Regional Security**: Use PriceClass_200 for compliance-bound geographic restrictions
+- **Development**: Use PriceClass_None to minimize costs during testing
+
+### Ongoing Optimization
+- Monitor geographic traffic patterns quarterly
+- Adjust price classes based on usage patterns
+- Implement automated cost alerts
+- Regularly review cache hit ratios and performance metrics
+- Consider reserved capacity for predictable workloads
+
+### Migration Checklist
+- [ ] Analyze current traffic patterns and geographic distribution
+- [ ] Estimate cost savings for different price classes
+- [ ] Plan migration timeline with rollback procedures
+- [ ] Setup monitoring and alerting for new configuration
+- [ ] Test performance impact before full migration
+- [ ] Document migration process and results
+
+This price class optimization framework provides intelligent cost management for CloudFront distributions while maintaining the performance and security required for scientific computing and cryptographic services.

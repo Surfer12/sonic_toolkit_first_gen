@@ -1,0 +1,485 @@
+---
+globs: *.py
+description: CloudFront reverse proxy integration and deployment for scientific computing services
+---
+
+# ☁️ CloudFront Integration and Deployment
+
+## Core Architecture
+
+### CloudFront Distribution Types
+**Reverse Proxy Configuration**: CloudFront as a reverse proxy server for web applications and APIs
+**Content Delivery**: Global CDN for static and dynamic content distribution
+**Security Integration**: WAF, SSL/TLS, and custom security headers
+**Real-time Analytics**: Kinesis integration for comprehensive logging and monitoring
+
+### Implementation Files
+- **[cloudfront_reverse_proxy.py](mdc:cloudfront_reverse_proxy.py)** - Main CloudFront management script
+- **[demo_cloudfront_proxy.py](mdc:demo_cloudfront_proxy.py)** - Interactive demonstration
+- **[CLOUDFRONT_REVERSE_PROXY_README.md](mdc:CLOUDFRONT_REVERSE_PROXY_README.md)** - Complete documentation
+
+## Distribution Configuration
+
+### Basic Reverse Proxy Setup
+```python
+class CloudFrontReverseProxy:
+    """CloudFront reverse proxy setup and management."""
+
+    def create_distribution(self,
+                          origin_domain: str,
+                          origin_path: str = "/",
+                          origin_protocol: str = "https-only",
+                          price_class: str = "PriceClass_All",
+                          comment: str = "Scientific Computing Reverse Proxy") -> Dict[str, Any]:
+        """
+        Create a CloudFront distribution for reverse proxy functionality.
+
+        Parameters:
+        -----------
+        origin_domain : str
+            Origin server domain
+        origin_path : str
+            Path on origin server (default: "/")
+        origin_protocol : str
+            Protocol policy: "http-only", "https-only", "match-viewer"
+        price_class : str
+            Geographic distribution: PriceClass_All, PriceClass_100, etc.
+        comment : str
+            Distribution description
+
+        Returns:
+        --------
+        Dict[str, Any]: Distribution configuration
+        """
+```
+
+### Advanced Configuration Options
+```python
+# Custom SSL certificate
+ssl_config = {
+    "certificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012",
+    "minimumProtocolVersion": "TLSv1.2_2021",
+    "sslSupportMethod": "sni-only"
+}
+
+# Security headers
+security_headers = {
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
+    "content-security-policy": "default-src 'self'",
+    "x-frame-options": "DENY",
+    "x-content-type-options": "nosniff"
+}
+
+# Cache behaviors
+cache_behaviors = [{
+    "pathPattern": "/api/*",
+    "targetOriginId": "api-origin",
+    "viewerProtocolPolicy": "redirect-to-https",
+    "allowedMethods": ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"],
+    "compress": True,
+    "forwardedValues": {
+        "queryString": True,
+        "cookies": {"forward": "all"},
+        "headers": ["Authorization", "Content-Type"]
+    }
+}]
+```
+
+## Price Class Optimization
+
+### Cost-Benefit Analysis
+```python
+PRICE_CLASS_OPTIMIZATION = {
+    "global_cryptographic_access": {
+        "price_class": "PriceClass_All",
+        "regions": ["us-east-1", "eu-west-1", "ap-southeast-1", "sa-east-1"],
+        "use_case": "Post-quantum cryptographic services with worldwide access",
+        "cost_multiplier": 1.0,
+        "performance_score": 1.0,
+        "security_score": 1.0
+    },
+    "academic_research_distribution": {
+        "price_class": "PriceClass_100",
+        "regions": ["us-east-1", "eu-west-1", "eu-central-1"],
+        "use_case": "Academic manuscript sharing and research collaboration",
+        "cost_multiplier": 0.6,
+        "performance_score": 0.85,
+        "security_score": 0.9
+    }
+}
+```
+
+### Cost Estimation Formula
+```python
+def calculate_monthly_cost(requests_per_month: int, data_transfer_gb: int, price_class: str) -> float:
+    """
+    Calculate estimated monthly CloudFront costs.
+
+    Parameters:
+    -----------
+    requests_per_month : int
+        Expected monthly request volume
+    data_transfer_gb : int
+        Expected monthly data transfer in GB
+    price_class : str
+        CloudFront price class
+
+    Returns:
+    --------
+    float: Estimated monthly cost in USD
+    """
+    # Base pricing (approximate)
+    cost_per_million_requests = 0.40
+    cost_per_gb = 0.085
+
+    base_cost = (requests_per_month * cost_per_million_requests / 1000000) + \
+                (data_transfer_gb * cost_per_gb)
+
+    # Apply price class multiplier
+    price_multipliers = {
+        "PriceClass_All": 1.0,
+        "PriceClass_200": 0.8,
+        "PriceClass_100": 0.6,
+        "PriceClass_None": 0.1
+    }
+
+    return base_cost * price_multipliers.get(price_class, 1.0)
+```
+
+## Real-Time Logging and Analytics
+
+### Kinesis Integration
+```python
+def setup_rainbow_crypto_logging(self,
+                               distribution_id: str,
+                               kinesis_stream_arn: str,
+                               sampling_rate: float = 1.0) -> bool:
+    """
+    Configure real-time logging for Rainbow cryptographic operations.
+
+    Parameters:
+    -----------
+    distribution_id : str
+        CloudFront distribution ID
+    kinesis_stream_arn : str
+        ARN of Kinesis stream for real-time logs
+    sampling_rate : float
+        Log sampling rate (0.0 to 1.0)
+
+    Returns:
+    --------
+    bool: Success status
+    """
+    log_config = {
+        "enabled": True,
+        "includeCookies": False,
+        "bucket": "",  # Not needed for Kinesis
+        "prefix": "",  # Not needed for Kinesis
+        "kinesisStreamConfig": {
+            "roleArn": self._get_kinesis_role_arn(),
+            "streamArn": kinesis_stream_arn
+        },
+        "samplingRate": sampling_rate
+    }
+
+    # Apply logging configuration
+    return self._update_distribution_config(distribution_id, {"logging": log_config})
+```
+
+### Custom Log Fields for Cryptography
+```python
+RAINBOW_CRYPTO_LOG_FIELDS = [
+    "timestamp",           # Request timestamp
+    "client_ip",           # Client IP address
+    "request_id",          # CloudFront request ID
+    "method",              # HTTP method
+    "uri",                 # Request URI
+    "status",              # HTTP status code
+    "bytes",               # Response size
+    "referer",             # HTTP referer
+    "user_agent",          # User agent string
+    # Rainbow-specific fields
+    "rainbow-signature-id",    # Unique signature identifier
+    "quantum-resistance-level", # Security level (ULTRA_HIGH, etc.)
+    "exceptional-prime-used",   # Prime pair used (29-31, 179-181)
+    "depth-amplification-factor", # Security enhancement level
+    "signature-verification-time", # Time to verify signature
+    "cryptographic-operation", # Operation type (sign, verify, keygen)
+    "security-validation-status" # Success/failure status
+]
+```
+
+## CLI Commands and Automation
+
+### Distribution Management
+```bash
+# Create a new reverse proxy distribution
+python3 cloudfront_reverse_proxy.py create \
+  --origin-domain myapp.example.com \
+  --origin-path /api \
+  --price-class PriceClass_All
+
+# Create with custom settings
+python3 cloudfront_reverse_proxy.py create \
+  --origin-domain crypto-api.example.com \
+  --origin-path /api/crypto \
+  --price-class PriceClass_All \
+  --cname crypto.example.com
+
+# Update existing distribution
+python3 cloudfront_reverse_proxy.py update \
+  --id E1A2B3C4D5E6F7 \
+  --origin-domain new-api.example.com
+
+# Check distribution status
+python3 cloudfront_reverse_proxy.py status \
+  --id E1A2B3C4D5E6F7
+
+# Create cache invalidation
+python3 cloudfront_reverse_proxy.py invalidate \
+  --id E1A2B3C4D5E6F7 \
+  --paths /api/crypto/* /api/keys/*
+```
+
+### Price Class Optimization
+```bash
+# Analyze price class optimization
+python3 cloudfront_reverse_proxy.py analyze-price \
+  --use-case global_cryptographic_access \
+  --requests 1000000 \
+  --data-transfer 100
+
+# Create cost-optimized distribution
+python3 cloudfront_reverse_proxy.py cost-optimized-crypto \
+  --origin-domain crypto-api.example.com \
+  --use-case global_cryptographic_access \
+  --requests 1000000 \
+  --data-transfer 100 \
+  --kinesis-stream-arn arn:aws:kinesis:us-east-1:123456789012:stream/crypto-logs
+
+# Compare all price class options
+python3 cloudfront_reverse_proxy.py compare-price-classes \
+  --origin-domain crypto-api.example.com \
+  --requests 1000000 \
+  --data-transfer 100
+```
+
+### Real-Time Logging Setup
+```bash
+# Setup Rainbow crypto logging
+python3 cloudfront_reverse_proxy.py setup-logging \
+  --id E1A2B3C4D5E6F7 \
+  --kinesis-stream-arn arn:aws:kinesis:us-east-1:123456789012:stream/crypto-logs \
+  --sampling-rate 1.0
+
+# Monitor cryptographic operations
+python3 cloudfront_reverse_proxy.py monitor-crypto \
+  --id E1A2B3C4D5E6F7 \
+  --duration 5
+```
+
+## Security Integration
+
+### WAF Configuration
+```python
+def configure_waf_for_crypto(self, distribution_id: str, waf_arn: str) -> bool:
+    """Configure WAF for cryptographic service protection."""
+
+    waf_config = {
+        "enabled": True,
+        "webAclArn": waf_arn,
+        "overrideAction": {"type": "NONE"}
+    }
+
+    return self._update_distribution_config(distribution_id, {"waf": waf_config})
+```
+
+### SSL/TLS Setup
+```python
+def setup_ssl_for_crypto(self, distribution_id: str, certificate_arn: str) -> bool:
+    """Configure SSL/TLS for secure cryptographic communications."""
+
+    ssl_config = {
+        "certificateArn": certificate_arn,
+        "sslSupportMethod": "sni-only",
+        "minimumProtocolVersion": "TLSv1.2_2021"
+    }
+
+    return self._update_distribution_config(distribution_id, {"ssl": ssl_config})
+```
+
+## Performance Optimization
+
+### Cache Configuration for Cryptography
+```python
+CRYPTO_CACHE_BEHAVIORS = {
+    # Never cache cryptographic operations
+    "/api/crypto/generate-key": {
+        "ttl": 0,
+        "cachePolicy": "Crypto-NoCache",
+        "originRequestPolicy": "Crypto-AllHeaders"
+    },
+
+    # Short cache for signature verification results
+    "/api/crypto/verify": {
+        "ttl": 300,  # 5 minutes
+        "cachePolicy": "Crypto-ShortCache",
+        "originRequestPolicy": "Crypto-SignatureHeaders"
+    },
+
+    # Long cache for public keys
+    "/api/crypto/public-key/*": {
+        "ttl": 3600,  # 1 hour
+        "cachePolicy": "Crypto-LongCache",
+        "originRequestPolicy": "Crypto-PublicKeyHeaders"
+    }
+}
+```
+
+### Origin Shield Configuration
+```python
+def configure_origin_shield(self, distribution_id: str, region: str = "us-east-1") -> bool:
+    """Configure Origin Shield for improved cache hit ratios."""
+
+    shield_config = {
+        "enabled": True,
+        "originShieldRegion": region
+    }
+
+    return self._update_distribution_config(distribution_id, {"originShield": shield_config})
+```
+
+## Monitoring and Alerting
+
+### CloudWatch Integration
+```python
+def setup_cloudwatch_monitoring(self, distribution_id: str) -> bool:
+    """Setup CloudWatch monitoring for CloudFront distribution."""
+
+    metrics = [
+        "Requests", "BytesDownloaded", "BytesUploaded",
+        "TotalErrorRate", "4xxErrorRate", "5xxErrorRate",
+        "CacheHitRate", "OriginLatency"
+    ]
+
+    alarms = {
+        "HighErrorRate": {
+            "metric": "TotalErrorRate",
+            "threshold": 5.0,
+            "comparisonOperator": "GreaterThanThreshold"
+        },
+        "LowCacheHitRate": {
+            "metric": "CacheHitRate",
+            "threshold": 0.7,
+            "comparisonOperator": "LessThanThreshold"
+        }
+    }
+
+    return self._setup_cloudwatch_alarms(distribution_id, alarms)
+```
+
+### Performance Dashboard
+```python
+def create_crypto_performance_dashboard(self, distribution_id: str) -> Dict[str, Any]:
+    """Create a CloudWatch dashboard for cryptographic service monitoring."""
+
+    dashboard_config = {
+        "widgets": [
+            {
+                "type": "metric",
+                "properties": {
+                    "metrics": [["AWS/CloudFront", "Requests", "DistributionId", distribution_id]],
+                    "title": "Cryptographic API Requests",
+                    "stat": "Sum"
+                }
+            },
+            {
+                "type": "metric",
+                "properties": {
+                    "metrics": [["AWS/CloudFront", "TotalErrorRate", "DistributionId", distribution_id]],
+                    "title": "Error Rate",
+                    "stat": "Average"
+                }
+            }
+        ]
+    }
+
+    return self._create_cloudwatch_dashboard(distribution_id, dashboard_config)
+```
+
+## Deployment Best Practices
+
+### Staging Environment Setup
+```python
+def create_staging_distribution(self, production_config: Dict[str, Any]) -> Dict[str, Any]:
+    """Create a staging distribution for testing before production deployment."""
+
+    staging_config = production_config.copy()
+    staging_config["price_class"] = "PriceClass_None"  # Minimize staging costs
+    staging_config["comment"] = f"STAGING: {staging_config['comment']}"
+    staging_config["cname"] = f"staging.{staging_config['cname']}"
+
+    return self.create_distribution(**staging_config)
+```
+
+### Blue-Green Deployment
+```python
+def blue_green_deployment(self,
+                        current_distribution_id: str,
+                        new_config: Dict[str, Any],
+                        traffic_split: float = 0.1) -> bool:
+    """Perform blue-green deployment with gradual traffic shifting."""
+
+    # Create new distribution (green)
+    green_config = self.create_distribution(**new_config)
+    if not green_config:
+        return False
+
+    green_distribution_id = green_config["Distribution"]["Id"]
+
+    # Gradually shift traffic from blue to green
+    self._update_route53_weights(current_distribution_id, green_distribution_id, traffic_split)
+
+    # Monitor for errors during transition
+    if self._monitor_deployment_health(green_distribution_id):
+        # Complete migration
+        self._update_route53_weights(current_distribution_id, green_distribution_id, 1.0)
+        # Disable old distribution
+        self._disable_distribution(current_distribution_id)
+        return True
+    else:
+        # Rollback to blue
+        self._update_route53_weights(current_distribution_id, green_distribution_id, 0.0)
+        self._disable_distribution(green_distribution_id)
+        return False
+```
+
+## Troubleshooting Guide
+
+### Common Issues and Solutions
+```python
+def diagnose_distribution_issues(self, distribution_id: str) -> Dict[str, Any]:
+    """Diagnose common CloudFront distribution issues."""
+
+    diagnostics = {
+        "distribution_status": self.get_distribution_status(distribution_id),
+        "origin_health": self._check_origin_connectivity(distribution_id),
+        "ssl_status": self._verify_ssl_configuration(distribution_id),
+        "cache_status": self._analyze_cache_hit_ratio(distribution_id),
+        "error_analysis": self._analyze_recent_errors(distribution_id)
+    }
+
+    return diagnostics
+```
+
+### Performance Optimization Checklist
+- [ ] Enable compression for text-based responses
+- [ ] Configure appropriate TTL values for different content types
+- [ ] Use Origin Shield for improved cache hit ratios
+- [ ] Enable IPv6 for global compatibility
+- [ ] Implement custom error pages
+- [ ] Use multiple origins for high availability
+- [ ] Configure field-level encryption for sensitive data
+- [ ] Enable real-time logs for monitoring
+
+This CloudFront integration framework provides comprehensive deployment, monitoring, and optimization capabilities specifically tailored for scientific computing and cryptographic services.

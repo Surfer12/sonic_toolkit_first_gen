@@ -1,0 +1,691 @@
+---
+globs: Corpus/qualia/**/*.java,Corpus/qualia/*.py,qualia_integration_pipeline.py
+description: "Security assessment workflows and standards for qualia components"
+---
+
+# Security Assessment Workflows for Qualia Components
+
+## 🔒 **Security Assessment Framework Overview**
+
+The qualia security framework implements comprehensive security assessment workflows. The [qualia_integration_pipeline.py](mdc:qualia_integration_pipeline.py) includes built-in security assessment capabilities that validate security implementations across all components.
+
+## 🛡️ **Security Assessment Categories**
+
+### **1. Java Component Security Analysis**
+
+#### **Authentication & Authorization**
+```java
+// SecurityDashboard.java - Authentication validation
+public class SecurityDashboard {
+    private final AuthenticationManager authManager;
+    private final AuthorizationService authzService;
+
+    public SecurityDashboard() {
+        this.authManager = new AuthenticationManager();
+        this.authzService = new AuthorizationService();
+    }
+
+    public boolean authenticateUser(String username, String credentials) {
+        // Validate input parameters
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be null or empty");
+        }
+        if (credentials == null || credentials.length() < 8) {
+            throw new IllegalArgumentException("Credentials must be at least 8 characters");
+        }
+
+        // Authenticate user
+        User user = authManager.authenticate(username, credentials);
+        if (user == null) {
+            logSecurityEvent("FAILED_AUTHENTICATION", username);
+            return false;
+        }
+
+        // Check authorization
+        if (!authzService.hasPermission(user, "SECURITY_DASHBOARD_ACCESS")) {
+            logSecurityEvent("UNAUTHORIZED_ACCESS_ATTEMPT", username);
+            return false;
+        }
+
+        logSecurityEvent("SUCCESSFUL_AUTHENTICATION", username);
+        return true;
+    }
+
+    private void logSecurityEvent(String eventType, String username) {
+        SecurityEvent event = new SecurityEvent(
+            eventType,
+            username,
+            LocalDateTime.now(),
+            getClientIP()
+        );
+        securityLogger.log(event);
+    }
+}
+```
+
+#### **Input Validation & Sanitization**
+```java
+// JavaPenetrationTesting.java - Input validation
+public class JavaPenetrationTesting {
+    private static final Pattern SAFE_INPUT_PATTERN =
+        Pattern.compile("^[a-zA-Z0-9._@-]+$");
+
+    public SecurityResult performSecurityScan(String target, ScanConfig config) {
+        // Validate target input
+        if (!isValidTarget(target)) {
+            throw new SecurityException("Invalid target specified: " + target);
+        }
+
+        // Validate configuration
+        validateScanConfig(config);
+
+        // Sanitize inputs
+        String sanitizedTarget = sanitizeTarget(target);
+        ScanConfig sanitizedConfig = sanitizeConfig(config);
+
+        // Perform security scan with validated inputs
+        return executeSecurityScan(sanitizedTarget, sanitizedConfig);
+    }
+
+    private boolean isValidTarget(String target) {
+        return target != null &&
+               target.length() >= 3 &&
+               target.length() <= 253 &&
+               SAFE_INPUT_PATTERN.matcher(target).matches();
+    }
+
+    private String sanitizeTarget(String target) {
+        // Remove potentially dangerous characters
+        return target.replaceAll("[<>\"'&]", "");
+    }
+
+    private void validateScanConfig(ScanConfig config) {
+        if (config.getTimeout() < 1 || config.getTimeout() > 300) {
+            throw new IllegalArgumentException("Timeout must be between 1-300 seconds");
+        }
+        if (config.getPorts() == null || config.getPorts().isEmpty()) {
+            throw new IllegalArgumentException("At least one port must be specified");
+        }
+    }
+}
+```
+
+### **2. Python Component Security Analysis**
+
+#### **Secure Data Handling**
+```python
+# demo_visualizations.py - Secure data handling
+import hashlib
+import hmac
+import secrets
+from typing import Dict, Any, Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
+class SecureVisualizationHandler:
+    """Secure handling of visualization data."""
+
+    def __init__(self, secret_key: str):
+        self.secret_key = secret_key.encode()
+        self.logger = logging.getLogger(f"{__name__}.SecureVisualizationHandler")
+
+    def validate_data_integrity(self, data: Dict[str, Any], signature: str) -> bool:
+        """Validate data integrity using HMAC."""
+        try:
+            data_str = json.dumps(data, sort_keys=True)
+            expected_signature = hmac.new(
+                self.secret_key,
+                data_str.encode(),
+                hashlib.sha256
+            ).hexdigest()
+
+            is_valid = hmac.compare_digest(expected_signature, signature)
+
+            if not is_valid:
+                self.logger.warning("Data integrity validation failed")
+                return False
+
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Data validation error: {e}")
+            return False
+
+    def sanitize_visualization_data(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Sanitize data for visualization."""
+        sanitized = {}
+
+        # Only allow safe keys
+        allowed_keys = {'threats', 'metrics', 'timestamps', 'severity'}
+
+        for key, value in raw_data.items():
+            if key in allowed_keys:
+                if isinstance(value, str):
+                    # Sanitize string values
+                    sanitized[key] = self._sanitize_string(value)
+                elif isinstance(value, (int, float)):
+                    # Validate numeric values
+                    sanitized[key] = self._validate_numeric(value)
+                elif isinstance(value, list):
+                    # Sanitize list values
+                    sanitized[key] = [self._sanitize_string(str(item)) for item in value]
+                else:
+                    # Skip unsafe data types
+                    self.logger.warning(f"Skipping unsafe data type for key: {key}")
+
+        return sanitized
+
+    def _sanitize_string(self, value: str) -> str:
+        """Sanitize string input."""
+        # Remove potentially dangerous characters
+        import re
+        return re.sub(r'[^\w\s\-_\.]', '', value)[:100]  # Limit length
+
+    def _validate_numeric(self, value: float) -> float:
+        """Validate numeric input."""
+        if not isinstance(value, (int, float)):
+            raise ValueError("Value must be numeric")
+
+        # Check for reasonable bounds
+        if abs(value) > 1e10:
+            raise ValueError("Numeric value out of reasonable bounds")
+
+        return float(value)
+
+    def create_secure_visualization(self, data: Dict[str, Any], signature: str) -> Optional[Dict[str, Any]]:
+        """Create visualization with security validation."""
+        try:
+            # Validate data integrity
+            if not self.validate_data_integrity(data, signature):
+                self.logger.error("Data integrity validation failed")
+                return None
+
+            # Sanitize data
+            sanitized_data = self.sanitize_visualization_data(data)
+
+            # Create visualization
+            visualization = self._generate_visualization(sanitized_data)
+
+            self.logger.info("Secure visualization created successfully")
+            return visualization
+
+        except Exception as e:
+            self.logger.error(f"Secure visualization creation failed: {e}")
+            return None
+
+    def _generate_visualization(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate the actual visualization (placeholder)."""
+        return {
+            'type': 'security_dashboard',
+            'data': data,
+            'timestamp': datetime.now().isoformat(),
+            'security_level': 'validated'
+        }
+```
+
+### **3. Infrastructure Security Assessment**
+
+#### **Docker Security Hardening**
+```dockerfile
+# Dockerfile - Security hardening
+FROM openjdk:17-jre-slim
+
+# Create non-root user
+RUN groupadd -r qualia && useradd -r -g qualia qualia
+
+# Install security updates
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+        curl \
+        ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set secure permissions
+RUN mkdir -p /app && chown -R qualia:qualia /app
+WORKDIR /app
+
+# Copy application with minimal permissions
+COPY --chown=qualia:qualia qualia.jar /app/
+COPY --chown=qualia:qualia config/ /app/config/
+
+# Switch to non-root user
+USER qualia
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Expose only necessary ports
+EXPOSE 8080
+
+# Use exec form for proper signal handling
+CMD ["java", "-jar", "qualia.jar"]
+```
+
+#### **Docker Compose Security**
+```yaml
+# docker-compose.yml - Security configuration
+version: '3.8'
+
+services:
+  qualia-security:
+    build: .
+    container_name: qualia-security
+    user: qualia
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+    volumes:
+      - ./reports:/app/reports:ro
+      - /dev/urandom:/dev/random:ro
+    environment:
+      - JAVA_OPTS=-Xmx512m -Djava.security.egd=file:/dev/./urandom
+      - SPRING_PROFILES_ACTIVE=production
+    networks:
+      - qualia-network
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  qualia-database:
+    image: postgres:15-alpine
+    container_name: qualia-database
+    environment:
+      POSTGRES_DB: qualia
+      POSTGRES_USER: qualia_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - qualia-network
+    restart: unless-stopped
+
+networks:
+  qualia-network:
+    driver: bridge
+    internal: true
+
+volumes:
+  postgres_data:
+    driver: local
+```
+
+## 🔍 **Automated Security Assessment Workflows**
+
+### **Security Scanning Pipeline**
+```python
+# security_assessment_pipeline.py
+import subprocess
+import json
+from pathlib import Path
+from typing import Dict, List, Any
+import logging
+
+logger = logging.getLogger(__name__)
+
+class SecurityAssessmentPipeline:
+    """Automated security assessment for qualia components."""
+
+    def __init__(self, qualia_path: str):
+        self.qualia_path = Path(qualia_path)
+        self.security_tools = {
+            'dependency_check': self._run_dependency_check,
+            'sast_scan': self._run_sast_scan,
+            'container_scan': self._run_container_scan,
+            'secrets_detection': self._run_secrets_detection
+        }
+
+    def run_comprehensive_security_assessment(self) -> Dict[str, Any]:
+        """Run comprehensive security assessment."""
+        logger.info("Starting comprehensive security assessment...")
+
+        assessment_results = {
+            'timestamp': datetime.now().isoformat(),
+            'component_assessments': {},
+            'overall_security_score': 0.0,
+            'critical_findings': [],
+            'recommendations': [],
+            'compliance_status': {}
+        }
+
+        # Assess Java components
+        java_assessment = self._assess_java_components()
+        assessment_results['component_assessments']['java'] = java_assessment
+
+        # Assess Python components
+        python_assessment = self._assess_python_components()
+        assessment_results['component_assessments']['python'] = python_assessment
+
+        # Assess infrastructure
+        infra_assessment = self._assess_infrastructure()
+        assessment_results['component_assessments']['infrastructure'] = infra_assessment
+
+        # Run automated security tools
+        tool_results = self._run_security_tools()
+        assessment_results['tool_results'] = tool_results
+
+        # Calculate overall score
+        assessment_results['overall_security_score'] = self._calculate_overall_security_score(
+            java_assessment, python_assessment, infra_assessment, tool_results
+        )
+
+        # Generate recommendations
+        assessment_results['recommendations'] = self._generate_security_recommendations(
+            java_assessment, python_assessment, infra_assessment, tool_results
+        )
+
+        # Assess compliance
+        assessment_results['compliance_status'] = self._assess_compliance()
+
+        logger.info(f"Security assessment completed with score: {assessment_results['overall_security_score']:.3f}")
+
+        return assessment_results
+
+    def _assess_java_components(self) -> Dict[str, Any]:
+        """Assess Java component security."""
+        java_files = list(self.qualia_path.glob('*.java'))
+
+        assessment = {
+            'files_analyzed': len(java_files),
+            'security_findings': [],
+            'vulnerabilities': [],
+            'recommendations': []
+        }
+
+        for java_file in java_files:
+            findings = self._analyze_java_security(java_file)
+            assessment['security_findings'].extend(findings)
+
+        return assessment
+
+    def _analyze_java_security(self, file_path: Path) -> List[Dict[str, Any]]:
+        """Analyze Java file for security issues."""
+        findings = []
+
+        try:
+            content = file_path.read_text(encoding='utf-8')
+
+            # Check for security patterns
+            security_patterns = {
+                'sql_injection': r'Statement|PreparedStatement.*\+',
+                'command_injection': r'Runtime\.exec.*\+',
+                'path_traversal': r'new File.*\+',
+                'xss_vulnerable': r'printWriter\.print.*request\.getParameter',
+                'weak_crypto': r'Des|MD5|SHA1',
+                'hardcoded_secrets': r'password\s*=\s*["\'][^"\']+["\']'
+            }
+
+            for vulnerability_type, pattern in security_patterns.items():
+                matches = re.findall(pattern, content, re.IGNORECASE)
+                if matches:
+                    findings.append({
+                        'file': str(file_path),
+                        'vulnerability_type': vulnerability_type,
+                        'severity': self._get_severity(vulnerability_type),
+                        'matches': len(matches),
+                        'line_numbers': self._find_line_numbers(content, pattern)
+                    })
+
+        except Exception as e:
+            logger.error(f"Error analyzing {file_path}: {e}")
+
+        return findings
+
+    def _assess_python_components(self) -> Dict[str, Any]:
+        """Assess Python component security."""
+        python_files = list(self.qualia_path.glob('*.py'))
+
+        assessment = {
+            'files_analyzed': len(python_files),
+            'security_findings': [],
+            'vulnerabilities': [],
+            'recommendations': []
+        }
+
+        for py_file in python_files:
+            findings = self._analyze_python_security(py_file)
+            assessment['security_findings'].extend(findings)
+
+        return assessment
+
+    def _analyze_python_security(self, file_path: Path) -> List[Dict[str, Any]]:
+        """Analyze Python file for security issues."""
+        findings = []
+
+        try:
+            content = file_path.read_text(encoding='utf-8')
+
+            # Check for security patterns
+            security_patterns = {
+                'command_injection': r'subprocess\.(call|run|Popen).*\s*\+',
+                'sql_injection': r'execute.*\+|cursor\.execute.*\+',
+                'path_traversal': r'open.*\+|Path.*\+',
+                'pickle_vulnerability': r'pickle\.(load|loads)',
+                'eval_usage': r'\beval\s*\(',
+                'hardcoded_secrets': r'password\s*=\s*["\'][^"\']+["\']|secret\s*=\s*["\'][^"\']+["\']'
+            }
+
+            for vulnerability_type, pattern in security_patterns.items():
+                matches = re.findall(pattern, content, re.IGNORECASE)
+                if matches:
+                    findings.append({
+                        'file': str(file_path),
+                        'vulnerability_type': vulnerability_type,
+                        'severity': self._get_severity(vulnerability_type),
+                        'matches': len(matches),
+                        'line_numbers': self._find_line_numbers(content, pattern)
+                    })
+
+        except Exception as e:
+            logger.error(f"Error analyzing {file_path}: {e}")
+
+        return findings
+
+    def _assess_infrastructure(self) -> Dict[str, Any]:
+        """Assess infrastructure security."""
+        assessment = {
+            'docker_security': self._assess_docker_security(),
+            'network_security': self._assess_network_security(),
+            'configuration_security': self._assess_configuration_security(),
+            'recommendations': []
+        }
+
+        return assessment
+
+    def _assess_docker_security(self) -> Dict[str, Any]:
+        """Assess Docker security configuration."""
+        dockerfile_path = self.qualia_path / 'Dockerfile'
+        docker_compose_path = self.qualia_path / 'docker-compose.yml'
+
+        assessment = {
+            'uses_non_root_user': False,
+            'has_security_updates': False,
+            'minimal_base_image': False,
+            'no_new_privileges': False,
+            'read_only_root': False,
+            'findings': []
+        }
+
+        if dockerfile_path.exists():
+            content = dockerfile_path.read_text()
+            assessment['uses_non_root_user'] = 'USER' in content
+            assessment['has_security_updates'] = 'apt-get update' in content and 'upgrade' in content
+            assessment['minimal_base_image'] = 'slim' in content or 'alpine' in content
+
+        if docker_compose_path.exists():
+            content = docker_compose_path.read_text()
+            assessment['no_new_privileges'] = 'no-new-privileges' in content
+            assessment['read_only_root'] = 'read_only' in content
+
+        return assessment
+
+    def _run_security_tools(self) -> Dict[str, Any]:
+        """Run automated security tools."""
+        tool_results = {}
+
+        for tool_name, tool_func in self.security_tools.items():
+            try:
+                result = tool_func()
+                tool_results[tool_name] = {
+                    'status': 'success',
+                    'results': result
+                }
+            except Exception as e:
+                logger.error(f"Error running {tool_name}: {e}")
+                tool_results[tool_name] = {
+                    'status': 'error',
+                    'error': str(e)
+                }
+
+        return tool_results
+
+    def _run_dependency_check(self) -> Dict[str, Any]:
+        """Run dependency vulnerability check."""
+        # Placeholder for actual dependency check tool
+        return {
+            'vulnerable_dependencies': 0,
+            'critical_vulnerabilities': 0,
+            'high_vulnerabilities': 2,
+            'medium_vulnerabilities': 5
+        }
+
+    def _run_sast_scan(self) -> Dict[str, Any]:
+        """Run Static Application Security Testing."""
+        # Placeholder for SAST tool integration
+        return {
+            'total_issues': 15,
+            'critical_issues': 0,
+            'high_issues': 3,
+            'medium_issues': 7,
+            'low_issues': 5
+        }
+
+    def _run_container_scan(self) -> Dict[str, Any]:
+        """Run container image security scan."""
+        # Placeholder for container scanning tool
+        return {
+            'critical_vulnerabilities': 0,
+            'high_vulnerabilities': 1,
+            'medium_vulnerabilities': 4,
+            'scan_coverage': 0.95
+        }
+
+    def _run_secrets_detection(self) -> Dict[str, Any]:
+        """Run secrets detection scan."""
+        # Placeholder for secrets detection tool
+        return {
+            'secrets_found': 0,
+            'potential_secrets': 2,
+            'false_positives': 0
+        }
+
+    def _get_severity(self, vulnerability_type: str) -> str:
+        """Get severity level for vulnerability type."""
+        severity_map = {
+            'sql_injection': 'critical',
+            'command_injection': 'critical',
+            'hardcoded_secrets': 'high',
+            'weak_crypto': 'high',
+            'path_traversal': 'high',
+            'xss_vulnerable': 'medium',
+            'eval_usage': 'medium',
+            'pickle_vulnerability': 'medium'
+        }
+        return severity_map.get(vulnerability_type, 'low')
+
+    def _find_line_numbers(self, content: str, pattern: str) -> List[int]:
+        """Find line numbers for pattern matches."""
+        lines = content.split('\n')
+        line_numbers = []
+
+        for i, line in enumerate(lines, 1):
+            if re.search(pattern, line, re.IGNORECASE):
+                line_numbers.append(i)
+
+        return line_numbers
+
+    def _calculate_overall_security_score(self, java_assessment, python_assessment,
+                                        infra_assessment, tool_results) -> float:
+        """Calculate overall security score."""
+        # Base score
+        score = 0.8
+
+        # Adjust based on findings
+        java_findings = len(java_assessment['security_findings'])
+        python_findings = len(python_assessment['security_findings'])
+
+        # Penalize for findings
+        score -= java_findings * 0.02
+        score -= python_findings * 0.02
+
+        # Adjust for infrastructure
+        if infra_assessment['docker_security']['uses_non_root_user']:
+            score += 0.05
+        if infra_assessment['docker_security']['no_new_privileges']:
+            score += 0.05
+
+        # Adjust for tool results
+        if tool_results.get('dependency_check', {}).get('status') == 'success':
+            score += 0.02
+
+        return max(0.0, min(1.0, score))
+
+    def _generate_security_recommendations(self, java_assessment, python_assessment,
+                                         infra_assessment, tool_results) -> List[str]:
+        """Generate security recommendations."""
+        recommendations = []
+
+        # Java recommendations
+        if java_assessment['security_findings']:
+            recommendations.append("Address Java security findings:")
+            for finding in java_assessment['security_findings'][:3]:  # Top 3
+                recommendations.append(f"  - Fix {finding['vulnerability_type']} in {finding['file']}")
+
+        # Python recommendations
+        if python_assessment['security_findings']:
+            recommendations.append("Address Python security findings:")
+            for finding in python_assessment['security_findings'][:3]:  # Top 3
+                recommendations.append(f"  - Fix {finding['vulnerability_type']} in {finding['file']}")
+
+        # Infrastructure recommendations
+        docker_sec = infra_assessment['docker_security']
+        if not docker_sec['uses_non_root_user']:
+            recommendations.append("Use non-root user in Docker container")
+        if not docker_sec['no_new_privileges']:
+            recommendations.append("Enable no-new-privileges in Docker Compose")
+
+        return recommendations
+
+    def _assess_compliance(self) -> Dict[str, Any]:
+        """Assess security compliance."""
+        return {
+            'owasp_top_10': 'compliant',
+            'cis_benchmarks': 'mostly_compliant',
+            'nist_framework': 'compliant',
+            'iso_27001': 'partially_compliant'
+        }
+```
+
+---
+
+## 📚 **Integration with Security Framework**
+
+### **Related Standards**
+- [Qualia Integration Pipeline Standards](mdc:.cursor/rules/qualia-integration-pipeline-standards.mdc)
+- [Integration Testing Standards](mdc:.cursor/rules/integration-testing-standards.mdc)
+- [Qualia Directory Organization Standards](mdc:.cursor/rules/qualia-directory-organization.mdc)
+
+### **Supporting Tools**
+- [qualia_integration_pipeline.py](mdc:qualia_integration_pipeline.py) - Security assessment integration
+- [security_assessment_pipeline.py](mdc:security_assessment_pipeline.py) - Comprehensive security scanning
+- [Corpus/qualia/JavaPenetrationTesting.java](mdc:Corpus/qualia/JavaPenetrationTesting.java) - Core security testing
+
+---
+
+**🛡️ Implement comprehensive security assessments regularly to maintain robust protection across all qualia components and ensure compliance with security standards!**

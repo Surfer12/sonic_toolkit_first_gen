@@ -16,7 +16,6 @@ import java.security.cert.*;
 import java.net.*;
 import java.io.*;
 import java.nio.file.*;
-import java.sql.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 import javax.net.ssl.*;
@@ -83,7 +82,7 @@ class DefenseAction {
     private final String trigger;
     private final String response;
     private final String mitigationStrategy;
-    private final Date timestamp;
+    private final LocalDateTime timestamp;
     private final boolean automated;
     private final Map<String, Object> metadata;
 
@@ -97,7 +96,7 @@ class DefenseAction {
         this.trigger = trigger;
         this.response = response;
         this.mitigationStrategy = mitigationStrategy;
-        this.timestamp = new Date();
+        this.timestamp = LocalDateTime.now();
         this.automated = automated;
         this.metadata = new HashMap<>();
     }
@@ -110,7 +109,7 @@ class DefenseAction {
     public String getTrigger() { return trigger; }
     public String getResponse() { return response; }
     public String getMitigationStrategy() { return mitigationStrategy; }
-    public Date getTimestamp() { return timestamp; }
+    public LocalDateTime getTimestamp() { return timestamp; }
     public boolean isAutomated() { return automated; }
     public Map<String, Object> getMetadata() { return new HashMap<>(metadata); }
 

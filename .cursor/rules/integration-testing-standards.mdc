@@ -1,0 +1,560 @@
+---
+globs: Corpus/qualia/**/*.java,Corpus/qualia/**/*.py,qualia_integration_pipeline.py
+description: "Standards for integration testing and validation of qualia components"
+---
+
+# Integration Testing Standards for Qualia Components
+
+## 🎯 **Testing Framework Overview**
+
+Integration testing for qualia components ensures that all Java, Python, and infrastructure components work together seamlessly. The [qualia_integration_pipeline.py](mdc:qualia_integration_pipeline.py) serves as the primary integration testing tool.
+
+## 🧪 **Test Categories and Standards**
+
+### **Component-Level Integration Tests**
+
+#### **Java Component Integration**
+```java
+// JavaPenetrationTestingIntegrationTest.java
+public class JavaPenetrationTestingIntegrationTest {
+
+    @Test
+    public void testJavaComponentsIntegration() {
+        // Test core Java components work together
+        JavaPenetrationTesting tester = new JavaPenetrationTesting();
+        ReverseKoopmanOperator operator = new ReverseKoopmanOperator();
+        SecurityDashboard dashboard = new SecurityDashboard();
+
+        // Integration test
+        SecurityResult result = tester.runAnalysis();
+        MathematicalResult mathResult = operator.process(result.getData());
+        dashboard.displayResults(mathResult);
+
+        assertNotNull(result);
+        assertNotNull(mathResult);
+        assertTrue(dashboard.isDisplaying());
+    }
+
+    @Test
+    public void testExceptionPropagation() {
+        // Test error handling across components
+        JavaPenetrationTesting tester = new JavaPenetrationTesting();
+
+        assertThrows(SecurityException.class, () -> {
+            tester.analyzeInvalidInput();
+        });
+    }
+}
+```
+
+#### **Python Component Integration**
+```python
+# test_python_integration.py
+import pytest
+from qualia.demo_visualizations import create_security_visualization
+from qualia.java_bridge import JavaBridge
+
+class TestPythonIntegration:
+    """Integration tests for Python components."""
+
+    def test_visualization_integration(self):
+        """Test visualization works with Java data."""
+        java_bridge = JavaBridge()
+        security_data = java_bridge.get_security_results()
+
+        # Test visualization creation
+        fig = create_security_visualization(security_data)
+
+        assert fig is not None
+        assert len(fig.get_axes()) > 0
+
+    def test_data_pipeline_integration(self):
+        """Test complete data pipeline from Java to Python."""
+        java_bridge = JavaBridge()
+
+        # Get data from Java
+        raw_data = java_bridge.extract_security_data()
+
+        # Process in Python
+        processed_data = process_security_data(raw_data)
+
+        # Validate processing
+        assert len(processed_data) > 0
+        assert 'threats' in processed_data
+        assert 'metrics' in processed_data
+
+    @pytest.mark.asyncio
+    async def test_async_integration(self):
+        """Test async operations between components."""
+        java_bridge = JavaBridge()
+
+        # Test async data retrieval
+        data = await java_bridge.get_async_security_data()
+
+        assert data is not None
+        assert isinstance(data, dict)
+```
+
+### **Cross-Language Integration Tests**
+
+#### **Java-Python Bridge Testing**
+```python
+# test_java_python_bridge.py
+import subprocess
+import json
+from pathlib import Path
+
+class TestJavaPythonBridge:
+    """Test Java-Python integration bridge."""
+
+    def test_java_call_python(self):
+        """Test Java calling Python visualization."""
+        # Java code execution
+        result = subprocess.run([
+            'java', '-cp', 'qualia.jar',
+            'qualia.JavaPythonBridge',
+            'create_visualization'
+        ], capture_output=True, text=True)
+
+        assert result.returncode == 0
+        assert 'visualization_created' in result.stdout
+
+    def test_python_call_java(self):
+        """Test Python calling Java security analysis."""
+        from qualia.java_bridge import JavaBridge
+
+        bridge = JavaBridge()
+        result = bridge.run_security_analysis()
+
+        assert result['status'] == 'success'
+        assert 'threats_found' in result
+        assert 'analysis_time' in result
+
+    def test_data_format_compatibility(self):
+        """Test data format compatibility between languages."""
+        from qualia.java_bridge import JavaBridge
+
+        bridge = JavaBridge()
+
+        # Get Java data
+        java_data = bridge.get_java_data()
+
+        # Validate Python can process it
+        processed = process_java_data(java_data)
+
+        assert isinstance(processed, dict)
+        assert 'java_fields' in processed
+        assert 'python_processed' in processed
+```
+
+### **Infrastructure Integration Tests**
+
+#### **Docker Integration Testing**
+```python
+# test_docker_integration.py
+import docker
+from docker.errors import DockerException
+
+class TestDockerIntegration:
+    """Test Docker container integration."""
+
+    def test_container_build(self):
+        """Test Docker container builds successfully."""
+        client = docker.from_env()
+
+        # Build container
+        image, logs = client.images.build(
+            path='.',
+            dockerfile='Corpus/qualia/Dockerfile',
+            tag='qualia-test'
+        )
+
+        # Validate build success
+        assert image is not None
+        assert 'qualia-test' in str(image)
+
+    def test_container_execution(self):
+        """Test container executes security analysis."""
+        client = docker.from_env()
+
+        # Run container
+        container = client.containers.run(
+            'qualia-test',
+            command=['java', '-cp', 'qualia.jar', 'qualia.JavaPenetrationTesting'],
+            detach=True
+        )
+
+        # Wait for completion
+        result = container.wait()
+        logs = container.logs().decode('utf-8')
+
+        assert result['StatusCode'] == 0
+        assert 'Security analysis completed' in logs
+
+        container.remove()
+
+    def test_volume_mounting(self):
+        """Test volume mounting for reports."""
+        client = docker.from_env()
+
+        # Create test volume
+        test_reports_dir = Path('./test_reports')
+        test_reports_dir.mkdir(exist_ok=True)
+
+        # Run with volume mount
+        container = client.containers.run(
+            'qualia-test',
+            volumes={str(test_reports_dir): {'bind': '/app/reports', 'mode': 'rw'}},
+            command=['sh', '-c', 'echo "test report" > /app/reports/test.txt'],
+            remove=True
+        )
+
+        # Validate volume mount worked
+        assert (test_reports_dir / 'test.txt').exists()
+
+        # Cleanup
+        test_reports_dir.rmdir()
+```
+
+#### **Docker Compose Integration**
+```python
+# test_docker_compose_integration.py
+import subprocess
+import time
+from pathlib import Path
+
+class TestDockerComposeIntegration:
+    """Test Docker Compose multi-service integration."""
+
+    def test_compose_up(self):
+        """Test docker-compose brings up all services."""
+        # Start services
+        result = subprocess.run([
+            'docker-compose', '-f', 'Corpus/qualia/docker-compose.yml', 'up', '-d'
+        ], capture_output=True, text=True)
+
+        assert result.returncode == 0
+
+        # Give services time to start
+        time.sleep(10)
+
+        # Check services are running
+        ps_result = subprocess.run([
+            'docker-compose', '-f', 'Corpus/qualia/docker-compose.yml', 'ps'
+        ], capture_output=True, text=True)
+
+        assert 'qualia-security' in ps_result.stdout
+        assert 'Up' in ps_result.stdout
+
+    def test_service_integration(self):
+        """Test services can communicate."""
+        # Test inter-service communication
+        result = subprocess.run([
+            'docker-compose', '-f', 'Corpus/qualia/docker-compose.yml',
+            'exec', 'qualia-security',
+            'curl', 'http://qualia-database:5432/health'
+        ], capture_output=True, text=True)
+
+        # Note: This is a conceptual test - actual implementation depends on services
+        assert result.returncode == 0 or 'connection refused' not in result.stderr.lower()
+
+    def test_compose_down(self):
+        """Test docker-compose cleans up properly."""
+        result = subprocess.run([
+            'docker-compose', '-f', 'Corpus/qualia/docker-compose.yml', 'down'
+        ], capture_output=True, text=True)
+
+        assert result.returncode == 0
+
+        # Verify containers are stopped
+        ps_result = subprocess.run([
+            'docker-compose', '-f', 'Corpus/qualia/docker-compose.yml', 'ps'
+        ], capture_output=True, text=True)
+
+        assert 'Up' not in ps_result.stdout
+```
+
+## 🔧 **Automated Testing Standards**
+
+### **Continuous Integration Pipeline**
+```yaml
+# .github/workflows/qualia-integration-tests.yml
+name: Qualia Integration Tests
+
+on:
+  push:
+    paths:
+      - 'Corpus/qualia/**'
+      - 'qualia_integration_pipeline.py'
+  pull_request:
+    paths:
+      - 'Corpus/qualia/**'
+      - 'qualia_integration_pipeline.py'
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        cd Corpus/qualia && javac *.java
+
+    - name: Run Java Integration Tests
+      run: |
+        cd Corpus/qualia
+        java -cp . qualia.JavaPenetrationTestingIntegrationTest
+
+    - name: Run Python Integration Tests
+      run: |
+        python -m pytest tests/test_python_integration.py -v
+
+    - name: Run Cross-Language Tests
+      run: |
+        python -m pytest tests/test_java_python_bridge.py -v
+
+    - name: Run Docker Integration Tests
+      run: |
+        python -m pytest tests/test_docker_integration.py -v
+
+    - name: Run Qualia Integration Pipeline
+      run: |
+        python qualia_integration_pipeline.py --qualia-path Corpus/qualia
+
+    - name: Validate Integration Score
+      run: |
+        python scripts/check_integration_score.py --min-score 0.85
+```
+
+### **Test Coverage Standards**
+- **Unit Tests**: ≥ 80% coverage for individual components
+- **Integration Tests**: ≥ 90% coverage for component interactions
+- **End-to-End Tests**: Complete workflow validation
+- **Performance Tests**: Benchmark validation against baselines
+
+## 📊 **Test Result Standards**
+
+### **Integration Test Report Format**
+```json
+{
+  "test_run_id": "integration_20241204_143045",
+  "timestamp": "2024-12-04T14:30:45.123456Z",
+  "test_categories": {
+    "java_integration": {
+      "tests_run": 15,
+      "tests_passed": 14,
+      "tests_failed": 1,
+      "coverage": 0.93,
+      "failures": [
+        {
+          "test": "testComplexNumberIntegration",
+          "error": "NullPointerException in ComplexNumber.java:42",
+          "stack_trace": "..."
+        }
+      ]
+    },
+    "python_integration": {
+      "tests_run": 8,
+      "tests_passed": 8,
+      "tests_failed": 0,
+      "coverage": 0.95
+    },
+    "cross_language": {
+      "tests_run": 12,
+      "tests_passed": 11,
+      "tests_failed": 1,
+      "coverage": 0.92
+    }
+  },
+  "overall_score": 0.92,
+  "recommendations": [
+    "Fix ComplexNumber integration issue",
+    "Add more cross-language error handling tests",
+    "Improve test coverage for edge cases"
+  ]
+}
+```
+
+### **Quality Metrics Tracking**
+```python
+# test_quality_metrics.py
+def track_test_quality_metrics():
+    """Track and validate test quality metrics."""
+
+    metrics = {
+        'test_execution_time': measure_test_execution_time(),
+        'test_reliability': calculate_test_reliability(),
+        'test_coverage': measure_test_coverage(),
+        'integration_success_rate': calculate_integration_success_rate(),
+        'flaky_test_detection': detect_flaky_tests()
+    }
+
+    # Validate against standards
+    assert metrics['test_coverage'] >= 0.80, "Test coverage below 80%"
+    assert metrics['integration_success_rate'] >= 0.90, "Integration success rate below 90%"
+
+    return metrics
+```
+
+## 🎯 **Best Practices for Integration Testing**
+
+### **Test Organization Standards**
+```
+tests/
+├── unit/                          # Unit tests for individual components
+│   ├── test_java_components.py
+│   └── test_python_components.py
+├── integration/                   # Integration tests
+│   ├── test_java_integration.py
+│   ├── test_python_integration.py
+│   ├── test_cross_language.py
+│   └── test_docker_integration.py
+├── e2e/                          # End-to-end tests
+│   └── test_complete_workflow.py
+└── performance/                  # Performance tests
+    └── test_performance_baselines.py
+```
+
+### **Test Data Management**
+```python
+# test_data_management.py
+def setup_test_data():
+    """Set up test data for integration tests."""
+
+    test_data = {
+        'java_test_data': create_java_test_data(),
+        'python_test_data': create_python_test_data(),
+        'integration_test_data': create_integration_test_data(),
+        'performance_test_data': create_performance_test_data()
+    }
+
+    # Validate test data integrity
+    validate_test_data_integrity(test_data)
+
+    return test_data
+
+def create_java_test_data():
+    """Create test data for Java components."""
+    return {
+        'security_scan_data': {
+            'target_system': 'test.example.com',
+            'scan_ports': [80, 443, 22],
+            'expected_vulnerabilities': ['CVE-2023-1234']
+        },
+        'mathematical_test_data': {
+            'complex_numbers': [
+                {'real': 3.0, 'imaginary': 4.0},
+                {'real': -1.5, 'imaginary': 2.7}
+            ],
+            'expected_results': [5.0, 3.202]
+        }
+    }
+```
+
+### **Test Execution Standards**
+- [ ] **Isolation**: Each test runs independently
+- [ ] **Cleanup**: Proper cleanup after test execution
+- [ ] **Timeouts**: Reasonable timeouts for long-running tests
+- [ ] **Logging**: Comprehensive logging for debugging failures
+- [ ] **Parallel Execution**: Safe parallel test execution
+
+## 🚨 **Integration Failure Handling**
+
+### **Common Integration Issues**
+```python
+# integration_failure_handler.py
+def handle_integration_failure(failure_type: str, details: dict) -> dict:
+    """Handle different types of integration failures."""
+
+    handlers = {
+        'java_compilation_error': handle_java_compilation_error,
+        'python_import_error': handle_python_import_error,
+        'docker_build_failure': handle_docker_build_failure,
+        'cross_language_bridge_failure': handle_bridge_failure,
+        'test_timeout': handle_test_timeout
+    }
+
+    if failure_type in handlers:
+        return handlers[failure_type](details)
+    else:
+        return handle_unknown_failure(failure_type, details)
+
+def handle_java_compilation_error(details):
+    """Handle Java compilation errors."""
+    return {
+        'severity': 'high',
+        'action': 'immediate_fix',
+        'recommendations': [
+            'Check Java syntax errors',
+            'Verify classpath configuration',
+            'Update Java dependencies',
+            'Run javac with verbose output'
+        ]
+    }
+```
+
+### **Automated Recovery Strategies**
+- [ ] **Retry Mechanisms**: Automatic retry for transient failures
+- [ ] **Rollback Procedures**: Rollback to last known good state
+- [ ] **Alert Notifications**: Notify team of integration failures
+- [ ] **Root Cause Analysis**: Automated failure analysis and reporting
+
+## 📈 **Performance Testing Standards**
+
+### **Integration Performance Benchmarks**
+```python
+# test_performance_baselines.py
+def test_integration_performance_baselines():
+    """Test integration performance against established baselines."""
+
+    baselines = {
+        'java_startup_time': 2.0,  # seconds
+        'python_initialization_time': 1.5,  # seconds
+        'cross_language_call_time': 0.1,  # seconds
+        'docker_container_startup': 5.0,  # seconds
+        'complete_integration_test': 30.0  # seconds
+    }
+
+    # Measure current performance
+    measurements = measure_integration_performance()
+
+    # Validate against baselines
+    for metric, baseline in baselines.items():
+        actual = measurements[metric]
+        assert actual <= baseline * 1.1, f"{metric} exceeded baseline: {actual} > {baseline}"
+
+        if actual > baseline:
+            logger.warning(f"{metric} performance degradation: {actual} vs {baseline}")
+```
+
+---
+
+## 📚 **Integration with Testing Framework**
+
+### **Related Standards**
+- [Qualia Integration Pipeline Standards](mdc:.cursor/rules/qualia-integration-pipeline-standards.mdc)
+- [Qualia Directory Organization Standards](mdc:.cursor/rules/qualia-directory-organization.mdc)
+- [Security Assessment Workflows](mdc:.cursor/rules/security-assessment-workflows.mdc)
+
+### **Supporting Tools**
+- [qualia_integration_pipeline.py](mdc:qualia_integration_pipeline.py) - Integration testing framework
+- [scripts/check_integration_score.py](mdc:scripts/check_integration_score.py) - Quality validation
+- [tests/integration/](mdc:tests/integration/) - Integration test suite
+
+---
+
+**🎯 Run comprehensive integration tests regularly to ensure qualia components work together seamlessly and maintain high-quality standards!**

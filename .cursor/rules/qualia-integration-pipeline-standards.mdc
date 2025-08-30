@@ -1,0 +1,161 @@
+---
+alwaysApply: true
+description: "Standards for using the qualia integration pipeline for comprehensive review and validation"
+---
+
+# Qualia Integration Pipeline Standards
+
+## 🎯 **Pipeline Overview**
+
+The [qualia_integration_pipeline.py](mdc:qualia_integration_pipeline.py) provides comprehensive integration review capabilities for the `@qualia/` directory, ensuring high-quality integration and validation standards.
+
+## 🚀 **Execution Standards**
+
+### **Standard Pipeline Execution**
+```bash
+# Complete integration review
+python qualia_integration_pipeline.py --qualia-path Corpus/qualia --verbose
+
+# Custom output directory
+python qualia_integration_pipeline.py --output-dir ./integration_reports
+
+# Specific component analysis
+python qualia_integration_pipeline.py --qualia-path Corpus/qualia --component java
+```
+
+### **Pre-Execution Checklist**
+- [ ] Qualia directory exists and is accessible
+- [ ] Python 3.8+ is available
+- [ ] Output directory has write permissions
+- [ ] Previous reports are archived if needed
+
+## 📊 **Quality Scoring Standards**
+
+### **Component Score Interpretation**
+- **0.9-1.0**: Excellent integration quality - minimal issues
+- **0.7-0.89**: Good quality - minor improvements needed
+- **0.6-0.69**: Needs improvement - address findings promptly
+- **< 0.6**: Critical issues - immediate attention required
+
+### **Overall Score Targets**
+- **Target**: ≥ 0.85 for production deployment
+- **Acceptable**: ≥ 0.75 for development environments
+- **Review Required**: < 0.75 - comprehensive review needed
+
+## 🔧 **Component Analysis Standards**
+
+### **Java Component Requirements**
+- [ ] Comprehensive JavaDoc documentation
+- [ ] Proper exception handling with try-catch blocks
+- [ ] Static analysis annotations (@Override, @NotNull)
+- [ ] Thread-safe implementation where required
+- [ ] Clear import organization and dependency management
+
+### **Python Component Requirements**
+- [ ] Type hints for all function parameters and return values
+- [ ] Comprehensive docstrings for public functions/classes
+- [ ] Proper error handling with specific exception types
+- [ ] Logging integration for debugging and monitoring
+- [ ] Async/await usage for I/O operations
+
+### **Configuration Standards**
+- [ ] Proper shebang lines in shell scripts
+- [ ] Environment variable usage for sensitive data
+- [ ] Volume mounts and networking in Docker Compose
+- [ ] Development container customizations
+- [ ] Build optimization and caching strategies
+
+## 📋 **Integration Validation Checklist**
+
+### **Directory Structure Validation**
+- [ ] All required Java components present
+- [ ] Python components properly integrated
+- [ ] Configuration files correctly placed
+- [ ] Documentation files comprehensive
+- [ ] Report directory structure maintained
+
+### **Dependency Validation**
+- [ ] Java class dependencies resolved
+- [ ] Python import dependencies satisfied
+- [ ] Cross-language integration points validated
+- [ ] External library dependencies up-to-date
+- [ ] Circular dependency detection
+
+### **Security Validation**
+- [ ] Input validation mechanisms implemented
+- [ ] Authentication and authorization patterns
+- [ ] Encryption standards compliance
+- [ ] Audit logging and monitoring
+- [ ] OWASP Top 10 compliance
+
+## 📝 **Report Generation Standards**
+
+### **Required Report Formats**
+1. **JSON Report**: Complete structured data for CI/CD integration
+2. **HTML Report**: Interactive web-based visualization
+3. **Text Summary**: Human-readable executive summary
+
+### **Report Content Standards**
+- [ ] Executive summary with overall score
+- [ ] Component-by-component analysis
+- [ ] Integration issues with severity levels
+- [ ] Actionable recommendations with priorities
+- [ ] Security assessment summary
+- [ ] Performance metrics and benchmarks
+
+## 🔄 **Continuous Integration Standards**
+
+### **Automated Pipeline Integration**
+```yaml
+# GitHub Actions example
+- name: Qualia Integration Review
+  run: |
+    python qualia_integration_pipeline.py --qualia-path Corpus/qualia
+    # Parse results and fail on critical issues
+    python scripts/check_integration_score.py --min-score 0.85
+```
+
+### **Quality Gates**
+- **Code Quality**: All components must pass quality checks
+- **Integration Quality**: Cross-dependency validation must pass
+- **Security Quality**: Security assessment must pass minimum thresholds
+- **Documentation Quality**: Documentation completeness must meet standards
+
+## 🎖️ **Best Practices**
+
+### **Regular Review Schedule**
+- **Daily**: Quick validation for active development
+- **Weekly**: Comprehensive review with detailed analysis
+- **Monthly**: Trend analysis and long-term improvements
+- **Pre-Release**: Full validation before deployment
+
+### **Issue Prioritization**
+- **Critical**: Integration-breaking issues (score < 0.6)
+- **High**: Significant quality issues (score 0.6-0.7)
+- **Medium**: Improvement opportunities (score 0.7-0.8)
+- **Low**: Minor enhancements (score 0.8-0.9)
+
+### **Continuous Improvement**
+- [ ] Track integration scores over time
+- [ ] Implement automated fixes for common issues
+- [ ] Update standards based on new best practices
+- [ ] Share successful patterns across teams
+
+---
+
+## 📚 **Integration Points**
+
+### **Related Standards**
+- [Qualia Directory Structure Standards](mdc:.cursor/rules/qualia-directory-organization.mdc)
+- [Integration Testing Standards](mdc:.cursor/rules/integration-testing-standards.mdc)
+- [Security Assessment Workflows](mdc:.cursor/rules/security-assessment-workflows.mdc)
+- [Report Generation Standards](mdc:.cursor/rules/report-generation-standards.mdc)
+
+### **Supporting Tools**
+- [qualia_integration_pipeline.py](mdc:qualia_integration_pipeline.py) - Main pipeline implementation
+- [scripts/check_integration_score.py](mdc:scripts/check_integration_score.py) - Quality gate validation
+- [docs/qualia_integration_guide.md](mdc:docs/qualia_integration_guide.md) - Integration documentation
+
+---
+
+**🎯 Always run the qualia integration pipeline before major changes to ensure quality standards are maintained!**

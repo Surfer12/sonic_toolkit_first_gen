@@ -1,0 +1,1012 @@
+---
+globs: qualia_integration_pipeline.py,docs/**/*.md,Corpus/qualia/reports/*.txt
+description: "Standards for report generation and documentation across qualia components"
+---
+
+# Report Generation and Documentation Standards
+
+## 📊 **Report Generation Framework Overview**
+
+The qualia integration pipeline generates comprehensive reports in multiple formats. This rule establishes standards for report generation, documentation quality, and publication-ready outputs across all qualia components.
+
+## 📋 **Report Format Standards**
+
+### **1. JSON Report Structure**
+```json
+{
+  "report_metadata": {
+    "report_id": "qualia_integration_20241204_143045_001",
+    "timestamp": "2024-12-04T14:30:45.123456Z",
+    "pipeline_version": "1.0.0",
+    "qualia_path": "Corpus/qualia",
+    "generation_duration": 45.67
+  },
+  "executive_summary": {
+    "overall_score": 0.87,
+    "status": "good",
+    "critical_issues": 0,
+    "high_priority_items": 2,
+    "total_components": 15,
+    "successful_components": 13
+  },
+  "component_analysis": [
+    {
+      "component_name": "JavaPenetrationTesting.java",
+      "status": "success",
+      "score": 0.92,
+      "category": "java",
+      "findings": [
+        {
+          "type": "documentation",
+          "severity": "low",
+          "description": "Some methods lack JavaDoc",
+          "recommendation": "Add comprehensive JavaDoc to all public methods"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 450,
+        "methods_count": 12,
+        "test_coverage": 0.85
+      }
+    }
+  ],
+  "integration_issues": [
+    {
+      "severity": "medium",
+      "component": "demo_visualizations.py",
+      "issue": "Missing error handling for file operations",
+      "recommendation": "Add try-catch blocks for file I/O operations"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "high",
+      "category": "security",
+      "description": "Implement comprehensive input validation",
+      "implementation_effort": "medium",
+      "expected_impact": "high"
+    }
+  ],
+  "performance_metrics": {
+    "execution_time": 45.67,
+    "memory_usage": 156.7,
+    "cpu_utilization": 23.4,
+    "io_operations": 234
+  },
+  "security_assessment": {
+    "overall_security_score": 0.89,
+    "vulnerability_counts": {
+      "critical": 0,
+      "high": 1,
+      "medium": 3,
+      "low": 5
+    },
+    "compliance_status": {
+      "owasp_top_10": "compliant",
+      "cis_benchmarks": "mostly_compliant",
+      "nist_framework": "compliant"
+    }
+  },
+  "quality_metrics": {
+    "documentation_completeness": 0.94,
+    "code_quality_score": 0.91,
+    "test_coverage": 0.87,
+    "maintainability_index": 0.83
+  }
+}
+```
+
+### **2. HTML Report Structure**
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qualia Integration Review Report</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .header .metadata {
+            margin-top: 1rem;
+            opacity: 0.9;
+        }
+
+        .score-card {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--success-color);
+        }
+
+        .score-display {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--success-color);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        .status-success { background: var(--success-color); color: white; }
+        .status-warning { background: var(--warning-color); color: white; }
+        .status-error { background: var(--error-color); color: white; }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .component-card {
+            background: var(--card-background);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .component-card.success { border-left-color: var(--success-color); }
+        .component-card.warning { border-left-color: var(--warning-color); }
+        .component-card.error { border-left-color: var(--error-color); }
+
+        .component-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .component-name {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .component-score {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .findings-list {
+            margin-top: 1rem;
+        }
+
+        .finding-item {
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .finding-low { background: #f3f4f6; border-left: 3px solid #9ca3af; }
+        .finding-medium { background: #fef3c7; border-left: 3px solid var(--warning-color); }
+        .finding-high { background: #fee2e2; border-left: 3px solid var(--error-color); }
+
+        .recommendations-section {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .recommendations-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .recommendation-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .recommendation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .priority-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .priority-high { background: var(--error-color); color: white; }
+        .priority-medium { background: var(--warning-color); color: white; }
+        .priority-low { background: #9ca3af; color: white; }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--card-background);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        @media (max-width: 768px) {
+            .component-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .score-display {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Qualia Integration Review Report</h1>
+        <div class="metadata">
+            <div>Generated: <span id="timestamp">2024-12-04T14:30:45.123456Z</span></div>
+            <div>Qualia Path: <span id="qualia-path">Corpus/qualia</span></div>
+            <div>Pipeline Version: <span id="pipeline-version">1.0.0</span></div>
+        </div>
+    </div>
+
+    <div class="score-card">
+        <div class="score-display" id="overall-score">0.87</div>
+        <div style="text-align: center;">
+            <span class="status-badge status-success" id="overall-status">GOOD</span>
+        </div>
+        <div style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
+            Integration Quality Score
+        </div>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-value" id="total-components">15</div>
+            <div class="metric-label">Total Components</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value" id="successful-components">13</div>
+            <div class="metric-label">Successful</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value" id="critical-issues">0</div>
+            <div class="metric-label">Critical Issues</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value" id="high-priority">2</div>
+            <div class="metric-label">High Priority</div>
+        </div>
+    </div>
+
+    <div class="component-grid" id="component-grid">
+        <!-- Component cards will be populated by JavaScript -->
+    </div>
+
+    <div class="recommendations-section">
+        <h2 style="margin-bottom: 1rem;">Recommendations</h2>
+        <div class="recommendations-grid" id="recommendations-grid">
+            <!-- Recommendations will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Report generated by Qualia Integration Pipeline v1.0.0</p>
+        <p>For questions or issues, please refer to the integration documentation.</p>
+    </div>
+
+    <script>
+        // Populate report data (in real implementation, this would be done server-side)
+        const reportData = {
+            components: [
+                {
+                    name: "JavaPenetrationTesting.java",
+                    status: "success",
+                    score: 0.92,
+                    findings: [
+                        {
+                            type: "documentation",
+                            severity: "low",
+                            description: "Some methods lack JavaDoc",
+                            recommendation: "Add comprehensive JavaDoc to all public methods"
+                        }
+                    ]
+                },
+                {
+                    name: "demo_visualizations.py",
+                    status: "warning",
+                    score: 0.78,
+                    findings: [
+                        {
+                            type: "error_handling",
+                            severity: "medium",
+                            description: "Missing error handling for file operations",
+                            recommendation: "Add try-catch blocks for file I/O operations"
+                        }
+                    ]
+                }
+            ],
+            recommendations: [
+                {
+                    priority: "high",
+                    category: "security",
+                    description: "Implement comprehensive input validation",
+                    implementation_effort: "medium",
+                    expected_impact: "high"
+                },
+                {
+                    priority: "medium",
+                    category: "documentation",
+                    description: "Enhance API documentation with examples",
+                    implementation_effort: "low",
+                    expected_impact: "medium"
+                }
+            ]
+        };
+
+        // Populate component grid
+        const componentGrid = document.getElementById('component-grid');
+        reportData.components.forEach(component => {
+            const card = document.createElement('div');
+            card.className = `component-card ${component.status}`;
+
+            card.innerHTML = `
+                <div class="component-header">
+                    <div class="component-name">${component.name}</div>
+                    <div class="component-score">${component.score}</div>
+                </div>
+                <div class="findings-list">
+                    ${component.findings.map(finding => `
+                        <div class="finding-item finding-${finding.severity}">
+                            <strong>${finding.type}:</strong> ${finding.description}
+                            <br><em>Recommendation: ${finding.recommendation}</em>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            componentGrid.appendChild(card);
+        });
+
+        // Populate recommendations
+        const recommendationsGrid = document.getElementById('recommendations-grid');
+        reportData.recommendations.forEach(rec => {
+            const card = document.createElement('div');
+            card.className = 'recommendation-card';
+
+            card.innerHTML = `
+                <div class="recommendation-header">
+                    <h3>${rec.description}</h3>
+                    <span class="priority-badge priority-${rec.priority}">${rec.priority}</span>
+                </div>
+                <p><strong>Category:</strong> ${rec.category}</p>
+                <p><strong>Implementation Effort:</strong> ${rec.implementation_effort}</p>
+                <p><strong>Expected Impact:</strong> ${rec.expected_impact}</p>
+            `;
+
+            recommendationsGrid.appendChild(card);
+        });
+    </script>
+</body>
+</html>
+```
+
+### **3. Text Summary Report**
+```text
+QUALIA INTEGRATION REVIEW SUMMARY
+==================================
+
+Generated: 2024-12-04T14:30:45.123456Z
+Qualia Path: Corpus/qualia
+Pipeline Version: 1.0.0
+
+OVERALL SCORE: 0.87
+Status: Good
+Critical Issues: 0
+High Priority Items: 2
+Total Components: 15
+Successful Components: 13
+
+EXECUTIVE SUMMARY
+=================
+The qualia integration review has identified several areas for improvement
+while maintaining overall good integration quality. Key findings include
+strong Java component implementation with minor documentation gaps, and
+some Python components needing enhanced error handling.
+
+COMPONENT ANALYSIS
+==================
+
+Java Components (Score: 0.91)
+------------------------------
+✓ JavaPenetrationTesting.java (0.92) - Well-implemented security framework
+  - Minor: Some methods lack JavaDoc documentation
+  - Recommendation: Add comprehensive JavaDoc to all public methods
+
+✓ ReverseKoopmanOperator.java (0.89) - Strong mathematical implementation
+  - Minor: Could benefit from additional unit tests
+  - Recommendation: Expand test coverage for edge cases
+
+Python Components (Score: 0.82)
+-------------------------------
+⚠️ demo_visualizations.py (0.78) - Functional but needs improvement
+  - Medium: Missing error handling for file operations
+  - Recommendation: Add try-catch blocks for file I/O operations
+
+✓ [Other Python components...]
+
+Configuration Components (Score: 0.88)
+---------------------------------------
+✓ build.sh - Proper build automation
+✓ docker-compose.yml - Good container orchestration
+⚠️ Dockerfile - Could optimize layer caching
+
+INTEGRATION ISSUES
+==================
+
+Medium Priority Issues:
+• Missing error handling in demo_visualizations.py file operations
+• Some Java methods lack comprehensive JavaDoc documentation
+• Docker layer optimization opportunities
+
+SECURITY ASSESSMENT
+===================
+
+Overall Security Score: 0.89
+Vulnerability Summary:
+• Critical: 0
+• High: 1
+• Medium: 3
+• Low: 5
+
+Compliance Status:
+• OWASP Top 10: Compliant
+• CIS Benchmarks: Mostly Compliant
+• NIST Framework: Compliant
+
+PERFORMANCE METRICS
+===================
+
+Execution Time: 45.67 seconds
+Memory Usage: 156.7 MB
+CPU Utilization: 23.4%
+I/O Operations: 234
+
+Component Performance:
+• Java Compilation: 12.3s
+• Python Validation: 8.9s
+• Docker Build: 15.6s
+• Integration Testing: 8.9s
+
+QUALITY METRICS
+===============
+
+Documentation Completeness: 94%
+Code Quality Score: 91%
+Test Coverage: 87%
+Maintainability Index: 83%
+
+RECOMMENDATIONS
+===============
+
+High Priority:
+1. Implement comprehensive input validation across all components
+   - Category: Security
+   - Implementation Effort: Medium
+   - Expected Impact: High
+
+2. Enhance API documentation with practical examples
+   - Category: Documentation
+   - Implementation Effort: Low
+   - Expected Impact: Medium
+
+Medium Priority:
+3. Add error handling for file operations in Python components
+   - Category: Reliability
+   - Implementation Effort: Low
+   - Expected Impact: Medium
+
+4. Optimize Docker layer caching for faster builds
+   - Category: Performance
+   - Implementation Effort: Low
+   - Expected Impact: Low
+
+IMPLEMENTATION ROADMAP
+======================
+
+Week 1-2: Security Enhancements
+• Implement comprehensive input validation
+• Add security headers and CSP policies
+• Update dependencies for security patches
+
+Week 3-4: Documentation Improvements
+• Add comprehensive JavaDoc documentation
+• Create API usage examples
+• Update README files with new features
+
+Week 5-6: Performance Optimization
+• Optimize Docker layer caching
+• Implement performance monitoring
+• Add caching for frequently accessed data
+
+Week 7-8: Testing and Validation
+• Expand unit test coverage
+• Add integration test automation
+• Implement continuous integration
+
+MONITORING AND MAINTENANCE
+==========================
+
+Regular Activities:
+• Weekly integration reviews
+• Monthly security assessments
+• Quarterly performance benchmarking
+• Annual architecture reviews
+
+Key Metrics to Monitor:
+• Integration score trends
+• Security vulnerability counts
+• Performance regression detection
+• Documentation completeness
+
+CONTACT AND SUPPORT
+===================
+
+For questions or issues related to this integration review:
+• Pipeline Documentation: docs/qualia_integration_guide.md
+• Security Issues: security@qualia-framework.org
+• Technical Support: support@qualia-framework.org
+
+Report generated by Qualia Integration Pipeline v1.0.0
+Timestamp: 2024-12-04T14:30:45.123456Z
+```
+
+## 🔧 **Report Generation Implementation**
+
+### **Automated Report Generation Pipeline**
+```python
+# report_generation_pipeline.py
+import json
+import markdown
+from pathlib import Path
+from datetime import datetime, timezone
+from typing import Dict, List, Any, Optional
+from jinja2 import Template
+import pdfkit
+import logging
+
+logger = logging.getLogger(__name__)
+
+class ReportGenerationPipeline:
+    """Automated report generation for qualia integration reviews."""
+
+    def __init__(self, output_dir: str = "qualia_integration_reports"):
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(exist_ok=True)
+
+        # Load report templates
+        self.templates = self._load_templates()
+
+    def generate_comprehensive_reports(self, integration_results: Dict[str, Any]) -> Dict[str, str]:
+        """Generate all report formats from integration results."""
+
+        report_id = f"qualia_integration_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+        reports = {}
+
+        # Generate JSON report
+        json_report = self._generate_json_report(integration_results, report_id)
+        json_path = self.output_dir / f"{report_id}.json"
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(json_report, f, indent=2, ensure_ascii=False)
+        reports['json'] = str(json_path)
+
+        # Generate HTML report
+        html_report = self._generate_html_report(json_report)
+        html_path = self.output_dir / f"{report_id}.html"
+        with open(html_path, 'w', encoding='utf-8') as f:
+            f.write(html_report)
+        reports['html'] = str(html_path)
+
+        # Generate text summary
+        text_report = self._generate_text_summary(json_report)
+        text_path = self.output_dir / f"{report_id}_summary.txt"
+        with open(text_path, 'w', encoding='utf-8') as f:
+            f.write(text_report)
+        reports['text'] = str(text_path)
+
+        # Generate PDF report (optional)
+        try:
+            pdf_path = self.output_dir / f"{report_id}.pdf"
+            pdfkit.from_string(html_report, str(pdf_path))
+            reports['pdf'] = str(pdf_path)
+        except Exception as e:
+            logger.warning(f"PDF generation failed: {e}")
+
+        logger.info(f"Generated {len(reports)} report formats: {list(reports.keys())}")
+
+        return reports
+
+    def _generate_json_report(self, results: Dict[str, Any], report_id: str) -> Dict[str, Any]:
+        """Generate structured JSON report."""
+
+        # Calculate summary metrics
+        components = results.get('component_results', [])
+        total_components = len(components)
+        successful_components = len([c for c in components if c.get('status') == 'success'])
+        critical_issues = len([c for c in components if c.get('status') == 'error'])
+        high_priority_items = len([c for c in components if c.get('score', 1.0) < 0.8])
+
+        # Determine overall status
+        overall_score = results.get('overall_score', 0.0)
+        if overall_score >= 0.9:
+            status = "excellent"
+        elif overall_score >= 0.8:
+            status = "good"
+        elif overall_score >= 0.7:
+            status = "needs_improvement"
+        else:
+            status = "critical"
+
+        json_report = {
+            "report_metadata": {
+                "report_id": report_id,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "pipeline_version": "1.0.0",
+                "qualia_path": results.get('qualia_path', 'Corpus/qualia'),
+                "generation_duration": results.get('execution_time', 0.0)
+            },
+            "executive_summary": {
+                "overall_score": overall_score,
+                "status": status,
+                "critical_issues": critical_issues,
+                "high_priority_items": high_priority_items,
+                "total_components": total_components,
+                "successful_components": successful_components
+            },
+            "component_analysis": components,
+            "integration_issues": results.get('integration_issues', []),
+            "recommendations": self._prioritize_recommendations(results.get('recommendations', [])),
+            "performance_metrics": results.get('performance_metrics', {}),
+            "security_assessment": results.get('security_assessment', {}),
+            "quality_metrics": self._calculate_quality_metrics(results)
+        }
+
+        return json_report
+
+    def _generate_html_report(self, json_report: Dict[str, Any]) -> str:
+        """Generate interactive HTML report."""
+
+        template = Template(self.templates['html'])
+
+        # Prepare template variables
+        template_vars = {
+            'report_id': json_report['report_metadata']['report_id'],
+            'timestamp': json_report['report_metadata']['timestamp'],
+            'qualia_path': json_report['report_metadata']['qualia_path'],
+            'pipeline_version': json_report['report_metadata']['pipeline_version'],
+            'overall_score': json_report['executive_summary']['overall_score'],
+            'overall_status': json_report['executive_summary']['status'].upper(),
+            'total_components': json_report['executive_summary']['total_components'],
+            'successful_components': json_report['executive_summary']['successful_components'],
+            'critical_issues': json_report['executive_summary']['critical_issues'],
+            'high_priority': json_report['executive_summary']['high_priority_items'],
+            'components': json_report['component_analysis'],
+            'recommendations': json_report['recommendations'],
+            'quality_metrics': json_report['quality_metrics']
+        }
+
+        return template.render(**template_vars)
+
+    def _generate_text_summary(self, json_report: Dict[str, Any]) -> str:
+        """Generate human-readable text summary."""
+
+        template = Template(self.templates['text'])
+
+        # Calculate section summaries
+        components_by_category = {}
+        for component in json_report['component_analysis']:
+            category = component.get('category', 'other')
+            if category not in components_by_category:
+                components_by_category[category] = []
+            components_by_category[category].append(component)
+
+        # Prepare template variables
+        template_vars = {
+            'timestamp': json_report['report_metadata']['timestamp'],
+            'qualia_path': json_report['report_metadata']['qualia_path'],
+            'pipeline_version': json_report['report_metadata']['pipeline_version'],
+            'overall_score': json_report['executive_summary']['overall_score'],
+            'status': json_report['executive_summary']['status'].replace('_', ' ').title(),
+            'critical_issues': json_report['executive_summary']['critical_issues'],
+            'high_priority': json_report['executive_summary']['high_priority_items'],
+            'total_components': json_report['executive_summary']['total_components'],
+            'successful_components': json_report['executive_summary']['successful_components'],
+            'components_by_category': components_by_category,
+            'integration_issues': json_report['integration_issues'],
+            'recommendations': json_report['recommendations'],
+            'performance_metrics': json_report['performance_metrics'],
+            'security_assessment': json_report['security_assessment'],
+            'quality_metrics': json_report['quality_metrics']
+        }
+
+        return template.render(**template_vars)
+
+    def _prioritize_recommendations(self, recommendations: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Prioritize recommendations by impact and effort."""
+
+        priority_map = {
+            'critical': 4,
+            'high': 3,
+            'medium': 2,
+            'low': 1
+        }
+
+        # Sort by priority (descending)
+        sorted_recs = sorted(
+            recommendations,
+            key=lambda x: priority_map.get(x.get('priority', 'low'), 1),
+            reverse=True
+        )
+
+        # Add implementation metadata
+        for rec in sorted_recs:
+            rec.setdefault('implementation_effort', 'medium')
+            rec.setdefault('expected_impact', 'medium')
+
+        return sorted_recs
+
+    def _calculate_quality_metrics(self, results: Dict[str, Any]) -> Dict[str, Any]:
+        """Calculate overall quality metrics."""
+
+        components = results.get('component_results', [])
+
+        if not components:
+            return {
+                'documentation_completeness': 0.0,
+                'code_quality_score': 0.0,
+                'test_coverage': 0.0,
+                'maintainability_index': 0.0
+            }
+
+        # Calculate averages
+        doc_scores = [c.get('documentation_score', 0.8) for c in components]
+        quality_scores = [c.get('score', 0.8) for c in components]
+        test_scores = [c.get('test_coverage', 0.8) for c in components]
+
+        return {
+            'documentation_completeness': sum(doc_scores) / len(doc_scores),
+            'code_quality_score': sum(quality_scores) / len(quality_scores),
+            'test_coverage': sum(test_scores) / len(test_scores),
+            'maintainability_index': self._calculate_maintainability_index(components)
+        }
+
+    def _calculate_maintainability_index(self, components: List[Dict[str, Any]]) -> float:
+        """Calculate maintainability index based on component metrics."""
+
+        if not components:
+            return 0.0
+
+        # Simple maintainability calculation
+        total_score = 0.0
+        for component in components:
+            score = component.get('score', 0.8)
+            # Adjust for complexity (higher lines of code = lower maintainability)
+            loc = component.get('metrics', {}).get('lines_of_code', 100)
+            complexity_penalty = min(1.0, loc / 1000.0)  # Penalty for > 1000 lines
+            adjusted_score = score * (1.0 - complexity_penalty * 0.2)
+            total_score += adjusted_score
+
+        return total_score / len(components)
+
+    def _load_templates(self) -> Dict[str, str]:
+        """Load report templates."""
+
+        # HTML template (simplified version)
+        html_template = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Qualia Integration Report - {{ report_id }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; }
+                .header { background: #2c3e50; color: white; padding: 20px; border-radius: 5px; }
+                .score { font-size: 48px; font-weight: bold; color: #27ae60; }
+                .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+                .component { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 3px; }
+                .success { border-left: 4px solid green; }
+                .warning { border-left: 4px solid orange; }
+                .error { border-left: 4px solid red; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Qualia Integration Review Report</h1>
+                <p>Report ID: {{ report_id }}</p>
+                <p>Generated: {{ timestamp }}</p>
+                <p>Qualia Path: {{ qualia_path }}</p>
+            </div>
+
+            <div class="section">
+                <h2>Overall Score</h2>
+                <div class="score">{{ "%.2f"|format(overall_score) }}</div>
+                <p>Status: {{ overall_status }}</p>
+            </div>
+
+            <div class="section">
+                <h2>Component Analysis</h2>
+                {% for component in components %}
+                <div class="component {{ 'success' if component.status == 'success' else 'warning' if component.status == 'warning' else 'error' }}">
+                    <h3>{{ component.component_name }}</h3>
+                    <p>Score: {{ "%.2f"|format(component.score) }}</p>
+                    <p>Status: {{ component.status }}</p>
+                    <p>Findings: {{ component.findings|length }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="section">
+                <h2>Recommendations</h2>
+                {% for rec in recommendations %}
+                <div class="component">
+                    <h4>{{ rec.description }}</h4>
+                    <p>Priority: {{ rec.priority }}</p>
+                    <p>Category: {{ rec.category }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </body>
+        </html>
+        """
+
+        # Text template
+        text_template = """
+QUALIA INTEGRATION REVIEW SUMMARY
+==================================
+
+Generated: {{ timestamp }}
+Qualia Path: {{ qualia_path }}
+Pipeline Version: {{ pipeline_version }}
+
+OVERALL SCORE: {{ "%.2f"|format(overall_score) }}
+Status: {{ status }}
+Critical Issues: {{ critical_issues }}
+High Priority Items: {{ high_priority }}
+Total Components: {{ total_components }}
+Successful Components: {{ successful_components }}
+
+EXECUTIVE SUMMARY
+=================
+Integration review completed with {{ status.lower() }} results.
+
+COMPONENT ANALYSIS
+==================
+
+{% for category, components in components_by_category.items() %}
+{{ category|title }} Components
+{% for component in components %}
+{{ "✓" if component.status == "success" else "⚠️" if component.status == "warning" else "❌" }} {{ component.component_name }} ({{ "%.2f"|format(component.score) }})
+{% if component.findings %}
+  {% for finding in component.findings[:2] %}
+  - {{ finding.description }}
+  {% endfor %}
+{% endif %}
+{% endfor %}
+
+{% endfor %}
+RECOMMENDATIONS
+===============
+
+{% for rec in recommendations %}
+{{ rec.priority|title }}: {{ rec.description }}
+• Category: {{ rec.category }}
+• Implementation Effort: {{ rec.implementation_effort }}
+• Expected Impact: {{ rec.expected_impact }}
+
+{% endfor %}
+Report generated by Qualia Integration Pipeline v{{ pipeline_version }}
+        """
+
+        return {
+            'html': html_template,
+            'text': text_template
+        }
+```
+
+## 📚 **Integration with Documentation Framework**
+
+### **Related Standards**
+- [Qualia Integration Pipeline Standards](mdc:.cursor/rules/qualia-integration-pipeline-standards.mdc)
+- [Qualia Directory Organization Standards](mdc:.cursor/rules/qualia-directory-organization.mdc)
+- [Integration Testing Standards](mdc:.cursor/rules/integration-testing-standards.mdc)
+- [Security Assessment Workflows](mdc:.cursor/rules/security-assessment-workflows.mdc)
+
+### **Supporting Tools**
+- [qualia_integration_pipeline.py](mdc:qualia_integration_pipeline.py) - Report generation engine
+- [report_generation_pipeline.py](mdc:report_generation_pipeline.py) - Advanced report generation
+- [docs/qualia_integration_guide.md](mdc:docs/qualia_integration_guide.md) - Documentation standards
+
+---
+
+**📊 Generate comprehensive, publication-ready reports that provide actionable insights for maintaining high-quality qualia integration standards!**
