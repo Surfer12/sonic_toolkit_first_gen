@@ -1,0 +1,743 @@
+---
+globs: *.py,*.java,*.swift,*.cpp,*.c
+description: "Performance profiling and optimization patterns for scientific computing applications"
+---
+
+# ⚡ Performance Profiling & Optimization Patterns
+
+This rule establishes comprehensive performance profiling and optimization patterns for the scientific computing toolkit, enabling systematic performance analysis, bottleneck identification, and optimization across all supported languages and frameworks.
+
+## 🎯 **Performance Profiling Framework**
+
+### **Unified Profiling Architecture**
+```python
+# Core performance profiling framework
+class PerformanceProfiler:
+    """
+    Unified performance profiling framework for scientific computing.
+
+    Provides comprehensive profiling capabilities across Python, Java, Swift,
+    and Mojo implementations with standardized metrics and reporting.
+    """
+
+    def __init__(self):
+        self.profilers = {
+            'python': PythonProfiler(),
+            'java': JavaProfiler(),
+            'swift': SwiftProfiler(),
+            'mojo': MojoProfiler()
+        }
+        self.metrics_collector = MetricsCollector()
+        self.bottleneck_analyzer = BottleneckAnalyzer()
+        self.optimization_recommender = OptimizationRecommender()
+
+    def profile_execution(self, language: str, code_block: Callable,
+                         iterations: int = 100) -> Dict[str, Any]:
+        """Profile code execution across specified iterations."""
+
+        if language not in self.profilers:
+            raise ValueError(f"Unsupported language: {language}")
+
+        profiler = self.profilers[language]
+
+        # Execute profiling
+        profile_results = profiler.profile_function(code_block, iterations)
+
+        # Analyze results
+        analysis = self.bottleneck_analyzer.analyze_profile(profile_results)
+
+        # Generate recommendations
+        recommendations = self.optimization_recommender.generate_recommendations(
+            profile_results, analysis
+        )
+
+        return {
+            'profile_results': profile_results,
+            'analysis': analysis,
+            'recommendations': recommendations,
+            'language': language,
+            'iterations': iterations,
+            'timestamp': datetime.now().isoformat()
+        }
+```
+
+### **Language-Specific Profilers**
+
+#### **Python Performance Profiling**
+```python
+class PythonProfiler:
+    """Python-specific performance profiling implementation."""
+
+    def profile_function(self, func: Callable, iterations: int = 100) -> Dict[str, Any]:
+        """Profile Python function execution."""
+
+        import cProfile
+        import pstats
+        import io
+        import tracemalloc
+        import time
+
+        # Setup profiling
+        pr = cProfile.Profile()
+        pr.enable()
+
+        # Memory tracking
+        tracemalloc.start()
+
+        # Time tracking
+        start_time = time.perf_counter()
+
+        # Execute function multiple times
+        results = []
+        for i in range(iterations):
+            result = func()
+            results.append(result)
+
+        # Stop profiling
+        execution_time = time.perf_counter() - start_time
+        pr.disable()
+
+        # Memory analysis
+        current, peak = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+
+        # Profile analysis
+        s = io.StringIO()
+        ps = pstats.Stats(pr, stream=s).sort_stats('cumulative')
+        ps.print_stats()
+
+        profile_stats = s.getvalue()
+
+        return {
+            'execution_time': execution_time,
+            'average_time_per_iteration': execution_time / iterations,
+            'memory_current': current,
+            'memory_peak': peak,
+            'profile_stats': profile_stats,
+            'function_calls': len(results),
+            'results_summary': self._summarize_results(results)
+        }
+
+    def _summarize_results(self, results: List[Any]) -> Dict[str, Any]:
+        """Summarize execution results."""
+        if not results:
+            return {}
+
+        # Basic statistics
+        summary = {
+            'total_results': len(results),
+            'successful_executions': len([r for r in results if r is not None])
+        }
+
+        # Type analysis
+        result_types = [type(r).__name__ for r in results if r is not None]
+        if result_types:
+            summary['result_types'] = list(set(result_types))
+            summary['primary_result_type'] = max(set(result_types), key=result_types.count)
+
+        return summary
+```
+
+#### **Java Performance Profiling**
+```java
+public class JavaProfiler {
+    private long startTime;
+    private long startMemory;
+    private Runtime runtime;
+
+    public JavaProfiler() {
+        this.runtime = Runtime.getRuntime();
+    }
+
+    public Map<String, Object> profileFunction(Supplier<Object> function, int iterations) {
+        Map<String, Object> results = new HashMap<>();
+
+        // Warm up JVM
+        for (int i = 0; i < 10; i++) {
+            function.get();
+        }
+
+        // Memory before execution
+        System.gc(); // Suggest garbage collection
+        startMemory = runtime.totalMemory() - runtime.freeMemory();
+
+        // Time execution
+        startTime = System.nanoTime();
+        List<Object> executionResults = new ArrayList<>();
+
+        for (int i = 0; i < iterations; i++) {
+            Object result = function.get();
+            executionResults.add(result);
+        }
+
+        long endTime = System.nanoTime();
+        long endMemory = runtime.totalMemory() - runtime.freeMemory();
+
+        // Calculate metrics
+        long totalTime = endTime - startTime;
+        double averageTime = (double) totalTime / iterations / 1_000_000; // Convert to milliseconds
+        long memoryUsed = endMemory - startMemory;
+
+        results.put("execution_time_ns", totalTime);
+        results.put("average_time_ms", averageTime);
+        results.put("memory_used_bytes", memoryUsed);
+        results.put("iterations", iterations);
+        results.put("results_count", executionResults.size());
+
+        // CPU usage estimation (simplified)
+        results.put("cpu_time_estimate", estimateCpuTime(executionResults));
+
+        return results;
+    }
+
+    private double estimateCpuTime(List<Object> results) {
+        // Simplified CPU time estimation
+        // In production, use more sophisticated CPU profiling
+        return results.size() * 0.001; // Placeholder
+    }
+
+    // Advanced profiling methods
+    public Map<String, Object> profileWithJITCompilation(Supplier<Object> function, int iterations) {
+        // Profile accounting for JIT compilation effects
+        Map<String, Object> coldStart = profileFunction(function, 1);
+        Map<String, Object> warmExecution = profileFunction(function, iterations);
+
+        Map<String, Object> jitAnalysis = new HashMap<>();
+        jitAnalysis.put("cold_start_time_ms", coldStart.get("average_time_ms"));
+        jitAnalysis.put("warm_execution_time_ms", warmExecution.get("average_time_ms"));
+        jitAnalysis.put("jit_overhead_ms", (Double) coldStart.get("average_time_ms") -
+                                          (Double) warmExecution.get("average_time_ms"));
+
+        return jitAnalysis;
+    }
+}
+```
+
+#### **Swift Performance Profiling**
+```swift
+import Foundation
+
+class SwiftProfiler {
+    private var startTime: CFAbsoluteTime = 0
+    private var startMemory: UInt64 = 0
+
+    func profileFunction<T>(_ function: () -> T, iterations: Int) -> [String: Any] {
+        var results: [T] = []
+
+        // Memory tracking setup (simplified)
+        startMemory = getMemoryUsage()
+
+        // Time execution
+        startTime = CFAbsoluteTimeGetCurrent()
+
+        for _ in 0..<iterations {
+            let result = function()
+            results.append(result)
+        }
+
+        let endTime = CFAbsoluteTimeGetCurrent()
+        let endMemory = getMemoryUsage()
+
+        // Calculate metrics
+        let totalTime = endTime - startTime
+        let averageTime = totalTime / Double(iterations)
+        let memoryUsed = Int(endMemory - startMemory)
+
+        return [
+            "execution_time_seconds": totalTime,
+            "average_time_seconds": averageTime,
+            "memory_used_bytes": memoryUsed,
+            "iterations": iterations,
+            "results_count": results.count,
+            "cpu_usage_estimate": estimateCpuUsage(results)
+        ]
+    }
+
+    private func getMemoryUsage() -> UInt64 {
+        // Get current memory usage
+        // This is a simplified implementation
+        // In production, use more sophisticated memory tracking
+        var info = mach_task_basic_info()
+        let count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size / MemoryLayout<natural_t>.size)
+
+        let kerr = task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), &info, &count)
+        if kerr == KERN_SUCCESS {
+            return info.resident_size
+        }
+        return 0
+    }
+
+    private func estimateCpuUsage<T>(_ results: [T]) -> Double {
+        // Estimate CPU usage based on execution time
+        // In production, use more sophisticated CPU profiling
+        return Double(results.count) * 0.001
+    }
+
+    // Advanced Swift profiling
+    func profileWithARCOverhead<T>(_ function: () -> T, iterations: Int) -> [String: Any] {
+        // Profile accounting for ARC (Automatic Reference Counting) overhead
+        let noRetainResults = profileFunction({
+            autoreleasepool {
+                return function()
+            }
+        }, iterations: iterations)
+
+        let retainResults = profileFunction(function, iterations: iterations)
+
+        return [
+            "no_retain_time": noRetainResults["average_time_seconds"] as? Double ?? 0,
+            "retain_time": retainResults["average_time_seconds"] as? Double ?? 0,
+            "arc_overhead_estimate": (retainResults["average_time_seconds"] as? Double ?? 0) -
+                                   (noRetainResults["average_time_seconds"] as? Double ?? 0)
+        ]
+    }
+}
+```
+
+## 🔍 **Bottleneck Analysis Framework**
+
+### **Automated Bottleneck Detection**
+```python
+class BottleneckAnalyzer:
+    """Automated bottleneck detection and analysis."""
+
+    def __init__(self):
+        self.bottleneck_patterns = {
+            'memory_bound': self._detect_memory_bottleneck,
+            'cpu_bound': self._detect_cpu_bottleneck,
+            'io_bound': self._detect_io_bottleneck,
+            'algorithmic_inefficiency': self._detect_algorithmic_inefficiency
+        }
+
+    def analyze_profile(self, profile_results: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze profiling results to identify bottlenecks."""
+
+        bottlenecks = []
+        recommendations = []
+
+        # Check each bottleneck type
+        for bottleneck_type, detector in self.bottleneck_patterns.items():
+            if detector(profile_results):
+                bottlenecks.append(bottleneck_type)
+                recommendations.extend(
+                    self._get_recommendations(bottleneck_type, profile_results)
+                )
+
+        # Overall performance assessment
+        performance_score = self._calculate_performance_score(profile_results)
+
+        return {
+            'bottlenecks_identified': bottlenecks,
+            'recommendations': recommendations,
+            'performance_score': performance_score,
+            'severity_assessment': self._assess_severity(bottlenecks, performance_score),
+            'optimization_priority': self._prioritize_optimizations(bottlenecks)
+        }
+
+    def _detect_memory_bottleneck(self, results: Dict[str, Any]) -> bool:
+        """Detect memory-related bottlenecks."""
+        memory_usage = results.get('memory_peak', 0)
+        execution_time = results.get('execution_time', 0)
+
+        # High memory usage relative to execution time suggests memory bottleneck
+        memory_efficiency = execution_time / max(memory_usage, 1)  # Avoid division by zero
+
+        return memory_efficiency < 0.001  # Threshold for memory bottleneck
+
+    def _detect_cpu_bottleneck(self, results: Dict[str, Any]) -> bool:
+        """Detect CPU-related bottlenecks."""
+        cpu_usage = results.get('cpu_usage_estimate', 0)
+        execution_time = results.get('execution_time', 0)
+
+        # Low CPU usage suggests CPU is not the bottleneck
+        return cpu_usage > 0.8  # High CPU usage indicates CPU bottleneck
+
+    def _detect_io_bottleneck(self, results: Dict[str, Any]) -> bool:
+        """Detect I/O-related bottlenecks."""
+        # Look for patterns in profile stats that indicate I/O operations
+        profile_stats = results.get('profile_stats', '')
+
+        io_indicators = ['read', 'write', 'open', 'close', 'seek']
+        io_count = sum(1 for indicator in io_indicators if indicator.lower() in profile_stats.lower())
+
+        return io_count > 10  # High number of I/O operations suggests I/O bottleneck
+
+    def _detect_algorithmic_inefficiency(self, results: Dict[str, Any]) -> bool:
+        """Detect algorithmic inefficiencies."""
+        execution_time = results.get('execution_time', 0)
+        iterations = results.get('iterations', 1)
+
+        # Very high execution time per iteration suggests algorithmic issues
+        time_per_iteration = execution_time / iterations
+
+        return time_per_iteration > 1.0  # More than 1 second per iteration
+
+    def _get_recommendations(self, bottleneck_type: str,
+                           profile_results: Dict[str, Any]) -> List[str]:
+        """Generate optimization recommendations based on bottleneck type."""
+
+        recommendations_map = {
+            'memory_bound': [
+                "Implement memory-efficient data structures",
+                "Use streaming processing for large datasets",
+                "Implement memory pooling and reuse",
+                "Consider out-of-core processing techniques"
+            ],
+            'cpu_bound': [
+                "Optimize algorithmic complexity (consider O(n) vs O(n²))",
+                "Implement parallel processing or vectorization",
+                "Use more efficient numerical libraries",
+                "Consider GPU acceleration for compute-intensive tasks"
+            ],
+            'io_bound': [
+                "Implement asynchronous I/O operations",
+                "Use memory-mapped files for large datasets",
+                "Implement data caching strategies",
+                "Consider data compression to reduce I/O"
+            ],
+            'algorithmic_inefficiency': [
+                "Review algorithm selection for problem characteristics",
+                "Implement more efficient data structures",
+                "Consider algorithmic approximations for speed",
+                "Profile and optimize critical code paths"
+            ]
+        }
+
+        return recommendations_map.get(bottleneck_type, ["Review code for optimization opportunities"])
+
+    def _calculate_performance_score(self, results: Dict[str, Any]) -> float:
+        """Calculate overall performance score (0-1, higher is better)."""
+
+        # Base score from execution time
+        execution_time = results.get('execution_time', 1)
+        time_score = min(1.0, 1.0 / execution_time)  # Faster is better
+
+        # Memory efficiency score
+        memory_usage = results.get('memory_peak', 1)
+        memory_score = min(1.0, 1.0 / (memory_usage / 1e9))  # Less memory is better
+
+        # CPU utilization score
+        cpu_usage = results.get('cpu_usage_estimate', 0.5)
+        cpu_score = cpu_usage  # Higher CPU usage is better
+
+        # Weighted combination
+        performance_score = (
+            0.4 * time_score +
+            0.3 * memory_score +
+            0.3 * cpu_score
+        )
+
+        return performance_score
+
+    def _assess_severity(self, bottlenecks: List[str], performance_score: float) -> str:
+        """Assess the severity of identified bottlenecks."""
+
+        bottleneck_count = len(bottlenecks)
+
+        if bottleneck_count == 0 and performance_score > 0.8:
+            return "EXCELLENT"
+        elif bottleneck_count <= 1 and performance_score > 0.6:
+            return "GOOD"
+        elif bottleneck_count <= 2 and performance_score > 0.4:
+            return "MODERATE"
+        elif bottleneck_count > 2 or performance_score < 0.4:
+            return "CRITICAL"
+        else:
+            return "REQUIRES_ATTENTION"
+
+    def _prioritize_optimizations(self, bottlenecks: List[str]) -> List[str]:
+        """Prioritize optimization efforts based on bottleneck impact."""
+
+        priority_order = {
+            'algorithmic_inefficiency': 1,  # Highest impact
+            'cpu_bound': 2,
+            'memory_bound': 3,
+            'io_bound': 4
+        }
+
+        # Sort bottlenecks by priority
+        sorted_bottlenecks = sorted(bottlenecks, key=lambda x: priority_order.get(x, 5))
+
+        return sorted_bottlenecks
+```
+
+## 🚀 **Optimization Strategies**
+
+### **Multi-Language Optimization Patterns**
+
+#### **Python Optimization Strategies**
+```python
+class PythonOptimizationStrategies:
+    """Python-specific optimization strategies."""
+
+    def vectorize_operations(self, data: np.ndarray) -> np.ndarray:
+        """Replace loops with vectorized operations."""
+        # Instead of: result = [x**2 for x in data]
+        return data ** 2  # Vectorized operation
+
+    def use_numba_jit(self, func):
+        """Apply Numba JIT compilation for performance-critical functions."""
+        from numba import jit
+        return jit(nopython=True, parallel=True)(func)
+
+    def optimize_memory_usage(self, large_data: np.ndarray) -> np.ndarray:
+        """Optimize memory usage for large datasets."""
+        # Use appropriate dtypes
+        if large_data.max() < 256:
+            return large_data.astype(np.uint8)
+        elif large_data.max() < 65536:
+            return large_data.astype(np.uint16)
+        else:
+            return large_data.astype(np.float32)  # Usually sufficient precision
+
+    def implement_caching(self, expensive_function):
+        """Implement caching for expensive computations."""
+        from functools import lru_cache
+
+        @lru_cache(maxsize=128)
+        def cached_function(*args, **kwargs):
+            return expensive_function(*args, **kwargs)
+
+        return cached_function
+```
+
+#### **Java Optimization Strategies**
+```java
+public class JavaOptimizationStrategies {
+
+    public double[] vectorizedComputation(double[] data) {
+        // Use efficient array operations instead of loops
+        double[] result = new double[data.length];
+        Arrays.parallelSetAll(result, i -> Math.pow(data[i], 2));
+        return result;
+    }
+
+    public List<Double> optimizeMemoryUsage(List<Double> largeList) {
+        // For large lists, consider more memory-efficient structures
+        if (largeList.size() > 1000000) {
+            // Convert to primitive array for better memory efficiency
+            double[] primitiveArray = largeList.stream()
+                .mapToDouble(Double::doubleValue)
+                .toArray();
+            return convertToList(primitiveArray);
+        }
+        return largeList;
+    }
+
+    public <T> T cacheExpensiveComputation(Supplier<T> computation, String cacheKey) {
+        // Simple in-memory caching
+        // In production, use more sophisticated caching solutions
+        return computation.get();
+    }
+
+    public void optimizeGarbageCollection() {
+        // Explicit garbage collection hints
+        System.gc();
+
+        // Use try-with-resources for automatic resource management
+        try (FileInputStream fis = new FileInputStream("data.txt")) {
+            // Process file
+        } catch (IOException e) {
+            // Handle exception
+        }
+    }
+}
+```
+
+#### **Swift Optimization Strategies**
+```swift
+class SwiftOptimizationStrategies {
+
+    func vectorizedComputation(_ data: [Double]) -> [Double] {
+        // Use Swift's high-performance array operations
+        return data.map { $0 * $0 } // More efficient than loops
+    }
+
+    func optimizeMemoryUsage(_ largeArray: [Double]) -> [Double] {
+        // For large arrays, consider more memory-efficient approaches
+        if largeArray.count > 1_000_000 {
+            // Use ContiguousArray for better performance
+            let contiguousArray = ContiguousArray(largeArray)
+            return Array(contiguousArray)
+        }
+        return largeArray
+    }
+
+    func cachedComputation<T>(_ computation: () -> T, cacheKey: String) -> T {
+        // Simple caching implementation
+        // In production, use NSCache or more sophisticated caching
+        struct Cache {
+            static var storage: [String: Any] = [:]
+        }
+
+        if let cached = Cache.storage[cacheKey] as? T {
+            return cached
+        }
+
+        let result = computation()
+        Cache.storage[cacheKey] = result
+        return result
+    }
+
+    func optimizeARC() {
+        // Use autoreleasepool for temporary objects
+        autoreleasepool {
+            // Create temporary objects that will be released immediately
+            let tempArray = (0..<1000).map { Double($0) }
+            let result = vectorizedComputation(tempArray)
+            // tempArray is released here
+        }
+    }
+}
+```
+
+## 📊 **Performance Monitoring & Alerting**
+
+### **Continuous Performance Monitoring**
+```python
+class PerformanceMonitor:
+    """Continuous performance monitoring and alerting."""
+
+    def __init__(self, alert_thresholds: Dict[str, float] = None):
+        self.alert_thresholds = alert_thresholds or {
+            'execution_time_increase': 0.20,  # 20% increase
+            'memory_usage_increase': 0.25,    # 25% increase
+            'error_rate_increase': 0.10       # 10% increase
+        }
+        self.baseline_metrics = {}
+        self.alert_history = []
+
+    def establish_baseline(self, component_name: str, metrics: Dict[str, Any]):
+        """Establish performance baseline for a component."""
+        self.baseline_metrics[component_name] = {
+            'metrics': metrics,
+            'timestamp': datetime.now().isoformat(),
+            'version': self._get_current_version()
+        }
+
+    def monitor_performance(self, component_name: str, current_metrics: Dict[str, Any]) -> Dict[str, Any]:
+        """Monitor performance against baseline and trigger alerts."""
+
+        if component_name not in self.baseline_metrics:
+            return {'status': 'no_baseline', 'alerts': []}
+
+        baseline = self.baseline_metrics[component_name]['metrics']
+        alerts = []
+
+        # Check execution time
+        if 'execution_time' in current_metrics and 'execution_time' in baseline:
+            time_increase = (current_metrics['execution_time'] - baseline['execution_time']) / baseline['execution_time']
+            if time_increase > self.alert_thresholds['execution_time_increase']:
+                alerts.append({
+                    'type': 'performance_degradation',
+                    'metric': 'execution_time',
+                    'increase': time_increase,
+                    'severity': 'HIGH' if time_increase > 0.5 else 'MEDIUM'
+                })
+
+        # Check memory usage
+        if 'memory_usage' in current_metrics and 'memory_usage' in baseline:
+            memory_increase = (current_metrics['memory_usage'] - baseline['memory_usage']) / baseline['memory_usage']
+            if memory_increase > self.alert_thresholds['memory_usage_increase']:
+                alerts.append({
+                    'type': 'memory_regression',
+                    'metric': 'memory_usage',
+                    'increase': memory_increase,
+                    'severity': 'HIGH' if memory_increase > 0.5 else 'MEDIUM'
+                })
+
+        # Log alerts
+        for alert in alerts:
+            self._log_alert(component_name, alert)
+
+        return {
+            'status': 'monitored',
+            'alerts': alerts,
+            'baseline_comparison': self._compare_with_baseline(component_name, current_metrics)
+        }
+
+    def _log_alert(self, component_name: str, alert: Dict[str, Any]):
+        """Log performance alert."""
+        alert_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'component': component_name,
+            'alert': alert
+        }
+
+        self.alert_history.append(alert_entry)
+
+        # Could integrate with external monitoring systems
+        print(f"🚨 PERFORMANCE ALERT: {component_name} - {alert['type']}")
+
+    def _compare_with_baseline(self, component_name: str, current_metrics: Dict[str, Any]) -> Dict[str, Any]:
+        """Compare current metrics with baseline."""
+        baseline = self.baseline_metrics[component_name]['metrics']
+
+        comparison = {}
+        for metric_name, current_value in current_metrics.items():
+            if metric_name in baseline:
+                baseline_value = baseline[metric_name]
+                change = (current_value - baseline_value) / baseline_value if baseline_value != 0 else 0
+                comparison[metric_name] = {
+                    'current': current_value,
+                    'baseline': baseline_value,
+                    'change_percent': change * 100,
+                    'status': 'improved' if change < -0.05 else 'degraded' if change > 0.05 else 'stable'
+                }
+
+        return comparison
+
+    def _get_current_version(self) -> str:
+        """Get current version information."""
+        # This would integrate with version control
+        return "1.0.0"
+
+    def generate_performance_report(self) -> Dict[str, Any]:
+        """Generate comprehensive performance report."""
+        return {
+            'timestamp': datetime.now().isoformat(),
+            'monitored_components': list(self.baseline_metrics.keys()),
+            'active_alerts': len([a for a in self.alert_history if self._is_recent_alert(a)]),
+            'baseline_coverage': len(self.baseline_metrics),
+            'performance_trends': self._analyze_performance_trends()
+        }
+
+    def _is_recent_alert(self, alert_entry: Dict[str, Any]) -> bool:
+        """Check if alert is recent (within last 24 hours)."""
+        alert_time = datetime.fromisoformat(alert_entry['timestamp'])
+        return (datetime.now() - alert_time).total_seconds() < 86400  # 24 hours
+
+    def _analyze_performance_trends(self) -> Dict[str, Any]:
+        """Analyze performance trends over time."""
+        # This would analyze historical performance data
+        return {
+            'overall_trend': 'stable',
+            'components_improving': [],
+            'components_degrading': [],
+            'recommendations': []
+        }
+```
+
+## 🎯 **Best Practices & Guidelines**
+
+### **Performance Profiling Best Practices**
+1. **Establish Baselines**: Always profile against known good baselines
+2. **Profile in Production**: Profile under realistic conditions and data sizes
+3. **Iterative Optimization**: Profile, optimize, profile again - iterate until satisfied
+4. **Comprehensive Metrics**: Track execution time, memory usage, CPU utilization, I/O operations
+5. **Statistical Significance**: Run multiple iterations and use statistical analysis
+
+### **Optimization Priority Guidelines**
+1. **Algorithm Selection**: Choose the right algorithm for the problem characteristics
+2. **Data Structures**: Use appropriate data structures for the access patterns
+3. **Memory Management**: Optimize memory allocation and garbage collection
+4. **Parallel Processing**: Utilize multiple cores and parallel processing where appropriate
+5. **I/O Optimization**: Minimize I/O operations and optimize data access patterns
+
+### **Language-Specific Optimization Guidelines**
+- **Python**: Use NumPy/SciPy for numerical computations, consider PyPy for long-running applications
+- **Java**: Focus on JIT compilation effects, use primitive types when possible, minimize object creation
+- **Swift**: Leverage value types, use autoreleasepool for memory management, consider Swift's concurrency model
+- **Mojo**: Utilize SIMD operations, optimize memory layout, leverage compile-time evaluation
+
+This performance profiling and optimization framework provides systematic approaches for identifying bottlenecks, implementing optimizations, and maintaining high performance across all scientific computing applications.

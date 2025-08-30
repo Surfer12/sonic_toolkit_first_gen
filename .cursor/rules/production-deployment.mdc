@@ -1,0 +1,917 @@
+---
+globs: *.py,*.yaml,*.yml,*.dockerfile,*.sh,*.md
+description: "Production deployment patterns and DevOps practices for scientific computing applications"
+---
+
+# 🚀 Production Deployment Patterns
+
+This rule establishes comprehensive production deployment patterns and DevOps practices for the scientific computing toolkit, ensuring reliable, scalable, and maintainable deployment across production environments.
+
+## 🎯 **Deployment Architecture Framework**
+
+### **Core Deployment Orchestration**
+```python
+# Primary deployment orchestration framework
+class DeploymentOrchestrator:
+    """
+    Comprehensive deployment orchestration for scientific computing applications.
+
+    Manages end-to-end deployment lifecycle from development to production
+    with automated scaling, monitoring, and rollback capabilities.
+    """
+
+    def __init__(self, environment: str = "production"):
+        self.environment = environment
+        self.config_manager = ConfigurationManager()
+        self.infrastructure_manager = InfrastructureManager()
+        self.monitoring_system = MonitoringSystem()
+        self.rollback_manager = RollbackManager()
+
+        # Initialize deployment pipeline
+        self.deployment_pipeline = self._initialize_pipeline()
+
+    def _initialize_pipeline(self) -> List[DeploymentStage]:
+        """Initialize deployment pipeline stages."""
+        return [
+            DeploymentStage("validation", self._validate_deployment),
+            DeploymentStage("build", self._build_artifacts),
+            DeploymentStage("test", self._run_integration_tests),
+            DeploymentStage("infrastructure", self._provision_infrastructure),
+            DeploymentStage("deploy", self._deploy_application),
+            DeploymentStage("verify", self._verify_deployment),
+            DeploymentStage("monitor", self._setup_monitoring)
+        ]
+
+    def execute_deployment(self, application_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute complete deployment pipeline."""
+
+        deployment_id = self._generate_deployment_id()
+        deployment_results = {
+            'deployment_id': deployment_id,
+            'start_time': datetime.now().isoformat(),
+            'stages': [],
+            'status': 'in_progress'
+        }
+
+        try:
+            for stage in self.deployment_pipeline:
+                stage_result = self._execute_stage(stage, application_config)
+                deployment_results['stages'].append(stage_result)
+
+                if not stage_result['success']:
+                    # Trigger rollback on failure
+                    rollback_result = self.rollback_manager.rollback(deployment_id)
+                    deployment_results['rollback'] = rollback_result
+                    deployment_results['status'] = 'failed'
+                    break
+
+            if deployment_results['status'] != 'failed':
+                deployment_results['status'] = 'completed'
+                deployment_results['end_time'] = datetime.now().isoformat()
+
+        except Exception as e:
+            deployment_results['status'] = 'error'
+            deployment_results['error'] = str(e)
+            deployment_results['end_time'] = datetime.now().isoformat()
+
+        # Store deployment results
+        self._store_deployment_results(deployment_results)
+
+        return deployment_results
+
+    def _execute_stage(self, stage: 'DeploymentStage',
+                      config: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute individual deployment stage."""
+
+        stage_start = datetime.now()
+        stage_result = {
+            'stage_name': stage.name,
+            'start_time': stage_start.isoformat(),
+            'success': False
+        }
+
+        try:
+            result = stage.function(config)
+            stage_result.update(result)
+            stage_result['success'] = True
+
+        except Exception as e:
+            stage_result['error'] = str(e)
+            stage_result['traceback'] = traceback.format_exc()
+
+        stage_result['end_time'] = datetime.now().isoformat()
+        stage_result['duration_seconds'] = (
+            datetime.fromisoformat(stage_result['end_time']) -
+            datetime.fromisoformat(stage_result['start_time'])
+        ).total_seconds()
+
+        return stage_result
+
+    def _generate_deployment_id(self) -> str:
+        """Generate unique deployment identifier."""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+        return f"deploy_{timestamp}_{random_suffix}"
+
+    def _store_deployment_results(self, results: Dict[str, Any]):
+        """Store deployment results for audit and monitoring."""
+        # Implementation would store in database or file system
+        pass
+
+    def get_deployment_status(self, deployment_id: str) -> Dict[str, Any]:
+        """Get status of specific deployment."""
+        # Implementation would retrieve from storage
+        pass
+
+    # Stage implementation methods
+    def _validate_deployment(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate deployment configuration and prerequisites."""
+        # Implementation details in sections below
+        pass
+
+    def _build_artifacts(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Build deployment artifacts."""
+        pass
+
+    def _run_integration_tests(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Run integration tests in staging environment."""
+        pass
+
+    def _provision_infrastructure(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Provision required infrastructure."""
+        pass
+
+    def _deploy_application(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Deploy application to target environment."""
+        pass
+
+    def _verify_deployment(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Verify successful deployment."""
+        pass
+
+    def _setup_monitoring(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Setup monitoring and alerting."""
+        pass
+```
+
+## 🏗️ **Infrastructure as Code**
+
+### **Docker Containerization**
+```dockerfile
+# Multi-stage Docker build for scientific computing
+FROM python:3.9-slim as base
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create application user
+RUN useradd --create-home --shell /bin/bash app
+
+FROM base as builder
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Build application
+COPY . /app
+WORKDIR /app
+RUN python setup.py build_ext --inplace
+
+FROM base as production
+
+# Copy built application
+COPY --from=builder /app /app
+COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+ENV OMP_NUM_THREADS=1
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/logs /app/models
+
+# Set permissions
+RUN chown -R app:app /app
+USER app
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import scientific_computing_toolkit; print('OK')" || exit 1
+
+# Expose ports
+EXPOSE 8000
+
+# Start application
+CMD ["python", "-m", "scientific_computing_toolkit.api"]
+```
+
+### **Kubernetes Deployment**
+```yaml
+# Complete Kubernetes deployment for scientific computing
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scientific-computing-deployment
+  labels:
+    app: scientific-computing
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: scientific-computing
+  template:
+    metadata:
+      labels:
+        app: scientific-computing
+    spec:
+      containers:
+      - name: scientific-computing
+        image: scientific-computing-toolkit:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: WORKERS
+          value: "4"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+        - name: models-volume
+          mountPath: /app/models
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: scientific-data-pvc
+      - name: models-volume
+        persistentVolumeClaim:
+          claimName: scientific-models-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scientific-computing-service
+spec:
+  selector:
+    app: scientific-computing
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: scientific-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: scientific-models-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+```
+
+## ⚙️ **Configuration Management**
+
+### **Environment-Based Configuration**
+```python
+class ConfigurationManager:
+    """Environment-based configuration management."""
+
+    def __init__(self):
+        self.config_cache = {}
+        self.environment = os.getenv('ENVIRONMENT', 'development')
+
+    def get_config(self, service_name: str) -> Dict[str, Any]:
+        """Get configuration for specific service."""
+
+        if service_name in self.config_cache:
+            return self.config_cache[service_name]
+
+        config = self._load_config(service_name)
+        self.config_cache[service_name] = config
+
+        return config
+
+    def _load_config(self, service_name: str) -> Dict[str, Any]:
+        """Load configuration from multiple sources."""
+
+        config = {}
+
+        # 1. Load base configuration
+        base_config = self._load_base_config()
+        config.update(base_config)
+
+        # 2. Load environment-specific configuration
+        env_config = self._load_environment_config(self.environment)
+        config.update(env_config)
+
+        # 3. Load service-specific configuration
+        service_config = self._load_service_config(service_name)
+        config.update(service_config)
+
+        # 4. Load secrets (if any)
+        secrets = self._load_secrets()
+        config.update(secrets)
+
+        # 5. Override with environment variables
+        config.update(self._load_environment_variables())
+
+        return config
+
+    def _load_base_config(self) -> Dict[str, Any]:
+        """Load base configuration."""
+        return {
+            'database': {
+                'host': 'localhost',
+                'port': 5432,
+                'database': 'scientific_db'
+            },
+            'cache': {
+                'redis_host': 'localhost',
+                'redis_port': 6379
+            },
+            'logging': {
+                'level': 'INFO',
+                'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            }
+        }
+
+    def _load_environment_config(self, environment: str) -> Dict[str, Any]:
+        """Load environment-specific configuration."""
+        env_configs = {
+            'development': {
+                'database': {'database': 'scientific_dev'},
+                'debug': True,
+                'workers': 1
+            },
+            'staging': {
+                'database': {'database': 'scientific_staging'},
+                'debug': False,
+                'workers': 2
+            },
+            'production': {
+                'database': {'host': 'prod-db.example.com'},
+                'debug': False,
+                'workers': 8,
+                'cache': {'redis_host': 'prod-cache.example.com'}
+            }
+        }
+
+        return env_configs.get(environment, {})
+
+    def _load_service_config(self, service_name: str) -> Dict[str, Any]:
+        """Load service-specific configuration."""
+        service_configs = {
+            'api': {
+                'port': 8000,
+                'cors_origins': ['*']
+            },
+            'worker': {
+                'queue_name': 'scientific_jobs',
+                'max_jobs': 1000
+            },
+            'scheduler': {
+                'cron_jobs': [
+                    {'name': 'data_cleanup', 'schedule': '0 2 * * *'},
+                    {'name': 'backup', 'schedule': '0 3 * * *'}
+                ]
+            }
+        }
+
+        return service_configs.get(service_name, {})
+
+    def _load_secrets(self) -> Dict[str, Any]:
+        """Load sensitive configuration from secure sources."""
+        # In production, this would integrate with AWS Secrets Manager, HashiCorp Vault, etc.
+        return {
+            'database': {
+                'password': os.getenv('DB_PASSWORD', 'default_password')
+            },
+            'api_keys': {
+                'openai': os.getenv('OPENAI_API_KEY'),
+                'aws': os.getenv('AWS_ACCESS_KEY_ID')
+            }
+        }
+
+    def _load_environment_variables(self) -> Dict[str, Any]:
+        """Load configuration from environment variables."""
+        env_config = {}
+
+        # Database configuration
+        if os.getenv('DATABASE_URL'):
+            env_config['database'] = {'url': os.getenv('DATABASE_URL')}
+
+        # Logging configuration
+        if os.getenv('LOG_LEVEL'):
+            env_config['logging'] = {'level': os.getenv('LOG_LEVEL')}
+
+        # Worker configuration
+        if os.getenv('MAX_WORKERS'):
+            env_config['workers'] = int(os.getenv('MAX_WORKERS'))
+
+        return env_config
+
+    def validate_config(self, config: Dict[str, Any]) -> List[str]:
+        """Validate configuration for completeness and correctness."""
+        issues = []
+
+        # Check required fields
+        required_fields = ['database', 'logging']
+        for field in required_fields:
+            if field not in config:
+                issues.append(f"Missing required configuration: {field}")
+
+        # Validate database configuration
+        if 'database' in config:
+            db_config = config['database']
+            if 'host' not in db_config:
+                issues.append("Database configuration missing 'host'")
+            if 'database' not in db_config:
+                issues.append("Database configuration missing 'database'")
+
+        # Validate logging configuration
+        if 'logging' in config:
+            log_config = config['logging']
+            valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+            if 'level' in log_config and log_config['level'] not in valid_levels:
+                issues.append(f"Invalid log level: {log_config['level']}")
+
+        return issues
+```
+
+## 📊 **Monitoring and Observability**
+
+### **Comprehensive Monitoring System**
+```python
+class MonitoringSystem:
+    """Comprehensive monitoring and observability system."""
+
+    def __init__(self):
+        self.metrics_collector = MetricsCollector()
+        self.alert_manager = AlertManager()
+        self.log_aggregator = LogAggregator()
+        self.performance_monitor = PerformanceMonitor()
+
+    def setup_monitoring(self, application_name: str, environment: str) -> Dict[str, Any]:
+        """Setup comprehensive monitoring for application."""
+
+        monitoring_config = {
+            'application': application_name,
+            'environment': environment,
+            'metrics': self._configure_metrics(),
+            'alerts': self._configure_alerts(),
+            'logging': self._configure_logging(),
+            'tracing': self._configure_tracing()
+        }
+
+        # Initialize monitoring components
+        self._initialize_monitoring_components(monitoring_config)
+
+        return monitoring_config
+
+    def _configure_metrics(self) -> Dict[str, Any]:
+        """Configure application metrics collection."""
+        return {
+            'system_metrics': {
+                'cpu_usage': True,
+                'memory_usage': True,
+                'disk_usage': True,
+                'network_io': True
+            },
+            'application_metrics': {
+                'request_count': True,
+                'request_duration': True,
+                'error_count': True,
+                'active_connections': True,
+                'queue_length': True
+            },
+            'scientific_metrics': {
+                'computation_time': True,
+                'data_processing_rate': True,
+                'model_accuracy': True,
+                'prediction_latency': True
+            },
+            'collection_interval': 30  # seconds
+        }
+
+    def _configure_alerts(self) -> Dict[str, Any]:
+        """Configure alerting rules."""
+        return {
+            'high_cpu_usage': {
+                'condition': 'cpu_usage > 90',
+                'severity': 'critical',
+                'channels': ['email', 'slack', 'pagerduty']
+            },
+            'high_memory_usage': {
+                'condition': 'memory_usage > 85',
+                'severity': 'warning',
+                'channels': ['email', 'slack']
+            },
+            'application_errors': {
+                'condition': 'error_rate > 5',
+                'severity': 'critical',
+                'channels': ['email', 'slack', 'pagerduty']
+            },
+            'slow_responses': {
+                'condition': 'response_time > 5000',  # ms
+                'severity': 'warning',
+                'channels': ['email']
+            }
+        }
+
+    def _configure_logging(self) -> Dict[str, Any]:
+        """Configure logging aggregation."""
+        return {
+            'log_levels': ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+            'structured_logging': True,
+            'log_retention': {
+                'debug_logs': 7,    # days
+                'info_logs': 30,    # days
+                'error_logs': 90    # days
+            },
+            'log_shipping': {
+                'destination': 'elasticsearch',
+                'index_pattern': 'scientific-computing-{environment}-{date}',
+                'batch_size': 1000
+            }
+        }
+
+    def _configure_tracing(self) -> Dict[str, Any]:
+        """Configure distributed tracing."""
+        return {
+            'tracing_enabled': True,
+            'sampler': {
+                'type': 'probabilistic',
+                'rate': 0.1  # 10% sampling rate
+            },
+            'exporters': [
+                {
+                    'type': 'jaeger',
+                    'endpoint': 'http://jaeger-collector:14268/api/traces'
+                },
+                {
+                    'type': 'zipkin',
+                    'endpoint': 'http://zipkin:9411/api/v2/spans'
+                }
+            ],
+            'instrumentation': {
+                'http_requests': True,
+                'database_queries': True,
+                'external_api_calls': True,
+                'scientific_computations': True
+            }
+        }
+
+    def _initialize_monitoring_components(self, config: Dict[str, Any]):
+        """Initialize all monitoring components."""
+        # Initialize metrics collection
+        self.metrics_collector.initialize(config['metrics'])
+
+        # Setup alerting
+        self.alert_manager.setup_alerts(config['alerts'])
+
+        # Configure logging
+        self.log_aggregator.configure_logging(config['logging'])
+
+        # Setup tracing
+        if config['tracing']['tracing_enabled']:
+            self._setup_distributed_tracing(config['tracing'])
+
+    def _setup_distributed_tracing(self, tracing_config: Dict[str, Any]):
+        """Setup distributed tracing infrastructure."""
+        # Implementation would initialize tracing libraries
+        # and instrument application code
+        pass
+
+    def collect_system_health(self) -> Dict[str, Any]:
+        """Collect comprehensive system health metrics."""
+        return {
+            'timestamp': datetime.now().isoformat(),
+            'system_health': self._get_system_health(),
+            'application_health': self._get_application_health(),
+            'scientific_health': self._get_scientific_health(),
+            'infrastructure_health': self._get_infrastructure_health()
+        }
+
+    def _get_system_health(self) -> Dict[str, Any]:
+        """Get system-level health metrics."""
+        return {
+            'cpu_usage_percent': psutil.cpu_percent(interval=1),
+            'memory_usage_percent': psutil.virtual_memory().percent,
+            'disk_usage_percent': psutil.disk_usage('/').percent,
+            'network_connections': len(psutil.net_connections())
+        }
+
+    def _get_application_health(self) -> Dict[str, Any]:
+        """Get application-level health metrics."""
+        return {
+            'active_requests': 42,  # Would be actual metric
+            'error_rate_percent': 0.5,
+            'average_response_time_ms': 245,
+            'uptime_seconds': 86400
+        }
+
+    def _get_scientific_health(self) -> Dict[str, Any]:
+        """Get scientific computation health metrics."""
+        return {
+            'active_computations': 8,
+            'average_computation_time_seconds': 12.5,
+            'computation_success_rate_percent': 98.7,
+            'data_processing_rate_mb_per_second': 45.2
+        }
+
+    def _get_infrastructure_health(self) -> Dict[str, Any]:
+        """Get infrastructure health metrics."""
+        return {
+            'database_connections_active': 15,
+            'cache_hit_rate_percent': 89.3,
+            'message_queue_depth': 234,
+            'load_balancer_healthy_backends': 8
+        }
+```
+
+## 🔄 **Rollback and Recovery System**
+
+### **Automated Rollback Framework**
+```python
+class RollbackManager:
+    """Automated rollback and recovery system."""
+
+    def __init__(self):
+        self.backup_manager = BackupManager()
+        self.version_manager = VersionManager()
+        self.health_checker = HealthChecker()
+
+    def rollback(self, deployment_id: str) -> Dict[str, Any]:
+        """Execute rollback for failed deployment."""
+
+        rollback_result = {
+            'deployment_id': deployment_id,
+            'rollback_id': self._generate_rollback_id(),
+            'start_time': datetime.now().isoformat(),
+            'status': 'in_progress'
+        }
+
+        try:
+            # 1. Identify previous stable version
+            previous_version = self.version_manager.get_previous_stable_version(deployment_id)
+
+            # 2. Create backup of current state
+            current_backup = self.backup_manager.create_rollback_backup()
+
+            # 3. Stop current deployment
+            self._stop_current_deployment()
+
+            # 4. Restore previous version
+            restore_result = self._restore_previous_version(previous_version)
+
+            # 5. Start restored deployment
+            start_result = self._start_restored_deployment()
+
+            # 6. Verify rollback success
+            health_check = self.health_checker.verify_deployment_health()
+
+            rollback_result.update({
+                'status': 'completed' if health_check['healthy'] else 'failed',
+                'previous_version': previous_version,
+                'current_backup': current_backup,
+                'restore_result': restore_result,
+                'start_result': start_result,
+                'health_check': health_check,
+                'end_time': datetime.now().isoformat()
+            })
+
+        except Exception as e:
+            rollback_result.update({
+                'status': 'error',
+                'error': str(e),
+                'traceback': traceback.format_exc(),
+                'end_time': datetime.now().isoformat()
+            })
+
+        return rollback_result
+
+    def _generate_rollback_id(self) -> str:
+        """Generate unique rollback identifier."""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+        return f"rollback_{timestamp}_{random_suffix}"
+
+    def _stop_current_deployment(self):
+        """Stop current deployment gracefully."""
+        # Implementation would stop services, drain connections, etc.
+        pass
+
+    def _restore_previous_version(self, version: str) -> Dict[str, Any]:
+        """Restore previous version of application."""
+        # Implementation would restore from backup or version control
+        return {'status': 'restored', 'version': version}
+
+    def _start_restored_deployment(self) -> Dict[str, Any]:
+        """Start restored deployment."""
+        # Implementation would start services with restored version
+        return {'status': 'started', 'services': ['api', 'worker', 'scheduler']}
+
+    def create_rollback_plan(self, deployment_id: str) -> Dict[str, Any]:
+        """Create detailed rollback plan for deployment."""
+        return {
+            'deployment_id': deployment_id,
+            'rollback_strategy': 'immediate_rollback',
+            'estimated_duration_minutes': 15,
+            'impact_assessment': 'minimal_downtime',
+            'prerequisites': [
+                'Database backup available',
+                'Application logs archived',
+                'Previous version artifacts available'
+            ],
+            'steps': [
+                'Create current state backup',
+                'Stop application services',
+                'Restore previous version',
+                'Update configuration',
+                'Start services with previous version',
+                'Verify application health',
+                'Monitor for 30 minutes'
+            ],
+            'success_criteria': [
+                'All services start successfully',
+                'Health checks pass',
+                'No data loss',
+                'Application responds to requests'
+            ],
+            'failure_procedures': [
+                'Immediate alert to on-call engineer',
+                'Attempt secondary rollback strategy',
+                'Escalate to incident response team if needed'
+            ]
+        }
+```
+
+## 🚀 **CI/CD Pipeline Integration**
+
+### **GitHub Actions Workflow**
+```yaml
+# Complete CI/CD pipeline for scientific computing
+name: Scientific Computing CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, "3.10"]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Run scientific validation tests
+      run: |
+        python -m pytest tests/ -v --cov=scientific_computing_toolkit
+        python complete_integration_test.py
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: false
+        tags: scientific-computing-toolkit:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Run container tests
+      run: |
+        docker run --rm scientific-computing-toolkit:latest python -c "import scientific_computing_toolkit; print('Import successful')"
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+
+    steps:
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment"
+        # Deployment commands would go here
+
+  deploy-production:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production environment"
+        # Production deployment commands would go here
+
+    - name: Run production smoke tests
+      run: |
+        echo "Running production smoke tests"
+        # Smoke test commands would go here
+```
+
+## 🎯 **Best Practices & Guidelines**
+
+### **Deployment Best Practices**
+1. **Blue-Green Deployments**: Deploy to staging, validate, then promote to production
+2. **Canary Releases**: Gradually roll out changes to subset of users
+3. **Feature Flags**: Enable/disable features without redeployment
+4. **Automated Testing**: Comprehensive test suites for all deployment stages
+5. **Monitoring Integration**: Real-time monitoring from deployment onwards
+6. **Rollback Readiness**: Automated rollback procedures for any deployment
+
+### **Infrastructure Best Practices**
+1. **Immutable Infrastructure**: Treat infrastructure as code and immutable
+2. **Infrastructure as Code**: Define all infrastructure using code (Terraform, CloudFormation)
+3. **Auto-scaling**: Automatically scale resources based on demand
+4. **Multi-region Deployment**: Deploy across multiple regions for high availability
+5. **Disaster Recovery**: Comprehensive backup and recovery procedures
+6. **Security Hardening**: Security best practices at infrastructure level
+
+### **Operational Best Practices**
+1. **Zero-downtime Deployments**: Ensure continuous service availability
+2. **Database Migrations**: Safe database schema changes with rollback capability
+3. **Configuration Management**: Centralized configuration with environment overrides
+4. **Log Aggregation**: Centralized logging for troubleshooting and monitoring
+5. **Performance Benchmarking**: Continuous performance monitoring and alerting
+6. **Capacity Planning**: Monitor resource usage and plan for scaling
+
+### **Security Best Practices**
+1. **Container Security**: Scan containers for vulnerabilities
+2. **Secret Management**: Secure storage and rotation of secrets
+3. **Network Security**: Proper network segmentation and firewall rules
+4. **Access Control**: Role-based access control and least privilege
+5. **Compliance**: Meet regulatory requirements for data handling
+6. **Audit Logging**: Comprehensive logging for security events
+
+This production deployment framework ensures reliable, scalable, and secure deployment of scientific computing applications with comprehensive monitoring, automated rollback, and operational excellence.

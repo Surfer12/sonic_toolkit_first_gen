@@ -41,6 +41,12 @@ from .lstm_integration import (
     LSTMTemporalIntegration,
     LSTMTemporalAnalysis
 )
+from .citation_manager import (
+    CitationManager,
+    CitationPattern,
+    CitationValidator,
+    CitationIntegration
+)
 
 __all__ = [
     'SourceHierarchy', 'SourceType',
@@ -58,5 +64,9 @@ __all__ = [
     'HBModelParameters',
     'LSTMTemporalValidator',
     'LSTMTemporalIntegration',
-    'LSTMTemporalAnalysis'
+    'LSTMTemporalAnalysis',
+    'CitationManager',
+    'CitationPattern',
+    'CitationValidator',
+    'CitationIntegration'
 ]

@@ -1,0 +1,651 @@
+---
+globs: *.py,*.ipynb,*.json
+description: "AI/ML integration patterns for scientific computing workflows"
+---
+
+# 🤖 AI/ML Integration Patterns
+
+This rule establishes comprehensive AI/ML integration patterns for the scientific computing toolkit, enabling seamless incorporation of machine learning and artificial intelligence capabilities into research workflows.
+
+## 🎯 **AI/ML Framework Architecture**
+
+### **Core Integration Components**
+```python
+# Primary AI/ML integration framework
+class AIMLIntegrationFramework:
+    """
+    Unified AI/ML integration for scientific computing workflows.
+
+    This framework provides standardized patterns for incorporating
+    machine learning and AI capabilities across research domains.
+    """
+
+    def __init__(self):
+        self.ml_engines = {
+            'neural_networks': NeuralNetworkEngine(),
+            'ensemble_methods': EnsembleEngine(),
+            'bayesian_optimization': BayesianOptimizationEngine(),
+            'reinforcement_learning': ReinforcementLearningEngine()
+        }
+        self.data_pipelines = DataPipelineManager()
+        self.model_registry = ModelRegistry()
+        self.performance_monitor = PerformanceMonitor()
+
+    def integrate_ml_workflow(self, scientific_problem: Dict[str, Any]) -> Dict[str, Any]:
+        """Integrate ML capabilities into scientific workflows."""
+        # Implementation details in sections below
+        pass
+```
+
+### **ML Integration Points**
+
+#### **1. Data Processing Integration**
+```python
+class DataPipelineManager:
+    """Manages data preprocessing for ML integration."""
+
+    def prepare_scientific_data(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Prepare scientific data for ML processing."""
+        processed_data = {
+            'features': self.extract_features(raw_data),
+            'labels': self.extract_labels(raw_data),
+            'metadata': self.extract_metadata(raw_data),
+            'validation_split': self.create_validation_split(raw_data)
+        }
+        return processed_data
+
+    def extract_features(self, data: Dict[str, Any]) -> np.ndarray:
+        """Extract relevant features for ML models."""
+        # Domain-specific feature extraction
+        if 'rheology' in data.get('domain', ''):
+            return self.extract_rheological_features(data)
+        elif 'biological' in data.get('domain', ''):
+            return self.extract_biological_features(data)
+        elif 'optical' in data.get('domain', ''):
+            return self.extract_optical_features(data)
+        else:
+            return self.extract_general_features(data)
+```
+
+#### **2. Model Selection and Training**
+```python
+class ModelRegistry:
+    """Registry for ML models optimized for scientific domains."""
+
+    def __init__(self):
+        self.models = {
+            'rheology_prediction': {
+                'neural_network': MLPRegressor(hidden_layer_sizes=(100, 50), max_iter=1000),
+                'random_forest': RandomForestRegressor(n_estimators=100, random_state=42),
+                'svr': SVR(kernel='rbf', C=1.0, epsilon=0.1)
+            },
+            'biological_modeling': {
+                'lstm': LSTMRegressor(units=64, dropout=0.2),
+                'transformer': TransformerRegressor(num_layers=6, d_model=128),
+                'attention_network': AttentionRegressor(attention_heads=8)
+            },
+            'optical_analysis': {
+                'cnn': CNNRegressor(filters=[32, 64, 128], kernel_size=3),
+                'unet': UNetRegressor(depth=4, features=64),
+                'vision_transformer': VisionTransformerRegressor(patch_size=16, embed_dim=768)
+            }
+        }
+
+    def select_optimal_model(self, problem_type: str, data_characteristics: Dict[str, Any]) -> Any:
+        """Select optimal ML model based on problem characteristics."""
+        domain_models = self.models.get(problem_type, {})
+
+        # Model selection logic based on data characteristics
+        if data_characteristics.get('dimensionality', 0) > 1000:
+            # High-dimensional data - prefer neural networks
+            return domain_models.get('neural_network', domain_models.get('cnn'))
+
+        elif data_characteristics.get('temporal', False):
+            # Time-series data - prefer LSTM/transformer
+            return domain_models.get('lstm', domain_models.get('transformer'))
+
+        elif data_characteristics.get('spatial', False):
+            # Spatial data - prefer CNN/U-Net
+            return domain_models.get('cnn', domain_models.get('unet'))
+
+        else:
+            # General case - prefer ensemble methods
+            return domain_models.get('random_forest', domain_models.get('neural_network'))
+```
+
+## 🔬 **Scientific ML Applications**
+
+### **1. Rheological Property Prediction**
+```python
+class RheologicalMLPredictor:
+    """ML-based rheological property prediction."""
+
+    def __init__(self):
+        self.models = {
+            'viscosity_prediction': self._build_viscosity_model(),
+            'yield_stress_prediction': self._build_yield_stress_model(),
+            'thixotropy_analysis': self._build_thixotropy_model()
+        }
+
+    def _build_viscosity_model(self) -> Pipeline:
+        """Build viscosity prediction model pipeline."""
+        return Pipeline([
+            ('scaler', StandardScaler()),
+            ('feature_selection', SelectKBest(f_regression, k=10)),
+            ('regressor', RandomForestRegressor(
+                n_estimators=200,
+                max_depth=20,
+                min_samples_split=5,
+                random_state=42
+            ))
+        ])
+
+    def predict_viscosity_curve(self, material_composition: Dict[str, float],
+                              shear_rate_range: np.ndarray) -> np.ndarray:
+        """Predict viscosity curve for given material composition."""
+
+        # Generate feature matrix for shear rate range
+        features = self._generate_feature_matrix(material_composition, shear_rate_range)
+
+        # Make predictions
+        predictions = self.models['viscosity_prediction'].predict(features)
+
+        return predictions
+
+    def _generate_feature_matrix(self, composition: Dict[str, float],
+                               shear_rates: np.ndarray) -> np.ndarray:
+        """Generate feature matrix for ML prediction."""
+        features = []
+
+        for gamma_dot in shear_rates:
+            feature_vector = [
+                composition.get('polymer_concentration', 0.0),
+                composition.get('solvent_viscosity', 1.0),
+                composition.get('temperature', 298.0),
+                gamma_dot,
+                np.log(gamma_dot + 1e-10),  # Logarithmic shear rate
+                gamma_dot**0.5,  # Square root shear rate
+            ]
+            features.append(feature_vector)
+
+        return np.array(features)
+```
+
+### **2. Biological System Modeling**
+```python
+class BiologicalMLModeler:
+    """ML-based biological system modeling."""
+
+    def __init__(self):
+        self.models = {
+            'nutrient_transport': self._build_transport_model(),
+            'cellular_response': self._build_response_model(),
+            'tissue_mechanics': self._build_mechanics_model()
+        }
+
+    def _build_transport_model(self) -> Pipeline:
+        """Build nutrient transport prediction model."""
+        return Pipeline([
+            ('scaler', StandardScaler()),
+            ('pca', PCA(n_components=0.95)),
+            ('regressor', MLPRegressor(
+                hidden_layer_sizes=(128, 64, 32),
+                activation='relu',
+                solver='adam',
+                alpha=0.001,
+                max_iter=2000,
+                random_state=42
+            ))
+        ])
+
+    def predict_nutrient_distribution(self, tissue_geometry: np.ndarray,
+                                    boundary_conditions: Dict[str, Any],
+                                    time_points: np.ndarray) -> np.ndarray:
+        """Predict nutrient distribution in biological tissue."""
+
+        # Generate spatio-temporal feature matrix
+        features = self._generate_spatiotemporal_features(
+            tissue_geometry, boundary_conditions, time_points
+        )
+
+        # Make predictions
+        predictions = self.models['nutrient_transport'].predict(features)
+
+        # Reshape to spatio-temporal grid
+        return predictions.reshape((len(time_points), -1))
+
+    def _generate_spatiotemporal_features(self, geometry: np.ndarray,
+                                        boundary_conditions: Dict[str, Any],
+                                        time_points: np.ndarray) -> np.ndarray:
+        """Generate spatio-temporal feature matrix."""
+        features = []
+
+        for t in time_points:
+            for point in geometry:
+                feature_vector = [
+                    point[0], point[1],  # Spatial coordinates
+                    t,  # Time
+                    boundary_conditions.get('inlet_concentration', 1.0),
+                    boundary_conditions.get('flow_velocity', 1e-4),
+                    np.linalg.norm(point),  # Distance from origin
+                    np.exp(-t / boundary_conditions.get('decay_time', 100.0))
+                ]
+                features.append(feature_vector)
+
+        return np.array(features)
+```
+
+### **3. Optical System Analysis**
+```python
+class OpticalMLAnalyzer:
+    """ML-based optical system analysis."""
+
+    def __init__(self):
+        self.models = {
+            'depth_enhancement': self._build_depth_model(),
+            'aberration_correction': self._build_aberration_model(),
+            'resolution_optimization': self._build_resolution_model()
+        }
+
+    def _build_depth_model(self) -> Pipeline:
+        """Build depth enhancement model."""
+        return Pipeline([
+            ('scaler', StandardScaler()),
+            ('feature_extraction', FeatureUnion([
+                ('raw_features', IdentityTransformer()),
+                ('polynomial_features', PolynomialFeatures(degree=2)),
+                ('spatial_features', SpatialFeatureExtractor())
+            ])),
+            ('regressor', GradientBoostingRegressor(
+                n_estimators=200,
+                max_depth=6,
+                learning_rate=0.1,
+                random_state=42
+            ))
+        ])
+
+    def enhance_depth_precision(self, raw_depth_data: np.ndarray,
+                              optical_parameters: Dict[str, Any]) -> np.ndarray:
+        """Enhance depth precision using ML models."""
+
+        # Extract features from raw depth data
+        features = self._extract_depth_features(raw_depth_data, optical_parameters)
+
+        # Apply ML-based enhancement
+        enhanced_depth = self.models['depth_enhancement'].predict(features)
+
+        # Apply physical constraints
+        enhanced_depth = self._apply_physical_constraints(enhanced_depth, optical_parameters)
+
+        return enhanced_depth
+
+    def _extract_depth_features(self, depth_data: np.ndarray,
+                              optical_params: Dict[str, Any]) -> np.ndarray:
+        """Extract features for depth enhancement."""
+        features = []
+
+        # Basic depth statistics
+        features.extend([
+            np.mean(depth_data),
+            np.std(depth_data),
+            np.min(depth_data),
+            np.max(depth_data),
+            np.median(depth_data)
+        ])
+
+        # Optical parameter features
+        features.extend([
+            optical_params.get('wavelength', 500e-9),
+            optical_params.get('numerical_aperture', 0.5),
+            optical_params.get('pixel_size', 1e-6),
+            optical_params.get('focal_length', 0.01)
+        ])
+
+        # Spatial features
+        gradient_magnitude = np.gradient(depth_data)
+        features.extend([
+            np.mean(np.abs(gradient_magnitude)),
+            np.std(gradient_magnitude),
+            np.max(np.abs(gradient_magnitude))
+        ])
+
+        return np.array(features).reshape(1, -1)
+```
+
+## 🚀 **Advanced ML Integration Patterns**
+
+### **1. Bayesian Optimization Integration**
+```python
+class BayesianOptimizationEngine:
+    """Bayesian optimization for hyperparameter tuning."""
+
+    def __init__(self):
+        self.optimizer = BayesianOptimizer(
+            bounds=self._get_parameter_bounds(),
+            random_state=42
+        )
+
+    def _get_parameter_bounds(self) -> List[Tuple[float, float]]:
+        """Get parameter bounds for optimization."""
+        return [
+            (10, 1000),    # Learning rate bounds
+            (32, 512),     # Hidden layer size bounds
+            (0.0, 0.5),    # Dropout rate bounds
+            (0.001, 0.1)   # Regularization bounds
+        ]
+
+    def optimize_hyperparameters(self, model_factory: Callable,
+                               evaluation_function: Callable,
+                               n_iterations: int = 50) -> Dict[str, Any]:
+        """Optimize model hyperparameters using Bayesian optimization."""
+
+        def objective_function(params):
+            """Objective function for Bayesian optimization."""
+            learning_rate, hidden_size, dropout, regularization = params
+
+            # Create model with current parameters
+            model = model_factory(
+                learning_rate=learning_rate,
+                hidden_size=int(hidden_size),
+                dropout=dropout,
+                regularization=regularization
+            )
+
+            # Evaluate model performance
+            performance = evaluation_function(model)
+
+            # Return negative performance (for minimization)
+            return -performance
+
+        # Run Bayesian optimization
+        result = self.optimizer.maximize(
+            func=objective_function,
+            n_iter=n_iterations
+        )
+
+        return {
+            'optimal_parameters': result.x,
+            'optimal_performance': -result.fun,
+            'optimization_history': result.func_vals,
+            'parameter_history': result.x_iters
+        }
+```
+
+### **2. Ensemble Learning Integration**
+```python
+class EnsembleEngine:
+    """Ensemble learning for robust scientific predictions."""
+
+    def __init__(self):
+        self.base_models = self._initialize_base_models()
+        self.meta_model = self._initialize_meta_model()
+
+    def _initialize_base_models(self) -> List[Any]:
+        """Initialize diverse base models."""
+        return [
+            RandomForestRegressor(n_estimators=100, random_state=42),
+            GradientBoostingRegressor(n_estimators=100, random_state=42),
+            MLPRegressor(hidden_layer_sizes=(100, 50), max_iter=1000, random_state=42),
+            SVR(kernel='rbf', C=1.0, epsilon=0.1),
+            LinearRegression()
+        ]
+
+    def _initialize_meta_model(self) -> Any:
+        """Initialize meta-model for ensemble combination."""
+        return Ridge(alpha=0.1, random_state=42)
+
+    def fit_ensemble(self, X_train: np.ndarray, y_train: np.ndarray) -> 'EnsembleEngine':
+        """Fit ensemble model."""
+
+        # Train base models
+        base_predictions = []
+        for model in self.base_models:
+            model.fit(X_train, y_train)
+            base_pred = model.predict(X_train)
+            base_predictions.append(base_pred.reshape(-1, 1))
+
+        # Create meta-features
+        meta_features = np.hstack(base_predictions)
+
+        # Train meta-model
+        self.meta_model.fit(meta_features, y_train)
+
+        return self
+
+    def predict_ensemble(self, X_test: np.ndarray) -> np.ndarray:
+        """Make predictions with ensemble model."""
+
+        # Get base model predictions
+        base_predictions = []
+        for model in self.base_models:
+            base_pred = model.predict(X_test)
+            base_predictions.append(base_pred.reshape(-1, 1))
+
+        # Create meta-features
+        meta_features = np.hstack(base_predictions)
+
+        # Make final prediction
+        final_prediction = self.meta_model.predict(meta_features)
+
+        return final_prediction
+
+    def predict_with_uncertainty(self, X_test: np.ndarray,
+                               n_bootstraps: int = 100) -> Tuple[np.ndarray, np.ndarray]:
+        """Predict with uncertainty quantification."""
+
+        predictions = []
+
+        for _ in range(n_bootstraps):
+            # Bootstrap sample of base models
+            bootstrap_indices = np.random.choice(len(self.base_models),
+                                               size=len(self.base_models),
+                                               replace=True)
+
+            bootstrap_models = [self.base_models[i] for i in bootstrap_indices]
+
+            # Make predictions with bootstrap models
+            bootstrap_predictions = []
+            for model in bootstrap_models:
+                pred = model.predict(X_test)
+                bootstrap_predictions.append(pred.reshape(-1, 1))
+
+            meta_features = np.hstack(bootstrap_predictions)
+            prediction = self.meta_model.predict(meta_features)
+            predictions.append(prediction)
+
+        # Calculate mean and standard deviation
+        predictions_array = np.array(predictions)
+        mean_prediction = np.mean(predictions_array, axis=0)
+        std_prediction = np.std(predictions_array, axis=0)
+
+        return mean_prediction, std_prediction
+```
+
+### **3. Neural Architecture Search Integration**
+```python
+class NeuralArchitectureSearch:
+    """Neural architecture search for optimal model design."""
+
+    def __init__(self, search_space: Dict[str, List[Any]]):
+        self.search_space = search_space
+        self.search_algorithm = EvolutionarySearch()
+        self.performance_evaluator = PerformanceEvaluator()
+
+    def search_optimal_architecture(self, train_data: Tuple[np.ndarray, np.ndarray],
+                                  val_data: Tuple[np.ndarray, np.ndarray],
+                                  generations: int = 20) -> Dict[str, Any]:
+        """Search for optimal neural architecture."""
+
+        def architecture_fitness(architecture: Dict[str, Any]) -> float:
+            """Evaluate architecture fitness."""
+            try:
+                # Build model from architecture
+                model = self._build_model_from_architecture(architecture)
+
+                # Train model
+                history = model.fit(
+                    train_data[0], train_data[1],
+                    validation_data=val_data,
+                    epochs=50,
+                    batch_size=32,
+                    verbose=0
+                )
+
+                # Evaluate performance
+                val_performance = self.performance_evaluator.evaluate_model(
+                    model, val_data[0], val_data[1]
+                )
+
+                # Calculate fitness (higher is better)
+                fitness = val_performance['accuracy'] - 0.01 * val_performance['complexity_penalty']
+
+                return fitness
+
+            except Exception as e:
+                # Penalize failed architectures
+                return -1.0
+
+        # Run architecture search
+        optimal_architecture = self.search_algorithm.search(
+            search_space=self.search_space,
+            fitness_function=architecture_fitness,
+            generations=generations
+        )
+
+        return optimal_architecture
+
+    def _build_model_from_architecture(self, architecture: Dict[str, Any]) -> Any:
+        """Build neural network model from architecture specification."""
+        # Implementation for building model from architecture
+        pass
+```
+
+## 📊 **ML Performance Monitoring**
+
+### **Model Performance Tracking**
+```python
+class PerformanceMonitor:
+    """Monitor ML model performance in scientific applications."""
+
+    def __init__(self):
+        self.performance_history = []
+        self.model_versions = {}
+        self.alert_thresholds = {
+            'accuracy_drop': 0.05,  # 5% accuracy drop threshold
+            'latency_increase': 0.10,  # 10% latency increase threshold
+            'memory_growth': 0.20  # 20% memory growth threshold
+        }
+
+    def track_model_performance(self, model_id: str, metrics: Dict[str, Any]) -> None:
+        """Track model performance metrics."""
+
+        performance_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'model_id': model_id,
+            'metrics': metrics,
+            'environment': self._get_environment_info()
+        }
+
+        self.performance_history.append(performance_entry)
+
+        # Check for performance alerts
+        self._check_performance_alerts(model_id, metrics)
+
+    def _check_performance_alerts(self, model_id: str, current_metrics: Dict[str, Any]) -> None:
+        """Check for performance degradation alerts."""
+
+        if len(self.performance_history) < 2:
+            return
+
+        # Get previous performance
+        previous_entry = None
+        for entry in reversed(self.performance_history[:-1]):
+            if entry['model_id'] == model_id:
+                previous_entry = entry
+                break
+
+        if previous_entry is None:
+            return
+
+        previous_metrics = previous_entry['metrics']
+
+        # Check accuracy degradation
+        if 'accuracy' in current_metrics and 'accuracy' in previous_metrics:
+            accuracy_drop = previous_metrics['accuracy'] - current_metrics['accuracy']
+            if accuracy_drop > self.alert_thresholds['accuracy_drop']:
+                self._trigger_alert(
+                    model_id,
+                    f"Accuracy dropped by {accuracy_drop:.1%}",
+                    'accuracy_degradation'
+                )
+
+        # Check latency increase
+        if 'latency' in current_metrics and 'latency' in previous_metrics:
+            latency_increase = (current_metrics['latency'] - previous_metrics['latency']) / previous_metrics['latency']
+            if latency_increase > self.alert_thresholds['latency_increase']:
+                self._trigger_alert(
+                    model_id,
+                    f"Latency increased by {latency_increase:.1%}",
+                    'latency_degradation'
+                )
+
+    def _trigger_alert(self, model_id: str, message: str, alert_type: str) -> None:
+        """Trigger performance alert."""
+        alert = {
+            'timestamp': datetime.now().isoformat(),
+            'model_id': model_id,
+            'alert_type': alert_type,
+            'message': message,
+            'severity': self._calculate_alert_severity(alert_type)
+        }
+
+        # Log alert
+        print(f"🚨 PERFORMANCE ALERT: {alert}")
+
+        # Could send to monitoring system, email, etc.
+
+    def _calculate_alert_severity(self, alert_type: str) -> str:
+        """Calculate alert severity."""
+        severity_map = {
+            'accuracy_degradation': 'HIGH',
+            'latency_degradation': 'MEDIUM',
+            'memory_growth': 'LOW'
+        }
+        return severity_map.get(alert_type, 'MEDIUM')
+
+    def _get_environment_info(self) -> Dict[str, Any]:
+        """Get current environment information."""
+        return {
+            'python_version': sys.version,
+            'numpy_version': np.__version__,
+            'tensorflow_version': tf.__version__ if 'tf' in globals() else None,
+            'pytorch_version': torch.__version__ if 'torch' in globals() else None,
+            'cpu_count': multiprocessing.cpu_count(),
+            'memory_total': psutil.virtual_memory().total if 'psutil' in globals() else None
+        }
+```
+
+## 🎯 **Best Practices & Guidelines**
+
+### **ML Integration Workflow**
+1. **Problem Assessment**: Evaluate if ML is appropriate for the scientific problem
+2. **Data Preparation**: Ensure data quality and quantity for ML training
+3. **Model Selection**: Choose appropriate ML approach based on problem characteristics
+4. **Training & Validation**: Implement proper cross-validation and hyperparameter tuning
+5. **Performance Monitoring**: Continuously monitor model performance in production
+6. **Model Updating**: Implement strategies for model retraining and updating
+
+### **Scientific ML Considerations**
+- **Interpretability**: Ensure ML models provide scientific insights, not just predictions
+- **Uncertainty Quantification**: Always provide confidence intervals for ML predictions
+- **Data Quality**: Validate training data quality and representativeness
+- **Computational Resources**: Consider computational costs for training and inference
+- **Reproducibility**: Ensure ML experiments are reproducible with fixed random seeds
+
+### **Integration Patterns**
+- **Hybrid Approaches**: Combine physics-based models with ML for improved accuracy
+- **Transfer Learning**: Leverage pre-trained models for scientific applications
+- **Active Learning**: Use ML to guide experimental design and data collection
+- **Ensemble Methods**: Combine multiple ML models for robust predictions
+
+This AI/ML integration framework provides comprehensive patterns for incorporating machine learning capabilities into scientific computing workflows, ensuring robust, interpretable, and scientifically sound ML applications.

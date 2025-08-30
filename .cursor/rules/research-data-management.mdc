@@ -1,0 +1,901 @@
+---
+globs: *.py,*.json,*.csv,*.h5,*.pkl,*.npy
+description: "Research data management patterns and best practices for scientific computing"
+---
+
+# 📊 Research Data Management Patterns
+
+This rule establishes comprehensive research data management patterns and best practices for the scientific computing toolkit, ensuring data integrity, reproducibility, and compliance across all research workflows.
+
+## 🎯 **Data Management Framework**
+
+### **Core Data Management Architecture**
+```python
+# Primary data management framework
+class ResearchDataManager:
+    """
+    Comprehensive research data management framework.
+
+    Ensures data integrity, reproducibility, and compliance across
+    all scientific computing workflows with standardized patterns.
+    """
+
+    def __init__(self, data_directory: str = "data"):
+        self.data_directory = Path(data_directory)
+        self.metadata_manager = MetadataManager()
+        self.quality_validator = DataQualityValidator()
+        self.provenance_tracker = ProvenanceTracker()
+        self.backup_manager = BackupManager()
+
+        # Initialize data management
+        self._initialize_data_structure()
+
+    def _initialize_data_structure(self):
+        """Initialize standardized data directory structure."""
+        required_directories = [
+            "raw",           # Original, unmodified data
+            "processed",     # Cleaned and processed data
+            "interim",       # Intermediate processing results
+            "external",      # Data from external sources
+            "metadata",      # Data documentation and metadata
+            "backups",       # Automated data backups
+            "archive"        # Archived historical data
+        ]
+
+        for directory in required_directories:
+            (self.data_directory / directory).mkdir(parents=True, exist_ok=True)
+
+    def ingest_research_data(self, data_source: str, data_type: str,
+                           metadata: Dict[str, Any]) -> str:
+        """Ingest research data with full provenance tracking."""
+
+        # Generate unique data identifier
+        data_id = self._generate_data_id(data_type)
+
+        # Validate data quality
+        validation_results = self.quality_validator.validate_data(data_source)
+
+        if not validation_results['passed']:
+            raise ValueError(f"Data validation failed: {validation_results['issues']}")
+
+        # Store raw data
+        raw_path = self.data_directory / "raw" / f"{data_id}_raw.{data_type}"
+        self._store_data(data_source, raw_path)
+
+        # Create comprehensive metadata
+        full_metadata = self._create_full_metadata(metadata, data_id, validation_results)
+
+        # Store metadata
+        metadata_path = self.data_directory / "metadata" / f"{data_id}_metadata.json"
+        self.metadata_manager.store_metadata(metadata_path, full_metadata)
+
+        # Initialize provenance tracking
+        self.provenance_tracker.initialize_tracking(data_id, {
+            'ingestion_timestamp': datetime.now().isoformat(),
+            'original_source': data_source,
+            'data_type': data_type,
+            'validation_results': validation_results
+        })
+
+        # Create backup
+        self.backup_manager.create_backup(raw_path, data_id)
+
+        return data_id
+
+    def process_research_data(self, data_id: str, processing_pipeline: List[Callable],
+                            processing_metadata: Dict[str, Any]) -> Dict[str, Any]:
+        """Process research data with full provenance tracking."""
+
+        # Load raw data and metadata
+        raw_data = self._load_data(data_id, "raw")
+        metadata = self.metadata_manager.load_metadata(data_id)
+
+        # Execute processing pipeline
+        processed_data = raw_data
+        processing_steps = []
+
+        for step_name, processing_function in processing_pipeline:
+            step_start = datetime.now()
+
+            # Apply processing step
+            processed_data = processing_function(processed_data)
+
+            step_end = datetime.now()
+
+            # Record processing step
+            step_record = {
+                'step_name': step_name,
+                'timestamp': step_start.isoformat(),
+                'duration_seconds': (step_end - step_start).total_seconds(),
+                'input_shape': self._get_data_shape(raw_data),
+                'output_shape': self._get_data_shape(processed_data),
+                'parameters': processing_metadata.get(step_name, {})
+            }
+
+            processing_steps.append(step_record)
+
+            # Update raw_data for next iteration
+            raw_data = processed_data
+
+        # Store processed data
+        processed_path = self.data_directory / "processed" / f"{data_id}_processed.pkl"
+        self._store_data(processed_data, processed_path)
+
+        # Update provenance tracking
+        self.provenance_tracker.record_processing(data_id, processing_steps)
+
+        # Update metadata
+        metadata['processing_history'] = processing_steps
+        metadata['last_processed'] = datetime.now().isoformat()
+        self.metadata_manager.update_metadata(data_id, metadata)
+
+        # Create backup of processed data
+        self.backup_manager.create_backup(processed_path, f"{data_id}_processed")
+
+        return {
+            'data_id': data_id,
+            'processed_data_path': processed_path,
+            'processing_steps': processing_steps,
+            'final_metadata': metadata
+        }
+
+    def _generate_data_id(self, data_type: str) -> str:
+        """Generate unique data identifier."""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+        return f"data_{data_type}_{timestamp}_{random_suffix}"
+
+    def _store_data(self, data, file_path: Path):
+        """Store data with appropriate serialization."""
+        file_extension = file_path.suffix.lower()
+
+        if file_extension == '.json':
+            with open(file_path, 'w') as f:
+                json.dump(data, f, indent=2, default=str)
+        elif file_extension == '.pkl':
+            import pickle
+            with open(file_path, 'wb') as f:
+                pickle.dump(data, f)
+        elif file_extension == '.npy':
+            np.save(file_path, data)
+        elif file_extension == '.csv':
+            if isinstance(data, pd.DataFrame):
+                data.to_csv(file_path, index=False)
+            else:
+                pd.DataFrame(data).to_csv(file_path, index=False)
+        else:
+            # Default to pickle for complex objects
+            import pickle
+            with open(file_path, 'wb') as f:
+                pickle.dump(data, f)
+
+    def _load_data(self, data_id: str, data_stage: str):
+        """Load data from specified processing stage."""
+        if data_stage == "raw":
+            pattern = f"{data_id}_raw.*"
+        elif data_stage == "processed":
+            pattern = f"{data_id}_processed.*"
+        else:
+            pattern = f"{data_id}.*"
+
+        data_dir = self.data_directory / data_stage
+        matching_files = list(data_dir.glob(pattern))
+
+        if not matching_files:
+            raise FileNotFoundError(f"No {data_stage} data found for ID: {data_id}")
+
+        data_file = matching_files[0]  # Take first match
+        return self._load_data_file(data_file)
+
+    def _load_data_file(self, file_path: Path):
+        """Load data from file with appropriate deserialization."""
+        file_extension = file_path.suffix.lower()
+
+        if file_extension == '.json':
+            with open(file_path, 'r') as f:
+                return json.load(f)
+        elif file_extension == '.pkl':
+            import pickle
+            with open(file_path, 'rb') as f:
+                return pickle.load(f)
+        elif file_extension == '.npy':
+            return np.load(file_path)
+        elif file_extension == '.csv':
+            return pd.read_csv(file_path)
+        elif file_extension == '.h5':
+            import h5py
+            with h5py.File(file_path, 'r') as f:
+                return {key: f[key][:] for key in f.keys()}
+        else:
+            raise ValueError(f"Unsupported file format: {file_extension}")
+
+    def _get_data_shape(self, data) -> Tuple:
+        """Get data shape for provenance tracking."""
+        if hasattr(data, 'shape'):
+            return tuple(data.shape)
+        elif hasattr(data, '__len__'):
+            return (len(data),)
+        else:
+            return (1,)
+
+    def _create_full_metadata(self, user_metadata: Dict[str, Any],
+                            data_id: str, validation_results: Dict[str, Any]) -> Dict[str, Any]:
+        """Create comprehensive metadata for research data."""
+
+        return {
+            'data_id': data_id,
+            'creation_timestamp': datetime.now().isoformat(),
+            'user_provided_metadata': user_metadata,
+            'system_metadata': {
+                'data_management_version': '1.0.0',
+                'storage_location': str(self.data_directory),
+                'file_permissions': 'rw-r--r--',
+                'backup_enabled': True
+            },
+            'validation_results': validation_results,
+            'quality_metrics': self.quality_validator.calculate_quality_metrics(user_metadata),
+            'compliance_status': self._check_compliance(user_metadata),
+            'provenance': {
+                'initial_ingestion': datetime.now().isoformat(),
+                'processing_history': [],
+                'access_history': []
+            }
+        }
+
+    def _check_compliance(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
+        """Check compliance with research data standards."""
+        compliance_checks = {
+            'has_title': bool(metadata.get('title')),
+            'has_description': bool(metadata.get('description')),
+            'has_creator': bool(metadata.get('creator')),
+            'has_creation_date': bool(metadata.get('creation_date')),
+            'has_data_type': bool(metadata.get('data_type')),
+            'has_license': bool(metadata.get('license', 'GPL-3.0-only')),
+            'has_units': bool(metadata.get('units')),
+            'has_uncertainty': bool(metadata.get('uncertainty')),
+            'follows_naming_convention': self._check_naming_convention(metadata)
+        }
+
+        overall_compliance = sum(compliance_checks.values()) / len(compliance_checks)
+
+        return {
+            'checks_passed': compliance_checks,
+            'overall_compliance_score': overall_compliance,
+            'compliance_level': 'excellent' if overall_compliance >= 0.9
+                             else 'good' if overall_compliance >= 0.8
+                             else 'needs_improvement'
+        }
+
+    def _check_naming_convention(self, metadata: Dict[str, Any]) -> bool:
+        """Check if metadata follows naming conventions."""
+        title = metadata.get('title', '')
+        # Check for descriptive naming without special characters
+        return bool(title and not any(char in title for char in ['###', '@', '<', '>']))
+```
+
+## 🔍 **Data Quality Validation Framework**
+
+### **Comprehensive Data Quality Assessment**
+```python
+class DataQualityValidator:
+    """Comprehensive data quality validation framework."""
+
+    def __init__(self):
+        self.quality_checks = {
+            'completeness': self._check_completeness,
+            'consistency': self._check_consistency,
+            'accuracy': self._check_accuracy,
+            'timeliness': self._check_timeliness,
+            'validity': self._check_validity,
+            'uniqueness': self._check_uniqueness
+        }
+
+    def validate_data(self, data_source: str) -> Dict[str, Any]:
+        """Perform comprehensive data quality validation."""
+
+        # Load data for validation
+        if isinstance(data_source, str):
+            data = self._load_data_for_validation(data_source)
+        else:
+            data = data_source
+
+        validation_results = {}
+        all_passed = True
+        issues = []
+
+        # Execute all quality checks
+        for check_name, check_function in self.quality_checks.items():
+            try:
+                check_result = check_function(data)
+                validation_results[check_name] = check_result
+
+                if not check_result['passed']:
+                    all_passed = False
+                    issues.extend(check_result['issues'])
+
+            except Exception as e:
+                validation_results[check_name] = {
+                    'passed': False,
+                    'issues': [f"Check failed with error: {str(e)}"]
+                }
+                all_passed = False
+                issues.append(f"{check_name} check error: {str(e)}")
+
+        return {
+            'passed': all_passed,
+            'validation_results': validation_results,
+            'issues': issues,
+            'quality_score': self._calculate_quality_score(validation_results),
+            'recommendations': self._generate_recommendations(validation_results)
+        }
+
+    def _check_completeness(self, data) -> Dict[str, Any]:
+        """Check data completeness."""
+        if hasattr(data, '__len__') and len(data) == 0:
+            return {'passed': False, 'issues': ['Data is empty']}
+
+        # Check for missing values
+        missing_count = self._count_missing_values(data)
+
+        if missing_count > 0:
+            return {
+                'passed': False,
+                'issues': [f'Found {missing_count} missing values'],
+                'missing_percentage': missing_count / max(len(data), 1) * 100
+            }
+
+        return {'passed': True, 'issues': []}
+
+    def _check_consistency(self, data) -> Dict[str, Any]:
+        """Check data consistency."""
+        issues = []
+
+        # Check data type consistency
+        if hasattr(data, 'dtypes'):
+            inconsistent_types = []
+            for column, dtype in data.dtypes.items():
+                if dtype == 'object':  # Mixed types in pandas
+                    unique_types = data[column].apply(type).unique()
+                    if len(unique_types) > 1:
+                        inconsistent_types.append(column)
+
+            if inconsistent_types:
+                issues.append(f"Inconsistent data types in columns: {inconsistent_types}")
+
+        # Check value range consistency
+        if hasattr(data, 'select_dtypes'):
+            numeric_data = data.select_dtypes(include=[np.number])
+            for column in numeric_data.columns:
+                values = numeric_data[column].dropna()
+                if len(values) > 0:
+                    # Check for unrealistic outliers
+                    q1, q3 = np.percentile(values, [25, 75])
+                    iqr = q3 - q1
+                    lower_bound = q1 - 1.5 * iqr
+                    upper_bound = q3 + 1.5 * iqr
+
+                    outliers = values[(values < lower_bound) | (values > upper_bound)]
+                    if len(outliers) > len(values) * 0.1:  # More than 10% outliers
+                        issues.append(f"Suspicious outliers in column {column}")
+
+        return {
+            'passed': len(issues) == 0,
+            'issues': issues
+        }
+
+    def _check_accuracy(self, data) -> Dict[str, Any]:
+        """Check data accuracy through basic sanity checks."""
+        issues = []
+
+        # Basic accuracy checks
+        if hasattr(data, 'select_dtypes'):
+            numeric_data = data.select_dtypes(include=[np.number])
+
+            for column in numeric_data.columns:
+                values = numeric_data[column].dropna()
+
+                if len(values) > 0:
+                    # Check for NaN or infinite values
+                    if values.isna().any():
+                        issues.append(f"NaN values found in {column}")
+
+                    if np.isinf(values).any():
+                        issues.append(f"Infinite values found in {column}")
+
+                    # Check for unrealistic values (example for scientific data)
+                    if 'temperature' in column.lower():
+                        if (values < -273.15).any():  # Below absolute zero
+                            issues.append(f"Impossible temperatures in {column}")
+
+                    if 'pressure' in column.lower():
+                        if (values < 0).any():  # Negative pressure
+                            issues.append(f"Negative pressures in {column}")
+
+        return {
+            'passed': len(issues) == 0,
+            'issues': issues
+        }
+
+    def _check_timeliness(self, data) -> Dict[str, Any]:
+        """Check data timeliness and freshness."""
+        # This would check timestamps and data age
+        # For now, return a basic check
+        return {'passed': True, 'issues': []}
+
+    def _check_validity(self, data) -> Dict[str, Any]:
+        """Check data validity against expected formats."""
+        issues = []
+
+        # Check data structure validity
+        if isinstance(data, dict):
+            if not data:
+                issues.append("Empty data dictionary")
+        elif hasattr(data, '__len__'):
+            if len(data) == 0:
+                issues.append("Empty data collection")
+
+        return {
+            'passed': len(issues) == 0,
+            'issues': issues
+        }
+
+    def _check_uniqueness(self, data) -> Dict[str, Any]:
+        """Check for duplicate entries."""
+        issues = []
+
+        if hasattr(data, 'duplicated'):
+            duplicates = data.duplicated().sum()
+            if duplicates > 0:
+                issues.append(f"Found {duplicates} duplicate rows")
+
+        return {
+            'passed': len(issues) == 0,
+            'issues': issues
+        }
+
+    def calculate_quality_metrics(self, metadata: Dict[str, Any]) -> Dict[str, float]:
+        """Calculate comprehensive quality metrics."""
+        return {
+            'completeness_score': 0.95,  # Placeholder
+            'consistency_score': 0.92,
+            'accuracy_score': 0.98,
+            'timeliness_score': 0.90,
+            'validity_score': 0.96,
+            'uniqueness_score': 0.94,
+            'overall_quality_score': 0.94
+        }
+
+    def _count_missing_values(self, data) -> int:
+        """Count missing values in data."""
+        if hasattr(data, 'isnull'):
+            return data.isnull().sum().sum()
+        elif isinstance(data, (list, tuple)):
+            return sum(1 for item in data if item is None or (isinstance(item, float) and np.isnan(item)))
+        else:
+            return 0
+
+    def _calculate_quality_score(self, validation_results: Dict[str, Any]) -> float:
+        """Calculate overall quality score from validation results."""
+        total_checks = len(validation_results)
+        passed_checks = sum(1 for result in validation_results.values() if result['passed'])
+
+        return passed_checks / total_checks if total_checks > 0 else 0.0
+
+    def _generate_recommendations(self, validation_results: Dict[str, Any]) -> List[str]:
+        """Generate recommendations based on validation results."""
+        recommendations = []
+
+        for check_name, result in validation_results.items():
+            if not result['passed']:
+                if check_name == 'completeness':
+                    recommendations.append("Fill missing values or implement data imputation strategies")
+                elif check_name == 'consistency':
+                    recommendations.append("Standardize data types and resolve inconsistencies")
+                elif check_name == 'accuracy':
+                    recommendations.append("Validate data against known standards and remove outliers")
+                elif check_name == 'validity':
+                    recommendations.append("Ensure data conforms to expected formats and ranges")
+                elif check_name == 'uniqueness':
+                    recommendations.append("Remove duplicate entries and implement deduplication")
+
+        return recommendations
+
+    def _load_data_for_validation(self, data_source: str):
+        """Load data for validation from various sources."""
+        file_path = Path(data_source)
+
+        if file_path.suffix.lower() == '.json':
+            with open(file_path, 'r') as f:
+                return json.load(f)
+        elif file_path.suffix.lower() == '.csv':
+            return pd.read_csv(file_path)
+        elif file_path.suffix.lower() == '.pkl':
+            import pickle
+            with open(file_path, 'rb') as f:
+                return pickle.load(f)
+        else:
+            raise ValueError(f"Unsupported file format for validation: {file_path.suffix}")
+```
+
+## 📋 **Metadata Management System**
+
+### **Comprehensive Metadata Framework**
+```python
+class MetadataManager:
+    """Comprehensive metadata management for research data."""
+
+    def __init__(self):
+        self.metadata_schema = self._load_metadata_schema()
+
+    def _load_metadata_schema(self) -> Dict[str, Any]:
+        """Load metadata schema definition."""
+        return {
+            'required_fields': [
+                'title', 'description', 'creator', 'creation_date',
+                'data_type', 'license', 'units', 'uncertainty'
+            ],
+            'recommended_fields': [
+                'keywords', 'funding_source', 'related_publications',
+                'data_collection_method', 'processing_history'
+            ],
+            'validation_rules': {
+                'title': {'type': 'string', 'min_length': 5, 'max_length': 200},
+                'description': {'type': 'string', 'min_length': 20, 'max_length': 2000},
+                'license': {'default': 'GPL-3.0-only'},
+                'creation_date': {'format': 'ISO8601'}
+            }
+        }
+
+    def store_metadata(self, metadata_path: Path, metadata: Dict[str, Any]):
+        """Store metadata with validation."""
+        validated_metadata = self._validate_metadata(metadata)
+        enriched_metadata = self._enrich_metadata(validated_metadata)
+
+        with open(metadata_path, 'w') as f:
+            json.dump(enriched_metadata, f, indent=2, default=str)
+
+    def load_metadata(self, data_id: str) -> Dict[str, Any]:
+        """Load metadata for specified data ID."""
+        metadata_path = Path(f"data/metadata/{data_id}_metadata.json")
+
+        if not metadata_path.exists():
+            raise FileNotFoundError(f"Metadata not found for data ID: {data_id}")
+
+        with open(metadata_path, 'r') as f:
+            return json.load(f)
+
+    def update_metadata(self, data_id: str, updates: Dict[str, Any]):
+        """Update existing metadata."""
+        current_metadata = self.load_metadata(data_id)
+        current_metadata.update(updates)
+        current_metadata['last_modified'] = datetime.now().isoformat()
+
+        metadata_path = Path(f"data/metadata/{data_id}_metadata.json")
+        self.store_metadata(metadata_path, current_metadata)
+
+    def _validate_metadata(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate metadata against schema."""
+        validated = metadata.copy()
+
+        # Check required fields
+        for field in self.metadata_schema['required_fields']:
+            if field not in validated or not validated[field]:
+                if field == 'license':
+                    validated[field] = self.metadata_schema['validation_rules']['license']['default']
+                else:
+                    raise ValueError(f"Required metadata field missing: {field}")
+
+        # Validate field formats
+        for field, rules in self.metadata_schema['validation_rules'].items():
+            if field in validated:
+                self._validate_field_format(field, validated[field], rules)
+
+        return validated
+
+    def _validate_field_format(self, field_name: str, value, rules: Dict[str, Any]):
+        """Validate individual field format."""
+        if rules.get('type') == 'string':
+            if not isinstance(value, str):
+                raise ValueError(f"Field {field_name} must be string")
+            if 'min_length' in rules and len(value) < rules['min_length']:
+                raise ValueError(f"Field {field_name} too short (min: {rules['min_length']})")
+            if 'max_length' in rules and len(value) > rules['max_length']:
+                raise ValueError(f"Field {field_name} too long (max: {rules['max_length']})")
+
+    def _enrich_metadata(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
+        """Enrich metadata with additional information."""
+        enriched = metadata.copy()
+
+        # Add system metadata
+        enriched['system_info'] = {
+            'metadata_version': '1.0.0',
+            'created_by': 'ResearchDataManager',
+            'creation_timestamp': datetime.now().isoformat(),
+            'schema_version': '1.0'
+        }
+
+        # Add data quality indicators
+        enriched['quality_indicators'] = {
+            'has_title': bool(metadata.get('title')),
+            'has_description': bool(metadata.get('description')),
+            'has_units': bool(metadata.get('units')),
+            'has_uncertainty': bool(metadata.get('uncertainty')),
+            'is_compliant': self._check_compliance_score(metadata) >= 0.8
+        }
+
+        return enriched
+
+    def _check_compliance_score(self, metadata: Dict[str, Any]) -> float:
+        """Calculate metadata compliance score."""
+        required_fields = set(self.metadata_schema['required_fields'])
+        provided_fields = set(metadata.keys())
+
+        compliance = len(required_fields.intersection(provided_fields)) / len(required_fields)
+        return compliance
+```
+
+## 🔗 **Provenance Tracking System**
+
+### **Complete Provenance Framework**
+```python
+class ProvenanceTracker:
+    """Complete provenance tracking for research data."""
+
+    def __init__(self):
+        self.provenance_store = {}
+
+    def initialize_tracking(self, data_id: str, initial_info: Dict[str, Any]):
+        """Initialize provenance tracking for new data."""
+        self.provenance_store[data_id] = {
+            'data_id': data_id,
+            'creation_info': initial_info,
+            'processing_steps': [],
+            'access_history': [],
+            'derived_datasets': [],
+            'quality_evolution': []
+        }
+
+    def record_processing(self, data_id: str, processing_steps: List[Dict[str, Any]]):
+        """Record data processing steps."""
+        if data_id in self.provenance_store:
+            self.provenance_store[data_id]['processing_steps'].extend(processing_steps)
+
+    def record_access(self, data_id: str, access_info: Dict[str, Any]):
+        """Record data access events."""
+        if data_id in self.provenance_store:
+            access_entry = {
+                'timestamp': datetime.now().isoformat(),
+                'user': access_info.get('user', 'unknown'),
+                'action': access_info.get('action', 'access'),
+                'tool': access_info.get('tool', 'unknown'),
+                'purpose': access_info.get('purpose', 'research')
+            }
+            self.provenance_store[data_id]['access_history'].append(access_entry)
+
+    def record_derivation(self, original_id: str, derived_id: str, derivation_info: Dict[str, Any]):
+        """Record derivation relationships between datasets."""
+        if original_id in self.provenance_store:
+            derivation_entry = {
+                'derived_id': derived_id,
+                'timestamp': datetime.now().isoformat(),
+                'method': derivation_info.get('method', 'unknown'),
+                'parameters': derivation_info.get('parameters', {}),
+                'purpose': derivation_info.get('purpose', 'analysis')
+            }
+            self.provenance_store[original_id]['derived_datasets'].append(derivation_entry)
+
+    def get_provenance_chain(self, data_id: str) -> Dict[str, Any]:
+        """Get complete provenance chain for data."""
+        if data_id not in self.provenance_store:
+            return {'error': f'No provenance information for {data_id}'}
+
+        provenance = self.provenance_store[data_id].copy()
+
+        # Add derived dataset provenance
+        for derived in provenance.get('derived_datasets', []):
+            derived_id = derived['derived_id']
+            if derived_id in self.provenance_store:
+                derived['full_provenance'] = self.provenance_store[derived_id]
+
+        return provenance
+
+    def export_provenance_report(self, data_id: str, format: str = 'json') -> str:
+        """Export provenance information in specified format."""
+        provenance = self.get_provenance_chain(data_id)
+
+        if format == 'json':
+            return json.dumps(provenance, indent=2, default=str)
+        elif format == 'yaml':
+            try:
+                import yaml
+                return yaml.dump(provenance, default_flow_style=False)
+            except ImportError:
+                return json.dumps(provenance, indent=2, default=str)
+        else:
+            return str(provenance)
+```
+
+## 💾 **Backup and Recovery System**
+
+### **Comprehensive Backup Framework**
+```python
+class BackupManager:
+    """Comprehensive backup and recovery system for research data."""
+
+    def __init__(self, backup_directory: str = "data/backups"):
+        self.backup_directory = Path(backup_directory)
+        self.backup_directory.mkdir(parents=True, exist_ok=True)
+        self.retention_policy = {
+            'daily_backups': 7,    # Keep 7 daily backups
+            'weekly_backups': 4,   # Keep 4 weekly backups
+            'monthly_backups': 12  # Keep 12 monthly backups
+        }
+
+    def create_backup(self, source_path: Path, data_id: str) -> str:
+        """Create backup of data file."""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_filename = f"{data_id}_{timestamp}{source_path.suffix}"
+
+        backup_path = self.backup_directory / backup_filename
+
+        # Create backup
+        if source_path.exists():
+            import shutil
+            shutil.copy2(source_path, backup_path)
+
+            # Create backup metadata
+            metadata = {
+                'original_path': str(source_path),
+                'backup_path': str(backup_path),
+                'timestamp': datetime.now().isoformat(),
+                'file_size': source_path.stat().st_size,
+                'data_id': data_id
+            }
+
+            metadata_path = backup_path.with_suffix('.json')
+            with open(metadata_path, 'w') as f:
+                json.dump(metadata, f, indent=2, default=str)
+
+            return str(backup_path)
+        else:
+            raise FileNotFoundError(f"Source file not found: {source_path}")
+
+    def restore_backup(self, data_id: str, target_directory: str,
+                      timestamp: str = None) -> str:
+        """Restore data from backup."""
+        target_dir = Path(target_directory)
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        # Find appropriate backup
+        backup_files = list(self.backup_directory.glob(f"{data_id}_*{timestamp or '*'}*"))
+
+        if not backup_files:
+            raise FileNotFoundError(f"No backup found for {data_id}")
+
+        # Use most recent backup if timestamp not specified
+        backup_file = max(backup_files, key=lambda x: x.stat().st_mtime)
+
+        # Restore file
+        import shutil
+        target_path = target_dir / backup_file.name.replace(f"_{backup_file.stem.split('_')[-1]}", "")
+        shutil.copy2(backup_file, target_path)
+
+        return str(target_path)
+
+    def cleanup_old_backups(self):
+        """Clean up old backups according to retention policy."""
+        current_time = datetime.now()
+
+        # Group backups by data_id and age
+        backup_groups = {}
+        for backup_file in self.backup_directory.glob("*"):
+            if backup_file.suffix != '.json':  # Skip metadata files
+                data_id = backup_file.stem.split('_')[0]
+                file_time = datetime.fromtimestamp(backup_file.stat().st_mtime)
+
+                if data_id not in backup_groups:
+                    backup_groups[data_id] = []
+
+                age_days = (current_time - file_time).days
+                backup_groups[data_id].append({
+                    'file': backup_file,
+                    'age_days': age_days,
+                    'is_daily': age_days <= 7,
+                    'is_weekly': 7 < age_days <= 30,
+                    'is_monthly': age_days > 30
+                })
+
+        # Apply retention policy
+        for data_id, backups in backup_groups.items():
+            self._apply_retention_policy(data_id, backups)
+
+    def _apply_retention_policy(self, data_id: str, backups: List[Dict[str, Any]]):
+        """Apply retention policy to backup group."""
+        # Sort by age (newest first)
+        backups.sort(key=lambda x: x['age_days'])
+
+        # Keep required number of each type
+        to_keep = set()
+
+        daily_count = 0
+        weekly_count = 0
+        monthly_count = 0
+
+        for backup in backups:
+            if backup['is_daily'] and daily_count < self.retention_policy['daily_backups']:
+                to_keep.add(backup['file'])
+                daily_count += 1
+            elif backup['is_weekly'] and weekly_count < self.retention_policy['weekly_backups']:
+                to_keep.add(backup['file'])
+                weekly_count += 1
+            elif backup['is_monthly'] and monthly_count < self.retention_policy['monthly_backups']:
+                to_keep.add(backup['file'])
+                monthly_count += 1
+
+        # Remove old backups
+        for backup in backups:
+            if backup['file'] not in to_keep:
+                backup['file'].unlink()
+                # Also remove metadata file
+                metadata_file = backup['file'].with_suffix('.json')
+                if metadata_file.exists():
+                    metadata_file.unlink()
+
+    def get_backup_status(self, data_id: str = None) -> Dict[str, Any]:
+        """Get backup status report."""
+        status = {
+            'total_backups': len(list(self.backup_directory.glob("*"))),
+            'backup_directory_size': self._get_directory_size(self.backup_directory),
+            'oldest_backup': None,
+            'newest_backup': None
+        }
+
+        backup_files = list(self.backup_directory.glob("*"))
+        if backup_files:
+            backup_times = [f.stat().st_mtime for f in backup_files if f.suffix != '.json']
+            if backup_times:
+                status['oldest_backup'] = datetime.fromtimestamp(min(backup_times)).isoformat()
+                status['newest_backup'] = datetime.fromtimestamp(max(backup_times)).isoformat()
+
+        if data_id:
+            data_backups = list(self.backup_directory.glob(f"{data_id}_*"))
+            status['data_specific'] = {
+                'backup_count': len(data_backups),
+                'total_size': sum(f.stat().st_size for f in data_backups if f.suffix != '.json')
+            }
+
+        return status
+
+    def _get_directory_size(self, directory: Path) -> int:
+        """Get total size of directory."""
+        total_size = 0
+        for file_path in directory.rglob('*'):
+            if file_path.is_file():
+                total_size += file_path.stat().st_size
+        return total_size
+```
+
+## 🎯 **Best Practices & Guidelines**
+
+### **Data Management Best Practices**
+1. **Data Organization**: Use standardized directory structure (raw/processed/interim)
+2. **Metadata Standards**: Include comprehensive metadata with all datasets
+3. **Version Control**: Track all data changes and processing steps
+4. **Backup Strategy**: Implement automated backups with retention policies
+5. **Quality Assurance**: Validate data quality at ingestion and processing
+6. **Provenance Tracking**: Maintain complete audit trail of data transformations
+
+### **Research Data Standards**
+1. **FAIR Principles**: Data should be Findable, Accessible, Interoperable, Reusable
+2. **Data Citation**: Enable proper citation of research data
+3. **Long-term Preservation**: Ensure data remains accessible over time
+4. **Ethical Considerations**: Protect sensitive data and ensure proper consent
+5. **Reproducibility**: Enable exact reproduction of research results
+
+### **Compliance Requirements**
+1. **Data Licensing**: Use appropriate open licenses (GPL-3.0-only default)
+2. **Privacy Protection**: Implement data anonymization where required
+3. **Regulatory Compliance**: Meet requirements for sensitive data handling
+4. **Institutional Policies**: Comply with research institution data policies
+
+This research data management framework ensures data integrity, reproducibility, and compliance across all scientific computing workflows, providing a solid foundation for reproducible research and long-term data preservation.
