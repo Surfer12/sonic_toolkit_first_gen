@@ -1,0 +1,624 @@
+---
+alwaysApply: false
+description: "Standards for managing and documenting publication supplementary materials in scientific computing"
+globs: *.md,*.tex,*.py
+---
+# 📚 Publication Supplementary Materials Standards
+
+This rule establishes comprehensive standards for creating, managing, and documenting supplementary materials that accompany scientific publications, ensuring they enhance rather than detract from the main publication content.
+
+## 📖 Supplementary Materials Framework
+
+### Purpose and Scope Definition
+```markdown
+# Supplementary Materials Overview
+
+## Primary Purpose
+[Clear statement of supplementary materials role in supporting main publication]
+
+## Target Audience
+- **Researchers**: Quick reference and implementation guidance
+- **Practitioners**: Technical details and code examples
+- **Reviewers**: Additional validation and methodological details
+- **Students**: Learning materials and background information
+
+## Relationship to Main Publication
+- **Complements**: Provides depth without overwhelming main text
+- **Validates**: Contains additional evidence and validation details
+- **Enables**: Makes research reproducible and accessible
+- **Extends**: Allows exploration of related topics and applications
+```
+
+### Content Organization Standards
+```python
+SUPPLEMENTARY_CONTENT_CATEGORIES = {
+    "methodological_details": {
+        "purpose": "Provide complete methodological information",
+        "audience": ["reviewers", "practitioners"],
+        "content_types": ["algorithms", "protocols", "workflows"]
+    },
+    "technical_implementations": {
+        "purpose": "Enable implementation and reproduction",
+        "audience": ["practitioners", "researchers"],
+        "content_types": ["code", "scripts", "configuration"]
+    },
+    "extended_results": {
+        "purpose": "Present comprehensive results and analysis",
+        "audience": ["researchers", "reviewers"],
+        "content_types": ["data", "figures", "statistics"]
+    },
+    "educational_materials": {
+        "purpose": "Support learning and understanding",
+        "audience": ["students", "novice_researchers"],
+        "content_types": ["tutorials", "examples", "glossary"]
+    },
+    "validation_materials": {
+        "purpose": "Demonstrate robustness and reproducibility",
+        "audience": ["reviewers", "research_community"],
+        "content_types": ["benchmarks", "tests", "reproducibility_scripts"]
+    }
+}
+```
+
+## 📋 Content Standards
+
+### Methodological Details
+```markdown
+## Methodological Supplementary Materials
+
+### Complete Algorithm Specifications
+```latex
+% Complete algorithm specification with all parameters
+\begin{algorithm}[H]
+\caption{[Algorithm Name] - Complete Implementation}
+\label{alg:complete_[algorithm]}
+
+\begin{algorithmic}[1]
+\Require Problem parameters: $\mathbf{x}_0, \epsilon, \lambda$
+\Require Algorithm-specific parameters: $\alpha, \beta, \gamma$
+\Ensure Optimal solution $\mathbf{x}^*$
+
+\State Initialize $\mathbf{x} \leftarrow \mathbf{x}_0$
+\State Set convergence tolerance $\epsilon$
+\For{$k = 1, 2, \dots$}
+    \State Compute objective $f(\mathbf{x}_k)$
+    \State Compute gradient $\nabla f(\mathbf{x}_k)$
+    \State Update parameters using [method-specific logic]
+    \If{convergence criterion met}
+        \State \Return $\mathbf{x}_k$
+    \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+```
+
+### Parameter Sensitivity Analysis
+```python
+def analyze_parameter_sensitivity(
+    algorithm_function: callable,
+    parameter_ranges: Dict[str, Tuple[float, float]],
+    test_problems: List[Dict[str, Any]],
+    n_samples: int = 100
+) -> Dict[str, Any]:
+    """
+    Comprehensive parameter sensitivity analysis for supplementary materials.
+
+    Parameters:
+    ----------
+    algorithm_function : callable
+        Algorithm implementation to analyze
+    parameter_ranges : dict
+        Parameter ranges to test (parameter_name -> (min, max))
+    test_problems : list
+        Test problems for evaluation
+    n_samples : int
+        Number of parameter combinations to test
+
+    Returns:
+    -------
+    sensitivity_analysis : dict
+        Complete parameter sensitivity analysis
+    """
+    sensitivity_results = {
+        'parameter_ranges': parameter_ranges,
+        'performance_landscape': {},
+        'robustness_assessment': {},
+        'optimal_parameter_sets': {},
+        'recommendations': {}
+    }
+
+    # Generate parameter combinations
+    parameter_combinations = generate_parameter_combinations(
+        parameter_ranges, n_samples
+    )
+
+    # Evaluate performance across parameter space
+    for params in parameter_combinations:
+        performance_results = evaluate_algorithm_performance(
+            algorithm_function, params, test_problems
+        )
+        sensitivity_results['performance_landscape'][str(params)] = performance_results
+
+    # Analyze robustness
+    sensitivity_results['robustness_assessment'] = analyze_parameter_robustness(
+        sensitivity_results['performance_landscape']
+    )
+
+    # Identify optimal parameter sets
+    sensitivity_results['optimal_parameter_sets'] = identify_optimal_parameters(
+        sensitivity_results['performance_landscape']
+    )
+
+    # Generate recommendations
+    sensitivity_results['recommendations'] = generate_parameter_recommendations(
+        sensitivity_results
+    )
+
+    return sensitivity_results
+```
+
+### Implementation Details
+```python
+# Complete implementation with comprehensive documentation
+class ResearchGradeImplementation:
+    """
+    Research-grade implementation template for supplementary materials.
+
+    This implementation includes:
+    - Complete parameter validation
+    - Comprehensive error handling
+    - Detailed logging and diagnostics
+    - Performance monitoring
+    - Memory management
+    - Reproducibility controls
+
+    Attributes:
+    ----------
+    algorithm_name : str
+        Name of the implemented algorithm
+    parameters : dict
+        Algorithm parameters with validation
+    convergence_tolerance : float
+        Convergence tolerance (default: 1e-6)
+    max_iterations : int
+        Maximum iterations (default: 1000)
+    random_seed : int
+        Random seed for reproducibility
+
+    Methods:
+    -------
+    fit(X, y)
+        Fit the algorithm to training data
+    predict(X)
+        Make predictions on new data
+    score(X, y)
+        Evaluate algorithm performance
+    get_diagnostics()
+        Get detailed diagnostic information
+    """
+
+    def __init__(self, algorithm_name: str, **parameters):
+        """Initialize with comprehensive parameter validation."""
+        self.algorithm_name = algorithm_name
+        self.parameters = self._validate_parameters(parameters)
+        self.convergence_tolerance = parameters.get('convergence_tolerance', 1e-6)
+        self.max_iterations = parameters.get('max_iterations', 1000)
+        self.random_seed = parameters.get('random_seed', 42)
+
+        # Initialize logging and diagnostics
+        self._setup_logging()
+        self._initialize_diagnostics()
+
+        # Set random seed for reproducibility
+        self._set_random_seed(self.random_seed)
+
+    def _validate_parameters(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """Comprehensive parameter validation."""
+        validated_params = {}
+
+        # Define parameter constraints
+        parameter_constraints = {
+            'learning_rate': {'type': float, 'range': (0, 1)},
+            'batch_size': {'type': int, 'range': (1, 10000)},
+            'regularization_strength': {'type': float, 'range': (0, 10)},
+            'convergence_tolerance': {'type': float, 'range': (1e-12, 1e-2)},
+            'max_iterations': {'type': int, 'range': (1, 100000)}
+        }
+
+        for param_name, param_value in parameters.items():
+            if param_name in parameter_constraints:
+                constraint = parameter_constraints[param_name]
+                self._validate_parameter_constraint(
+                    param_name, param_value, constraint
+                )
+                validated_params[param_name] = param_value
+            else:
+                logger.warning(f"Unknown parameter: {param_name}")
+
+        return validated_params
+
+    def _validate_parameter_constraint(self, name: str, value: Any, constraint: Dict[str, Any]):
+        """Validate individual parameter against constraints."""
+        # Type checking
+        if not isinstance(value, constraint['type']):
+            raise TypeError(f"Parameter {name} must be of type {constraint['type'].__name__}")
+
+        # Range checking
+        if 'range' in constraint:
+            min_val, max_val = constraint['range']
+            if not (min_val <= value <= max_val):
+                raise ValueError(f"Parameter {name} must be in range [{min_val}, {max_val}]")
+
+    def fit(self, X: np.ndarray, y: np.ndarray) -> 'ResearchGradeImplementation':
+        """Fit algorithm with comprehensive monitoring and validation."""
+        self._log_operation_start('fit')
+
+        try:
+            # Input validation
+            self._validate_input_data(X, y)
+
+            # Initialize algorithm state
+            self._initialize_algorithm_state(X, y)
+
+            # Main optimization loop with monitoring
+            for iteration in range(self.max_iterations):
+                # Perform algorithm update
+                self._algorithm_update_step(iteration)
+
+                # Check convergence
+                if self._check_convergence():
+                    self._log_convergence_achieved(iteration)
+                    break
+
+                # Log progress
+                if iteration % self._get_logging_frequency() == 0:
+                    self._log_iteration_progress(iteration)
+
+            # Final validation
+            self._validate_final_solution()
+
+            self._log_operation_success('fit')
+
+        except Exception as e:
+            self._log_operation_failure('fit', e)
+            raise
+
+        return self
+
+    def _validate_input_data(self, X: np.ndarray, y: np.ndarray):
+        """Comprehensive input data validation."""
+        # Shape validation
+        if len(X.shape) != 2:
+            raise ValueError("X must be a 2D array")
+        if len(y.shape) != 1:
+            raise ValueError("y must be a 1D array")
+        if X.shape[0] != y.shape[0]:
+            raise ValueError("X and y must have same number of samples")
+
+        # Data type validation
+        if not np.issubdtype(X.dtype, np.floating):
+            logger.warning("X contains non-floating point values")
+        if not np.issubdtype(y.dtype, np.floating):
+            logger.warning("y contains non-floating point values")
+
+        # Missing value detection
+        if np.any(np.isnan(X)):
+            raise ValueError("X contains NaN values")
+        if np.any(np.isnan(y)):
+            raise ValueError("y contains NaN values")
+
+    def get_diagnostics(self) -> Dict[str, Any]:
+        """Get comprehensive diagnostic information."""
+        return {
+            'convergence_history': self._get_convergence_history(),
+            'parameter_evolution': self._get_parameter_evolution(),
+            'performance_metrics': self._get_performance_metrics(),
+            'computational_stats': self._get_computational_stats(),
+            'numerical_stability': self._get_numerical_stability_metrics(),
+            'memory_usage': self._get_memory_usage_stats(),
+            'timing_information': self._get_timing_information()
+        }
+
+    def _get_convergence_history(self) -> List[float]:
+        """Get complete convergence history."""
+        return getattr(self, '_convergence_history', [])
+
+    def _get_parameter_evolution(self) -> Dict[str, List[float]]:
+        """Get parameter evolution over iterations."""
+        return getattr(self, '_parameter_evolution', {})
+
+    def _get_performance_metrics(self) -> Dict[str, float]:
+        """Get comprehensive performance metrics."""
+        return {
+            'final_objective_value': self._get_final_objective_value(),
+            'convergence_rate': self._calculate_convergence_rate(),
+            'solution_quality': self._assess_solution_quality(),
+            'numerical_accuracy': self._assess_numerical_accuracy()
+        }
+
+    def _get_computational_stats(self) -> Dict[str, Any]:
+        """Get computational statistics."""
+        return {
+            'total_iterations': getattr(self, '_total_iterations', 0),
+            'total_function_evaluations': getattr(self, '_total_function_evals', 0),
+            'total_gradient_evaluations': getattr(self, '_total_gradient_evals', 0),
+            'average_iteration_time': self._calculate_average_iteration_time(),
+            'peak_memory_usage': getattr(self, '_peak_memory_usage', 0)
+        }
+```
+
+### Extended Results and Data
+```python
+def generate_extended_results_supplement(
+    main_results: Dict[str, Any],
+    extended_analysis: Dict[str, Any],
+    statistical_tests: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Generate comprehensive extended results for supplementary materials.
+
+    Parameters:
+    ----------
+    main_results : dict
+        Primary results from main publication
+    extended_analysis : dict
+        Additional analysis results
+    statistical_tests : dict
+        Complete statistical test results
+
+    Returns:
+    -------
+    extended_supplement : dict
+        Complete extended results supplement
+    """
+    extended_supplement = {
+        'summary_statistics': {},
+        'detailed_performance_analysis': {},
+        'statistical_validation': {},
+        'sensitivity_analysis': {},
+        'robustness_assessment': {},
+        'benchmark_comparisons': {},
+        'failure_mode_analysis': {},
+        'scalability_analysis': {}
+    }
+
+    # Generate summary statistics
+    extended_supplement['summary_statistics'] = generate_comprehensive_statistics(
+        main_results, extended_analysis
+    )
+
+    # Detailed performance analysis
+    extended_supplement['detailed_performance_analysis'] = perform_detailed_performance_analysis(
+        main_results, extended_analysis
+    )
+
+    # Statistical validation
+    extended_supplement['statistical_validation'] = compile_statistical_validation(
+        statistical_tests
+    )
+
+    # Sensitivity analysis
+    extended_supplement['sensitivity_analysis'] = conduct_sensitivity_analysis(
+        main_results, extended_analysis
+    )
+
+    # Robustness assessment
+    extended_supplement['robustness_assessment'] = assess_algorithm_robustness(
+        main_results, extended_analysis
+    )
+
+    # Benchmark comparisons
+    extended_supplement['benchmark_comparisons'] = generate_benchmark_comparisons(
+        main_results, extended_analysis
+    )
+
+    # Failure mode analysis
+    extended_supplement['failure_mode_analysis'] = analyze_failure_modes(
+        main_results, extended_analysis
+    )
+
+    # Scalability analysis
+    extended_supplement['scalability_analysis'] = analyze_scalability(
+        main_results, extended_analysis
+    )
+
+    return extended_supplement
+```
+
+## 🎯 Quality Assurance Standards
+
+### Supplementary Materials Checklist
+```markdown
+# Supplementary Materials Quality Assurance Checklist
+
+## Content Completeness
+- [ ] **Purpose Statement**: Clear statement of supplementary materials purpose
+- [ ] **Audience Definition**: Target audience clearly identified
+- [ ] **Relationship to Main Text**: Connection to main publication explained
+- [ ] **Navigation Guide**: Clear guide for using supplementary materials
+
+## Technical Quality
+- [ ] **Implementation Details**: Complete code implementations provided
+- [ ] **Parameter Specifications**: All algorithm parameters documented
+- [ ] **Data Formats**: Data formats clearly specified
+- [ ] **Dependencies**: All software dependencies listed
+- [ ] **Installation Instructions**: Clear setup instructions provided
+
+## Validation and Testing
+- [ ] **Reproducibility**: All results reproducible from provided materials
+- [ ] **Test Cases**: Comprehensive test cases included
+- [ ] **Validation Scripts**: Scripts for result validation provided
+- [ ] **Benchmark Data**: Benchmark datasets included for comparison
+- [ ] **Statistical Tests**: Statistical validation methods provided
+
+## Documentation Quality
+- [ ] **Clear Structure**: Logical organization and clear section headers
+- [ ] **Comprehensive Index**: Complete table of contents and index
+- [ ] **Cross-References**: Proper cross-references between sections
+- [ ] **Glossary**: Technical terms defined in glossary
+- [ ] **Examples**: Practical examples for all major concepts
+
+## Accessibility and Usability
+- [ ] **File Organization**: Logical file and directory structure
+- [ ] **Naming Conventions**: Clear, consistent file naming
+- [ ] **Documentation Formats**: Multiple formats (PDF, HTML, Jupyter notebooks)
+- [ ] **Search Functionality**: Searchable content where applicable
+- [ ] **Version Information**: Version numbers and change logs
+
+## Ethical and Legal Compliance
+- [ ] **Data Licensing**: Clear licensing for all data and code
+- [ ] **Attribution**: Proper attribution for third-party materials
+- [ ] **Ethical Guidelines**: Compliance with research ethics guidelines
+- [ ] **Privacy Protection**: No sensitive data included inappropriately
+- [ ] **Intellectual Property**: Respect for intellectual property rights
+```
+
+### Automated Quality Validation
+```python
+def validate_supplementary_materials_quality(
+    supplement_path: str,
+    main_publication_path: str
+) -> Dict[str, Any]:
+    """
+    Automated quality validation of supplementary materials.
+
+    Parameters:
+    ----------
+    supplement_path : str
+        Path to supplementary materials directory
+    main_publication_path : str
+        Path to main publication
+
+    Returns:
+    -------
+    quality_assessment : dict
+        Comprehensive quality assessment
+    """
+    quality_assessment = {
+        'content_completeness': {},
+        'technical_quality': {},
+        'validation_coverage': {},
+        'documentation_quality': {},
+        'accessibility': {},
+        'compliance': {},
+        'overall_score': 0.0,
+        'recommendations': []
+    }
+
+    # Content completeness assessment
+    quality_assessment['content_completeness'] = assess_content_completeness(
+        supplement_path, main_publication_path
+    )
+
+    # Technical quality assessment
+    quality_assessment['technical_quality'] = assess_technical_quality(
+        supplement_path
+    )
+
+    # Validation coverage assessment
+    quality_assessment['validation_coverage'] = assess_validation_coverage(
+        supplement_path
+    )
+
+    # Documentation quality assessment
+    quality_assessment['documentation_quality'] = assess_documentation_quality(
+        supplement_path
+    )
+
+    # Accessibility assessment
+    quality_assessment['accessibility'] = assess_accessibility(
+        supplement_path
+    )
+
+    # Compliance assessment
+    quality_assessment['compliance'] = assess_compliance(
+        supplement_path
+    )
+
+    # Calculate overall score
+    quality_assessment['overall_score'] = calculate_overall_quality_score(
+        quality_assessment
+    )
+
+    # Generate recommendations
+    quality_assessment['recommendations'] = generate_quality_recommendations(
+        quality_assessment
+    )
+
+    return quality_assessment
+```
+
+## 📋 Integration Standards
+
+### Main Publication Integration
+```latex
+% Integration example in main publication
+\section{Supplementary Materials}
+\label{sec:supplementary}
+
+Comprehensive supplementary materials are available online at [DOI/link], including:
+
+\begin{itemize}
+\item \textbf{Complete Implementation}: Full source code with documentation
+\item \textbf{Extended Results}: Additional performance analysis and statistics
+\item \textbf{Methodological Details}: Complete algorithm specifications and parameters
+\item \textbf{Validation Data}: Benchmark datasets and validation scripts
+\item \textbf{Tutorials}: Step-by-step implementation guides
+\end{itemize}
+
+The supplementary materials enable complete reproduction of all results and provide additional technical details that support the main findings.
+```
+
+### Repository Organization
+```markdown
+# Supplementary Materials Repository Structure
+
+supplementary_materials/
+├── README.md                    # Overview and usage guide
+├── code/                        # Complete implementations
+│   ├── algorithms/             # Algorithm implementations
+│   ├── utilities/              # Helper functions and utilities
+│   └── examples/               # Usage examples and tutorials
+├── data/                       # Datasets and benchmark data
+│   ├── benchmarks/             # Benchmark datasets
+│   ├── validation/             # Validation datasets
+│   └── examples/               # Example datasets
+├── documentation/              # Extended documentation
+│   ├── tutorials/              # Implementation tutorials
+│   ├── api_reference/          # Complete API documentation
+│   └── examples/               # Detailed examples
+├── results/                    # Extended results and analysis
+│   ├── performance/            # Performance analysis
+│   ├── validation/             # Validation results
+│   └── statistics/             # Statistical analysis
+├── scripts/                    # Utility scripts
+│   ├── setup/                  # Installation and setup scripts
+│   ├── validation/             # Validation and testing scripts
+│   └── analysis/               # Analysis and plotting scripts
+└── LICENSE                     # Licensing information
+```
+
+## 🎖️ Best Practices
+
+### Content Development Guidelines
+1. **Audience-Centric Design**: Design content for specific audience needs
+2. **Progressive Disclosure**: Provide overview, details, and advanced content
+3. **Modular Organization**: Break complex materials into digestible modules
+4. **Interactive Elements**: Include executable code and interactive examples
+5. **Version Control**: Maintain version history and change documentation
+
+### Quality Control Procedures
+1. **Peer Review**: Subject supplementary materials to peer review
+2. **User Testing**: Test materials with representative users
+3. **Automated Testing**: Implement automated quality checks
+4. **Regular Updates**: Keep materials current with main publication
+5. **Feedback Integration**: Incorporate user feedback and improvements
+
+### Maintenance Standards
+1. **Version Synchronization**: Keep supplementary materials synchronized with main publication
+2. **Deprecation Policy**: Clear policy for outdated materials
+3. **Archive Access**: Maintain access to historical versions
+4. **Update Documentation**: Document all changes and updates
+5. **User Communication**: Communicate updates to users
+
+This rule ensures supplementary materials enhance rather than detract from scientific publications, providing valuable resources that support reproducibility, implementation, and deeper understanding of research findings.
