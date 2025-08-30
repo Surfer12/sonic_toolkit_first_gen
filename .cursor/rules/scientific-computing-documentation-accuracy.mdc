@@ -1,0 +1,109 @@
+---
+alwaysApply: true
+description: "Ensures scientific computing documentation accurately reflects implemented optimization methods and avoids incorrect MCMC assumptions"
+globs: *.md,*.tex,*.py
+---
+# Scientific Computing Documentation Accuracy
+
+## Core Principle
+**All documentation must accurately reflect the scientific computing toolkit's deterministic optimization foundation.** The toolkit achieves 0.9987 correlation coefficients through systematic multi-algorithm deterministic optimization, NOT MCMC sampling.
+
+## Implemented Optimization Methods
+When documenting optimization capabilities, always reference these actual methods:
+
+### Primary Algorithms
+- **Levenberg-Marquardt** (`scipy.optimize.least_squares`)
+  - Nonlinear least-squares optimization for smooth problems
+  - Applications: Parameter extraction in fluid dynamics
+
+- **Trust Region Methods** (`scipy.optimize.minimize` with `trust-constr`)
+  - Constrained optimization with confidence regions
+  - Applications: Rheological parameter estimation
+
+- **Differential Evolution** (`scipy.optimize.differential_evolution`)
+  - Population-based global optimization
+  - Applications: Multi-modal parameter landscapes
+
+- **Basin Hopping** (`scipy.optimize.basinhopping`)
+  - Global optimization with stochastic perturbations
+  - Applications: High-dimensional optimization problems
+
+### Supporting Methods
+- BFGS, L-BFGS-B, Nelder-Mead, Powell via `scipy.optimize.minimize`
+
+## Documentation Standards
+
+### ✅ Correct Claims
+```python
+# Valid performance claims
+"0.9987 correlation coefficients achieved through deterministic optimization"
+"Levenberg-Marquardt provides fast convergence for smooth problems"
+"Trust Region methods ensure robust constraint handling"
+"Differential Evolution excels at global optimization"
+```
+
+### ❌ Incorrect Claims (AVOID)
+```python
+# Invalid MCMC assumptions
+"MCMC sampling achieves 0.9987 correlation coefficients"
+"Bayesian MCMC methods for parameter estimation"
+"Full posterior distributions via MCMC"
+"MCMC for efficient inference"
+```
+
+## Validation Requirements
+
+### Performance Claims
+- **Must reference actual algorithms**: Specify which optimization method achieved the result
+- **Include timing data**: Report actual execution times from implementation
+- **Cite convergence criteria**: Reference 0.9987 precision criterion properly
+
+### Algorithm Selection
+When recommending optimization methods:
+1. **Problem characteristics matter**: Match algorithm to problem type
+2. **Reference actual capabilities**: Use implemented methods only
+3. **Provide rationale**: Explain why specific algorithm is appropriate
+
+## Common Documentation Patterns
+
+### Algorithm Documentation
+```markdown
+## Optimization Method: Levenberg-Marquardt
+
+**Implementation**: `scipy.optimize.least_squares` with `method='lm'`
+**Best For**: Smooth, well-conditioned nonlinear least-squares problems
+**Performance**: ~234ms average execution time
+**Applications**: Herschel-Bulkley parameter extraction
+```
+
+### Performance Benchmarking
+```markdown
+## Benchmark Results
+
+| Algorithm | Execution Time | Success Rate | Best Use Case |
+|-----------|----------------|--------------|---------------|
+| Levenberg-Marquardt | 234ms | 98.7% | Smooth problems |
+| Trust Region | 567ms | 97.3% | Constrained optimization |
+| Differential Evolution | 892ms | 95.8% | Global optimization |
+```
+
+## Quality Assurance
+
+### Documentation Review Checklist
+- [ ] References actual implemented optimization methods
+- [ ] Avoids MCMC assumptions and terminology
+- [ ] Includes specific algorithm implementations
+- [ ] Provides performance metrics with timing data
+- [ ] Matches algorithm capabilities to appropriate use cases
+
+### Validation Commands
+```bash
+# Verify optimization methods
+python -c "from scipy.optimize import least_squares, minimize, differential_evolution, basinhopping; print('All methods available')"
+
+# Check documentation accuracy
+grep -r "MCMC" docs/  # Should return no results
+grep -r "Bayesian.*sampling" docs/  # Should reference deterministic methods
+```
+
+This rule ensures all scientific computing documentation maintains technical accuracy and reflects the toolkit's actual deterministic optimization capabilities.

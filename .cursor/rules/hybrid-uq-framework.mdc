@@ -1,0 +1,240 @@
+---
+alwaysApply: false
+description: "Hybrid Uncertainty Quantification framework usage and validation patterns"
+globs: hybrid_uq/**,*.py
+---
+# Hybrid UQ Framework Usage Guide
+
+## Overview
+The Hybrid UQ framework implements advanced uncertainty quantification with Ψ(x) confidence calibration for scientific computing applications. This rule provides guidance for proper usage, validation, and integration.
+
+## Core Components
+
+### Physics Interpolator (S(x))
+**Purpose**: Domain-specific surface-to-sigma transformation with fluid dynamics diagnostics
+
+**Usage Pattern**:
+```python
+class CustomPhysicsInterpolator(PhysicsInterpolator):
+    """Custom physics interpolator for specific domain."""
+
+    def forward(self, x_surface: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        S = x_surface  # Identity placeholder - replace with domain logic
+
+        # Extract velocity components for fluid dynamics
+        u = S[:, 0:1]  # x-velocity
+        v = S[:, 1:2]  # y-velocity
+
+        # Compute vorticity and divergence
+        zeta, div = vorticity_divergence(u, v, dx, dy)
+
+        diagnostics = {
+            "vorticity": zeta,
+            "divergence": div
+        }
+
+        return S, diagnostics
+```
+
+**Best Practices**:
+- Replace identity mapping with domain-specific operators
+- Include relevant physical diagnostics
+- Validate conservation laws when applicable
+
+### Neural Residual Network (N(x))
+**Purpose**: Heteroscedastic residual correction with uncertainty quantification
+
+**Usage Pattern**:
+```python
+residual_net = ResidualNet(
+    in_ch=input_channels,
+    out_ch=output_channels,
+    hidden=128  # Hidden layer size
+)
+
+# Forward pass returns mean, uncertainty, and log variance
+mu, sigma, log_sigma = residual_net(features)
+```
+
+**Validation Requirements**:
+- ✅ Heteroscedastic uncertainty (σ varies with input)
+- ✅ Clamped log_sigma [-6.0, 3.0] for stability
+- ✅ Proper uncertainty scaling (residual_scale parameter)
+
+### Hybrid Integration (Ψ(x))
+**Purpose**: Unified physics-informed neural network with confidence quantification
+
+**Configuration Pattern**:
+```python
+model = HybridModel(
+    grid_metrics={'dx': 1.0, 'dy': 1.0},  # Grid spacing
+    in_ch=2, out_ch=2,                     # Input/output channels
+    residual_scale=0.02,                   # Neural residual scaling
+    lambda_cog=0.5, lambda_eff=0.5,       # Risk penalty weights
+    beta=1.0                              # Posterior calibration
+)
+
+# Forward pass with uncertainty
+outputs = model(x)
+psi_confidence = outputs['psi']           # Ψ(x) confidence values
+predictions = outputs['O']                # Hybrid predictions
+uncertainty = outputs['sigma_res']        # Prediction uncertainty
+```
+
+## Validation Procedures
+
+### Numerical Validation
+```python
+def validate_hybrid_uq():
+    """Validate hybrid UQ numerical accuracy."""
+
+    # Test case from validation documentation
+    S, N, alpha = 0.78, 0.86, 0.48
+    O = alpha * S + (1 - alpha) * N
+    expected_O = 0.8216
+
+    assert abs(O - expected_O) < 1e-6, f"Hybrid computation error: {O}"
+
+    # Validate Ψ(x) confidence computation
+    # Add risk penalties and posterior calibration
+    # Verify bounded output [0,1]
+```
+
+### Performance Validation
+```python
+def benchmark_performance():
+    """Performance benchmarking for hybrid UQ components."""
+
+    model = HybridModel(grid_config)
+    test_input = torch.randn(32, 2, 64, 64)
+
+    # Warm-up
+    for _ in range(10):
+        _ = model(test_input)
+
+    # Benchmark
+    start_time = time.time()
+    iterations = 100
+
+    for _ in range(iterations):
+        outputs = model(test_input)
+
+    total_time = time.time() - start_time
+    avg_time = total_time / iterations
+
+    print(f"Average inference time: {avg_time:.4f}s")
+    print(f"Throughput: {32/avg_time:.1f} samples/s")
+    print(f"Ψ(x) confidence range: [{outputs['psi'].min():.3f}, {outputs['psi'].max():.3f}]")
+
+    # Assert performance requirements
+    assert avg_time < 0.1, f"Slow inference: {avg_time:.4f}s"
+    assert outputs['psi'].min() >= 0.0 and outputs['psi'].max() <= 1.0
+```
+
+## Integration Patterns
+
+### Scientific Computing Integration
+```python
+class ScientificComputingIntegration:
+    """Integrate hybrid UQ with broader scientific computing framework."""
+
+    def __init__(self):
+        self.hybrid_uq = HybridModel(grid_config)
+        self.inverse_precision = InversePrecisionFramework()
+        self.psi_framework = PsiConfidenceFramework()
+
+    def comprehensive_analysis(self, data):
+        """End-to-end analysis with uncertainty quantification."""
+
+        # Parameter estimation with inverse methods
+        parameters = self.inverse_precision.solve(data)
+
+        # Uncertainty quantification with hybrid UQ
+        predictions, uncertainty = self.hybrid_uq.predict_with_uq(parameters)
+
+        # Confidence assessment with Ψ(x)
+        confidence = self.psi_framework.assess_confidence(predictions, uncertainty)
+
+        return {
+            'parameters': parameters,
+            'predictions': predictions,
+            'uncertainty': uncertainty,
+            'confidence': confidence,
+            'validation_status': self.validate_results(predictions, uncertainty, confidence)
+        }
+```
+
+### Corpus Integration
+```java
+// Java integration with hybrid UQ for security analysis
+public class HybridUQSecurityIntegration {
+
+    public SecurityAssessment assessWithUncertainty(
+            double[] systemState,
+            SecurityTest test) throws HybridUQException {
+
+        // Get uncertainty quantification from Python
+        UncertaintyResult uqResult = hybridUQClient.predict(systemState);
+
+        // Apply to security assessment
+        SecurityFinding finding = test.execute();
+        finding.setConfidence(uqResult.getPsiConfidence());
+        finding.setUncertaintyInterval(uqResult.getConfidenceInterval());
+
+        return new SecurityAssessment(finding, uqResult);
+    }
+}
+```
+
+## Best Practices
+
+### Model Configuration
+- **Grid Metrics**: Always specify appropriate spatial discretization
+- **Channel Dimensions**: Match input/output data dimensions
+- **Residual Scaling**: Start with 0.02, adjust based on domain
+- **Risk Penalties**: λ_cog=0.5, λ_eff=0.5 as defaults
+
+### Training Guidelines
+- **Alpha Scheduler**: Use for adaptive hybrid weighting
+- **Loss Function**: Combine MSE, NLL, and penalty terms
+- **Early Stopping**: Monitor validation Ψ(x) confidence
+- **Gradient Clipping**: Prevent numerical instability
+
+### Validation Requirements
+- ✅ **95% Coverage Guarantee** for conformal prediction intervals
+- ✅ **0.893 Confidence Calibration** for Ψ(x) posterior
+- ✅ **Cryptographic Precision** (1e-6 tolerance)
+- ✅ **Real-time Performance** (< 0.1s inference time)
+
+### Error Handling
+```python
+def safe_hybrid_uq_prediction(model, inputs):
+    """Safe prediction with comprehensive error handling."""
+
+    try:
+        # Input validation
+        validate_inputs(inputs)
+
+        # Model prediction
+        with torch.no_grad():
+            outputs = model(inputs)
+
+        # Output validation
+        validate_outputs(outputs)
+
+        return process_results(outputs)
+
+    except InputValidationError as e:
+        logger.error(f"Input validation failed: {e}")
+        return fallback_prediction()
+
+    except ComputationError as e:
+        logger.error(f"Computation failed: {e}")
+        return recovery_prediction()
+```
+
+## References
+- [hybrid_uq_validation_verification.tex](mdc:hybrid_uq_validation_verification.tex) - Complete validation report
+- [hybrid_uq_api_reference.md](mdc:hybrid_uq_api_reference.md) - API documentation
+- [hybrid_uq_implementation_tutorial.md](mdc:hybrid_uq_implementation_tutorial.md) - Implementation guide
+- [integrated_framework_testing_coverage.md](mdc:integrated_framework_testing_coverage.md) - Testing documentation

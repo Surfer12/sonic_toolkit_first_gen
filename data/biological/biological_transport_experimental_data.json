@@ -1,0 +1,97 @@
+{
+  "biological_experiment_metadata": {
+    "experiment_name": "Nutrient Transport in Engineered Cartilage Tissue",
+    "tissue_type": "Engineered Cartilage Scaffold",
+    "species": "Human chondrocytes",
+    "culture_conditions": {
+      "temperature": 37.0,
+      "co2_percentage": 5.0,
+      "medium_type": "DMEM with 10% FBS",
+      "scaffold_material": "Collagen-GAG hydrogel"
+    },
+    "measurement_device": "Fluorescence Recovery After Photobleaching (FRAP)",
+    "experiment_date": "2024-01-12",
+    "researcher": "Dr. Michael Rodriguez"
+  },
+  "transport_measurements": {
+    "glucose_transport": {
+      "time_points": [0, 5, 10, 15, 20, 30, 45, 60],
+      "time_unit": "minutes",
+      "concentration_profile": [
+        [5.0, 4.8, 4.2, 3.5, 2.8, 2.1, 1.5, 1.2],
+        [5.0, 4.7, 4.0, 3.2, 2.5, 1.8, 1.3, 1.0],
+        [5.0, 4.9, 4.3, 3.6, 2.9, 2.2, 1.6, 1.3]
+      ],
+      "concentration_unit": "mM",
+      "measurement_uncertainty": 0.1
+    },
+    "oxygen_transport": {
+      "time_points": [0, 2, 5, 10, 15, 20, 30],
+      "time_unit": "minutes",
+      "concentration_profile": [
+        [0.20, 0.18, 0.15, 0.12, 0.09, 0.07, 0.05],
+        [0.20, 0.17, 0.14, 0.11, 0.08, 0.06, 0.04],
+        [0.20, 0.19, 0.16, 0.13, 0.10, 0.08, 0.06]
+      ],
+      "concentration_unit": "mM",
+      "measurement_uncertainty": 0.005
+    }
+  },
+  "tissue_properties": {
+    "porosity": 0.85,
+    "pore_size_distribution": {
+      "mean_pore_size": 150,
+      "pore_size_unit": "micrometers",
+      "pore_size_std": 25
+    },
+    "diffusivity_coefficients": {
+      "glucose_effective_diffusivity": 3.2e-10,
+      "oxygen_effective_diffusivity": 1.8e-9,
+      "diffusivity_unit": "m²/s"
+    },
+    "cellular_density": 2.5e6,
+    "cellular_density_unit": "cells/mL",
+    "scaffold_thickness": 2.0,
+    "scaffold_thickness_unit": "mm"
+  },
+  "transport_model_parameters": {
+    "advection_velocity": 1e-6,
+    "advection_velocity_unit": "m/s",
+    "glucose_consumption_rate": 5e-4,
+    "oxygen_consumption_rate": 2e-4,
+    "consumption_rate_unit": "mol/(m³·s)",
+    "boundary_conditions": {
+      "inlet_concentration_glucose": 5.0,
+      "inlet_concentration_oxygen": 0.20,
+      "outlet_flux": "zero_gradient"
+    }
+  },
+  "validation_targets": {
+    "glucose_penetration_depth": 0.8,
+    "glucose_penetration_unit": "mm",
+    "oxygen_penetration_depth": 0.6,
+    "oxygen_penetration_unit": "mm",
+    "uniformity_tolerance": 0.15,
+    "temporal_stability_hours": 72
+  },
+  "experimental_conditions": {
+    "perfusion_setup": "continuous_flow_bioreactor",
+    "flow_rate": 0.5,
+    "flow_rate_unit": "mL/min",
+    "sample_volume": 0.2,
+    "sample_volume_unit": "mL",
+    "measurement_frequency": 30,
+    "measurement_frequency_unit": "seconds",
+    "total_experiment_duration": 60,
+    "total_experiment_duration_unit": "minutes"
+  },
+  "quality_assurance": {
+    "cell_viability": 0.92,
+    "dna_content": 1.8,
+    "dna_content_unit": "µg/mg_wet_weight",
+    "glycosaminoglycan_content": 4.2,
+    "glycosaminoglycan_content_unit": "µg/mg_dry_weight",
+    "collagen_content": 8.5,
+    "collagen_content_unit": "µg/mg_dry_weight"
+  }
+}
