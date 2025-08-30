@@ -1,0 +1,1255 @@
+---
+alwaysApply: false
+description: "Research reproducibility standards for scientific computing frameworks"
+globs: research/**,reproducibility/**,*research*,*reproduce*,experiments/**,notebooks/**
+---
+# Research Reproducibility Standards
+
+## Overview
+This rule establishes comprehensive standards for ensuring research reproducibility in scientific computing frameworks. It covers experiment tracking, environment management, data versioning, and validation procedures to guarantee that research results can be reliably reproduced and verified.
+
+## Experiment Tracking Framework
+
+### MLflow Integration for Scientific Experiments
+```python
+import mlflow
+import mlflow.pytorch
+from mlflow.tracking import MlflowClient
+import torch
+import json
+from datetime import datetime
+from pathlib import Path
+import hashlib
+
+class ScientificExperimentTracker:
+    """Comprehensive experiment tracking for scientific computing research."""
+
+    def __init__(self, experiment_name: str, tracking_uri: str = None):
+        self.experiment_name = experiment_name
+
+        # Set MLflow tracking URI
+        if tracking_uri:
+            mlflow.set_tracking_uri(tracking_uri)
+
+        # Set experiment
+        mlflow.set_experiment(experiment_name)
+
+        # Initialize client
+        self.client = MlflowClient()
+
+        # Create experiment if it doesn't exist
+        try:
+            self.experiment_id = mlflow.create_experiment(experiment_name)
+        except:
+            self.experiment = mlflow.get_experiment_by_name(experiment_name)
+            self.experiment_id = self.experiment.experiment_id
+
+        # Initialize reproducibility components
+        self.environment_snapshot = self._capture_environment()
+        self.data_version = self._get_data_version()
+        self.code_version = self._get_code_version()
+
+    def _capture_environment(self) -> Dict[str, Any]:
+        """Capture complete environment snapshot for reproducibility."""
+        import platform
+        import sys
+        import subprocess
+
+        env_snapshot = {
+            'platform': platform.platform(),
+            'python_version': sys.version,
+            'python_executable': sys.executable,
+            'working_directory': str(Path.cwd()),
+            'timestamp': datetime.now().isoformat(),
+            'environment_variables': dict(os.environ),
+            'installed_packages': self._get_installed_packages(),
+            'system_info': self._get_system_info(),
+            'gpu_info': self._get_gpu_info() if torch.cuda.is_available() else None
+        }
+
+        return env_snapshot
+
+    def _get_installed_packages(self) -> Dict[str, str]:
+        """Get versions of all installed packages."""
+        import pkg_resources
+
+        packages = {}
+        for dist in pkg_resources.working_set:
+            packages[dist.project_name] = dist.version
+
+        return packages
+
+    def _get_system_info(self) -> Dict[str, Any]:
+        """Get system information."""
+        return {
+            'cpu_count': os.cpu_count(),
+            'memory_total': psutil.virtual_memory().total,
+            'disk_total': psutil.disk_usage('/').total,
+            'hostname': platform.node()
+        }
+
+    def _get_gpu_info(self) -> Dict[str, Any]:
+        """Get GPU information."""
+        return {
+            'cuda_available': torch.cuda.is_available(),
+            'cuda_version': torch.version.cuda if torch.cuda.is_available() else None,
+            'gpu_count': torch.cuda.device_count(),
+            'gpu_name': torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
+            'gpu_memory': torch.cuda.get_device_properties(0).total_memory if torch.cuda.is_available() else None
+        }
+
+    def _get_data_version(self) -> str:
+        """Get data version hash for reproducibility."""
+        data_dir = Path('./data')
+        if data_dir.exists():
+            # Create hash of all data files
+            hash_obj = hashlib.sha256()
+            for file_path in sorted(data_dir.rglob('*')):
+                if file_path.is_file():
+                    hash_obj.update(str(file_path).encode())
+                    hash_obj.update(file_path.read_bytes())
+
+            return hash_obj.hexdigest()[:16]
+        return "no_data_directory"
+
+    def _get_code_version(self) -> str:
+        """Get code version (git commit hash)."""
+        try:
+            result = subprocess.run(['git', 'rev-parse', 'HEAD'],
+                                  capture_output=True, text=True, cwd='.')
+            if result.returncode == 0:
+                return result.stdout.strip()[:16]
+        except:
+            pass
+
+        # Fallback: hash of Python files
+        hash_obj = hashlib.sha256()
+        for file_path in sorted(Path('.').rglob('*.py')):
+            if file_path.is_file():
+                hash_obj.update(file_path.read_bytes())
+
+        return hash_obj.hexdigest()[:16]
+
+    def start_experiment_run(self, run_name: str = None, tags: Dict[str, Any] = None):
+        """Start a new experiment run with comprehensive tracking."""
+        if run_name is None:
+            run_name = f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+        # Start MLflow run
+        mlflow.start_run(run_name=run_name)
+
+        # Log experiment metadata
+        mlflow.log_param("experiment_name", self.experiment_name)
+        mlflow.log_param("data_version", self.data_version)
+        mlflow.log_param("code_version", self.code_version)
+
+        # Log environment snapshot
+        mlflow.log_dict(self.environment_snapshot, "environment_snapshot.json")
+
+        # Log tags
+        if tags:
+            for key, value in tags.items():
+                mlflow.set_tag(key, value)
+
+        # Log reproducibility information
+        mlflow.set_tag("reproducibility_ready", "true")
+        mlflow.set_tag("data_version", self.data_version)
+        mlflow.set_tag("code_version", self.code_version)
+
+        return mlflow.active_run()
+
+    def log_model(self, model: nn.Module, model_name: str = "model",
+                  input_example: torch.Tensor = None):
+        """Log model with reproducibility information."""
+        # Log model with MLflow
+        mlflow.pytorch.log_model(model, model_name, input_example=input_example)
+
+        # Log additional model metadata
+        model_info = {
+            'model_class': model.__class__.__name__,
+            'num_parameters': sum(p.numel() for p in model.parameters()),
+            'trainable_parameters': sum(p.numel() for p in model.parameters() if p.requires_grad),
+            'model_size_mb': self._get_model_size(model),
+            'torch_version': torch.__version__,
+            'cuda_available': torch.cuda.is_available()
+        }
+
+        mlflow.log_dict(model_info, f"{model_name}_metadata.json")
+
+    def _get_model_size(self, model: nn.Module) -> float:
+        """Get model size in MB."""
+        param_size = 0
+        for param in model.parameters():
+            param_size += param.nelement() * param.element_size()
+
+        buffer_size = 0
+        for buffer in model.buffers():
+            buffer_size += buffer.nelement() * buffer.element_size()
+
+        size_mb = (param_size + buffer_size) / 1024 / 1024
+        return size_mb
+
+    def log_metrics(self, metrics: Dict[str, Any], step: int = None):
+        """Log metrics with proper formatting."""
+        # Separate scalar and non-scalar metrics
+        scalar_metrics = {}
+        artifact_metrics = {}
+
+        for key, value in metrics.items():
+            if isinstance(value, (int, float)):
+                scalar_metrics[key] = value
+            else:
+                artifact_metrics[key] = value
+
+        # Log scalar metrics
+        if scalar_metrics:
+            mlflow.log_metrics(scalar_metrics, step=step)
+
+        # Log complex metrics as artifacts
+        for key, value in artifact_metrics.items():
+            if isinstance(value, dict):
+                mlflow.log_dict(value, f"{key}.json")
+            elif isinstance(value, (list, tuple)):
+                with open(f"{key}.json", 'w') as f:
+                    json.dump(value, f)
+                mlflow.log_artifact(f"{key}.json")
+            else:
+                # Convert to string and log
+                mlflow.log_param(f"{key}_str", str(value))
+
+    def log_reproducibility_checklist(self):
+        """Log reproducibility checklist completion."""
+        checklist = {
+            'environment_snapshot': True,
+            'data_versioning': True,
+            'code_versioning': True,
+            'random_seed_control': True,
+            'deterministic_computation': True,
+            'dependency_versions': True,
+            'hardware_specification': True,
+            'software_versions': True,
+            'data_preprocessing_pipeline': True,
+            'model_architecture_specification': True,
+            'training_hyperparameters': True,
+            'evaluation_metrics': True,
+            'cross_validation_folds': True,
+            'statistical_significance_tests': True,
+            'error_analysis': True,
+            'performance_benchmarks': True,
+            'documentation_completeness': True
+        }
+
+        mlflow.log_dict(checklist, "reproducibility_checklist.json")
+
+        # Calculate reproducibility score
+        reproducibility_score = sum(checklist.values()) / len(checklist)
+        mlflow.log_metric("reproducibility_score", reproducibility_score)
+
+        return checklist, reproducibility_score
+
+    def end_experiment_run(self):
+        """End the current experiment run."""
+        mlflow.end_run()
+
+    def create_reproduction_script(self, run_id: str = None) -> str:
+        """Create a reproduction script for the experiment."""
+        if run_id is None:
+            run = mlflow.active_run()
+            if run:
+                run_id = run.info.run_id
+
+        if not run_id:
+            return "No active run to reproduce"
+
+        # Get run information
+        run_info = self.client.get_run(run_id)
+
+        # Create reproduction script
+        script_content = self._generate_reproduction_script(run_info)
+
+        # Save script
+        script_path = f"reproduce_{run_id}.py"
+        with open(script_path, 'w') as f:
+            f.write(script_content)
+
+        # Log as artifact
+        mlflow.log_artifact(script_path)
+
+        return script_content
+
+    def _generate_reproduction_script(self, run_info) -> str:
+        """Generate Python script for experiment reproduction."""
+        params = run_info.data.params
+        tags = run_info.data.tags
+
+        script = f'''#!/usr/bin/env python3
+"""
+Reproduction script for experiment: {self.experiment_name}
+Run ID: {run_info.info.run_id}
+Generated: {datetime.now().isoformat()}
+"""
+
+import os
+import sys
+import torch
+import numpy as np
+from pathlib import Path
+
+# Set random seeds for reproducibility
+torch.manual_seed(42)
+np.random.seed(42)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+
+def setup_environment():
+    """Set up reproducible environment."""
+    print("Setting up reproducible environment...")
+
+    # Set environment variables
+    os.environ['PYTHONHASHSEED'] = '42'
+
+    # Verify versions
+    required_versions = {json.loads(run_info.data.tags.get('environment_snapshot', '{{}}'))}
+
+    print(f"PyTorch version: {torch.__version__}")
+    print(f"CUDA available: {torch.cuda.is_available()}")
+
+def load_data():
+    """Load data with proper versioning."""
+    print("Loading data...")
+    # Data loading code would go here
+    # Use data_version from tags to ensure correct dataset
+    data_version = "{tags.get('data_version', 'unknown')}"
+    print(f"Data version: {data_version}")
+
+def create_model():
+    """Create model with saved architecture."""
+    print("Creating model...")
+    # Model creation code would go here
+    # Use parameters from run to recreate exact model
+
+def reproduce_experiment():
+    """Reproduce the complete experiment."""
+    print("Starting experiment reproduction...")
+
+    setup_environment()
+    data = load_data()
+    model = create_model()
+
+    print("Experiment reproduction completed!")
+
+if __name__ == "__main__":
+    reproduce_experiment()
+'''
+
+        return script
+
+# Usage example
+def run_reproducible_experiment():
+    """Example of running a fully reproducible scientific experiment."""
+    from hybrid_uq import HybridModel
+
+    # Initialize experiment tracker
+    tracker = ScientificExperimentTracker("hybrid_uq_validation_experiment")
+
+    # Start experiment run
+    tracker.start_experiment_run(
+        run_name="validation_run_001",
+        tags={
+            "researcher": "scientist_name",
+            "institution": "research_lab",
+            "funding": "grant_number",
+            "dataset": "validation_dataset_v1",
+            "model_version": "hybrid_uq_v1.3.0"
+        }
+    )
+
+    try:
+        # Set random seeds for reproducibility
+        torch.manual_seed(42)
+        np.random.seed(42)
+
+        # Log hyperparameters
+        config = {
+            'learning_rate': 0.001,
+            'batch_size': 32,
+            'num_epochs': 100,
+            'model_config': {
+                'grid_metrics': {'dx': 1.0, 'dy': 1.0},
+                'in_ch': 2,
+                'out_ch': 2,
+                'residual_scale': 0.02
+            }
+        }
+
+        mlflow.log_params(config)
+
+        # Create and log model
+        model = HybridModel(**config['model_config'])
+        tracker.log_model(model, "hybrid_model")
+
+        # Training loop with metrics logging
+        for epoch in range(config['num_epochs']):
+            # Training code would go here
+            # ...
+
+            # Log metrics
+            metrics = {
+                'epoch': epoch,
+                'train_loss': 0.123,  # Replace with actual loss
+                'val_accuracy': 0.945,  # Replace with actual accuracy
+                'learning_rate': config['learning_rate']
+            }
+
+            tracker.log_metrics(metrics, step=epoch)
+
+        # Log reproducibility checklist
+        checklist, score = tracker.log_reproducibility_checklist()
+        print(f"Reproducibility score: {score:.3f}")
+
+        # Create reproduction script
+        reproduction_script = tracker.create_reproduction_script()
+
+        print("Experiment completed successfully!")
+        print("Reproduction script saved as artifact")
+
+    finally:
+        tracker.end_experiment_run()
+
+    return tracker
+```
+
+## Environment Management and Containerization
+
+### Docker Environment for Reproducibility
+```dockerfile
+# Reproducible scientific computing environment
+FROM nvidia/cuda:11.8-devel-ubuntu20.04
+
+# Install system dependencies with specific versions
+RUN apt-get update && apt-get install -y \
+    python3.9=3.9.7-1 \
+    python3.9-dev=3.9.7-1 \
+    python3-pip=20.0.2-5ubuntu1.8 \
+    git=1:2.25.1-1ubuntu3.10 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python packages with pinned versions
+COPY requirements.txt /tmp/
+RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
+    rm /tmp/requirements.txt
+
+# Install MLflow for experiment tracking
+RUN pip install --no-cache-dir mlflow==2.3.1
+
+# Create reproducible user environment
+RUN useradd -m -s /bin/bash researcher && \
+    mkdir -p /workspace /data /models /experiments && \
+    chown -R researcher:researcher /workspace /data /models /experiments
+
+USER researcher
+WORKDIR /workspace
+
+# Copy reproducible environment setup
+COPY --chown=researcher:researcher environment_setup.py /workspace/
+COPY --chown=researcher:researcher .python-version /workspace/
+
+# Set environment variables for reproducibility
+ENV PYTHONHASHSEED=42
+ENV CUDA_VISIBLE_DEVICES=0
+ENV MLFLOW_TRACKING_URI=http://mlflow-server:5000
+
+# Health check to verify environment reproducibility
+HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
+    CMD python -c "import torch, numpy as np; print('Environment ready')"
+
+# Default command
+CMD ["python", "reproduce_experiment.py"]
+```
+
+### Environment Validation Script
+```python
+def validate_reproducible_environment():
+    """Validate that the environment is properly configured for reproducibility."""
+
+    validation_results = {
+        'python_version': False,
+        'package_versions': False,
+        'cuda_setup': False,
+        'random_seed': False,
+        'deterministic_computation': False,
+        'data_integrity': False,
+        'code_version': False
+    }
+
+    # Check Python version
+    import sys
+    required_python = "3.9.7"
+    if sys.version.startswith(required_python):
+        validation_results['python_version'] = True
+    else:
+        print(f"Warning: Python version mismatch. Expected {required_python}, got {sys.version}")
+
+    # Check package versions
+    try:
+        import torch
+        import numpy as np
+        import scipy
+
+        required_versions = {
+            'torch': '2.0.1',
+            'numpy': '1.24.3',
+            'scipy': '1.11.1'
+        }
+
+        package_versions_ok = True
+        for package, required_version in required_versions.items():
+            installed_version = globals()[package].__version__
+            if installed_version != required_version:
+                print(f"Warning: {package} version mismatch. Expected {required_version}, got {installed_version}")
+                package_versions_ok = False
+
+        validation_results['package_versions'] = package_versions_ok
+
+    except ImportError as e:
+        print(f"Error: Missing required package: {e}")
+        validation_results['package_versions'] = False
+
+    # Check CUDA setup
+    if torch.cuda.is_available():
+        cuda_version = torch.version.cuda
+        gpu_count = torch.cuda.device_count()
+        gpu_name = torch.cuda.get_device_name(0) if gpu_count > 0 else "None"
+
+        print(f"CUDA available: {cuda_version}")
+        print(f"GPU count: {gpu_count}")
+        print(f"GPU name: {gpu_name}")
+
+        validation_results['cuda_setup'] = True
+    else:
+        print("Warning: CUDA not available")
+        validation_results['cuda_setup'] = False
+
+    # Check random seed setup
+    seed_value = os.environ.get('PYTHONHASHSEED')
+    if seed_value == '42':
+        validation_results['random_seed'] = True
+    else:
+        print(f"Warning: PYTHONHASHSEED not set correctly. Expected '42', got '{seed_value}'")
+
+    # Check deterministic computation
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+    # Test deterministic computation
+    torch.manual_seed(42)
+    np.random.seed(42)
+
+    x = torch.randn(10, 10)
+    y1 = torch.matmul(x, x.t())
+
+    torch.manual_seed(42)
+    np.random.seed(42)
+
+    x = torch.randn(10, 10)
+    y2 = torch.matmul(x, x.t())
+
+    if torch.allclose(y1, y2):
+        validation_results['deterministic_computation'] = True
+    else:
+        print("Warning: Computation is not deterministic")
+
+    # Check data integrity
+    data_dir = Path('./data')
+    if data_dir.exists():
+        # Check for data integrity file
+        integrity_file = data_dir / 'data_integrity.sha256'
+        if integrity_file.exists():
+            # Verify data integrity
+            data_hash = calculate_directory_hash(data_dir)
+            stored_hash = integrity_file.read_text().strip()
+
+            if data_hash == stored_hash:
+                validation_results['data_integrity'] = True
+            else:
+                print("Warning: Data integrity check failed")
+        else:
+            print("Warning: No data integrity file found")
+    else:
+        print("Warning: Data directory not found")
+
+    # Check code version
+    try:
+        import subprocess
+        result = subprocess.run(['git', 'rev-parse', 'HEAD'],
+                              capture_output=True, text=True)
+        if result.returncode == 0:
+            code_version = result.stdout.strip()
+            print(f"Code version: {code_version[:16]}")
+            validation_results['code_version'] = True
+        else:
+            print("Warning: Could not determine code version")
+    except:
+        print("Warning: Git not available for version checking")
+
+    # Summary
+    total_checks = len(validation_results)
+    passed_checks = sum(validation_results.values())
+
+    print(f"\nEnvironment Validation Summary:")
+    print(f"Passed: {passed_checks}/{total_checks} checks")
+
+    for check, passed in validation_results.items():
+        status = "✅" if passed else "❌"
+        print(f"  {status} {check.replace('_', ' ').title()}")
+
+    reproducibility_score = passed_checks / total_checks
+    print(".1%")
+
+    return validation_results, reproducibility_score
+
+def calculate_directory_hash(directory: Path) -> str:
+    """Calculate SHA256 hash of all files in directory."""
+    import hashlib
+
+    hash_obj = hashlib.sha256()
+
+    for file_path in sorted(directory.rglob('*')):
+        if file_path.is_file() and file_path.name != 'data_integrity.sha256':
+            hash_obj.update(file_path.read_bytes())
+
+    return hash_obj.hexdigest()
+```
+
+## Data Versioning and Provenance
+
+### DVC Integration for Data Versioning
+```python
+import dvc.api
+import dvc.repo
+from dvc.repo import Repo
+from pathlib import Path
+import json
+
+class ScientificDataVersioning:
+    """Data versioning and provenance tracking for scientific datasets."""
+
+    def __init__(self, data_dir: str = "./data", dvc_repo: str = "."):
+        self.data_dir = Path(data_dir)
+        self.dvc_repo = Path(dvc_repo)
+
+        # Initialize DVC if not already done
+        if not (self.dvc_repo / '.dvc').exists():
+            self._init_dvc()
+
+        self.repo = Repo(self.dvc_repo)
+
+    def _init_dvc(self):
+        """Initialize DVC repository."""
+        import subprocess
+        subprocess.run(['dvc', 'init'], cwd=self.dvc_repo, check=True)
+
+    def version_dataset(self, dataset_name: str, description: str = None):
+        """Version a dataset with DVC."""
+
+        dataset_path = self.data_dir / dataset_name
+
+        if not dataset_path.exists():
+            raise FileNotFoundError(f"Dataset {dataset_name} not found in {self.data_dir}")
+
+        # Add dataset to DVC
+        self.repo.add(str(dataset_path))
+
+        # Create version tag
+        import subprocess
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        version_tag = f"{dataset_name}_{timestamp}"
+
+        # Commit changes
+        subprocess.run(['git', 'add', f"{dataset_path}.dvc", '.gitignore'],
+                      cwd=self.dvc_repo, check=True)
+
+        commit_msg = f"Version dataset {dataset_name}: {description or 'Updated dataset'}"
+        subprocess.run(['git', 'commit', '-m', commit_msg],
+                      cwd=self.dvc_repo, check=True)
+
+        # Create git tag
+        subprocess.run(['git', 'tag', version_tag],
+                      cwd=self.dvc_repo, check=True)
+
+        return version_tag
+
+    def get_dataset_version(self, dataset_name: str, version: str = None) -> Path:
+        """Get a specific version of a dataset."""
+
+        if version:
+            # Checkout specific version
+            import subprocess
+            subprocess.run(['git', 'checkout', version],
+                          cwd=self.dvc_repo, check=True)
+
+            # Pull data from DVC
+            self.repo.pull()
+
+        dataset_path = self.data_dir / dataset_name
+        return dataset_path
+
+    def create_data_provenance_record(self, dataset_name: str,
+                                    processing_steps: List[Dict]) -> Dict:
+        """Create comprehensive data provenance record."""
+
+        provenance = {
+            'dataset_name': dataset_name,
+            'creation_timestamp': datetime.now().isoformat(),
+            'processing_history': processing_steps,
+            'data_characteristics': self._analyze_dataset(dataset_name),
+            'quality_metrics': self._calculate_data_quality_metrics(dataset_name),
+            'reproducibility_info': {
+                'code_version': self._get_code_version(),
+                'environment_snapshot': self._get_environment_snapshot(),
+                'random_seed': 42,
+                'processing_deterministic': True
+            }
+        }
+
+        # Save provenance record
+        provenance_file = self.data_dir / f"{dataset_name}_provenance.json"
+        with open(provenance_file, 'w') as f:
+            json.dump(provenance, f, indent=2)
+
+        return provenance
+
+    def _analyze_dataset(self, dataset_name: str) -> Dict:
+        """Analyze dataset characteristics."""
+
+        dataset_path = self.data_dir / dataset_name
+
+        if dataset_path.suffix == '.csv':
+            # Analyze CSV dataset
+            import pandas as pd
+            df = pd.read_csv(dataset_path)
+
+            return {
+                'format': 'csv',
+                'shape': df.shape,
+                'columns': list(df.columns),
+                'dtypes': df.dtypes.to_dict(),
+                'missing_values': df.isnull().sum().to_dict(),
+                'statistics': {
+                    col: {
+                        'mean': df[col].mean() if df[col].dtype in ['float64', 'int64'] else None,
+                        'std': df[col].std() if df[col].dtype in ['float64', 'int64'] else None,
+                        'min': df[col].min() if df[col].dtype in ['float64', 'int64'] else None,
+                        'max': df[col].max() if df[col].dtype in ['float64', 'int64'] else None
+                    } for col in df.columns if df[col].dtype in ['float64', 'int64']
+                }
+            }
+
+        elif dataset_path.suffix == '.npy':
+            # Analyze NumPy array
+            data = np.load(dataset_path)
+
+            return {
+                'format': 'numpy',
+                'shape': data.shape,
+                'dtype': str(data.dtype),
+                'size': data.size,
+                'statistics': {
+                    'mean': float(data.mean()),
+                    'std': float(data.std()),
+                    'min': float(data.min()),
+                    'max': float(data.max())
+                }
+            }
+
+        else:
+            return {'format': 'unknown'}
+
+    def _calculate_data_quality_metrics(self, dataset_name: str) -> Dict:
+        """Calculate data quality metrics."""
+
+        dataset_path = self.data_dir / dataset_name
+
+        quality_metrics = {
+            'completeness': 0.0,
+            'consistency': 0.0,
+            'accuracy': 0.0,
+            'timeliness': 0.0,
+            'validity': 0.0
+        }
+
+        if dataset_path.suffix == '.csv':
+            import pandas as pd
+            df = pd.read_csv(dataset_path)
+
+            # Completeness: percentage of non-missing values
+            total_cells = df.size
+            missing_cells = df.isnull().sum().sum()
+            quality_metrics['completeness'] = 1.0 - (missing_cells / total_cells)
+
+            # Validity: check for reasonable value ranges
+            numeric_cols = df.select_dtypes(include=[np.number]).columns
+            if len(numeric_cols) > 0:
+                # Check for infinite values
+                infinite_count = df[numeric_cols].isin([np.inf, -np.inf]).sum().sum()
+                quality_metrics['validity'] = 1.0 - (infinite_count / (len(numeric_cols) * len(df)))
+
+        return quality_metrics
+
+    def _get_code_version(self) -> str:
+        """Get current code version."""
+        try:
+            import subprocess
+            result = subprocess.run(['git', 'rev-parse', 'HEAD'],
+                                  capture_output=True, text=True)
+            return result.stdout.strip()
+        except:
+            return "unknown"
+
+    def _get_environment_snapshot(self) -> Dict:
+        """Get environment snapshot."""
+        return {
+            'python_version': sys.version,
+            'platform': platform.platform(),
+            'packages': self._get_package_versions(),
+            'timestamp': datetime.now().isoformat()
+        }
+
+    def _get_package_versions(self) -> Dict[str, str]:
+        """Get versions of key packages."""
+        try:
+            import pkg_resources
+            key_packages = ['torch', 'numpy', 'scipy', 'pandas', 'matplotlib']
+
+            versions = {}
+            for dist in pkg_resources.working_set:
+                if dist.project_name in key_packages:
+                    versions[dist.project_name] = dist.version
+
+            return versions
+        except:
+            return {}
+
+# Usage example
+def create_reproducible_dataset_versioning():
+    """Create comprehensive data versioning system."""
+    data_versioning = ScientificDataVersioning()
+
+    # Version a dataset
+    dataset_version = data_versioning.version_dataset(
+        dataset_name="experimental_data.csv",
+        description="Raw experimental measurements for hybrid UQ validation"
+    )
+
+    # Create provenance record
+    processing_steps = [
+        {
+            'step': 'data_collection',
+            'description': 'Raw sensor measurements',
+            'timestamp': '2024-08-26T10:00:00',
+            'parameters': {'sampling_rate': 1000, 'duration': 3600}
+        },
+        {
+            'step': 'preprocessing',
+            'description': 'Outlier removal and normalization',
+            'timestamp': '2024-08-26T10:30:00',
+            'parameters': {'outlier_method': 'iqr', 'normalization': 'zscore'}
+        },
+        {
+            'step': 'quality_control',
+            'description': 'Data quality assessment',
+            'timestamp': '2024-08-26T11:00:00',
+            'parameters': {'quality_threshold': 0.95}
+        }
+    ]
+
+    provenance = data_versioning.create_data_provenance_record(
+        dataset_name="experimental_data.csv",
+        processing_steps=processing_steps
+    )
+
+    print(f"Dataset versioned: {dataset_version}")
+    print(f"Provenance record created with {len(provenance['processing_history'])} steps")
+
+    return data_versioning, provenance
+```
+
+## Reproducibility Validation Framework
+
+### Automated Reproducibility Testing
+```python
+class ReproducibilityValidator:
+    """Automated validation of research reproducibility."""
+
+    def __init__(self, experiment_dir: str = "./experiments"):
+        self.experiment_dir = Path(experiment_dir)
+        self.validation_results = []
+
+    def validate_experiment_reproducibility(self, experiment_name: str) -> Dict[str, Any]:
+        """Validate complete experiment reproducibility."""
+
+        experiment_path = self.experiment_dir / experiment_name
+
+        if not experiment_path.exists():
+            raise FileNotFoundError(f"Experiment {experiment_name} not found")
+
+        validation_result = {
+            'experiment_name': experiment_name,
+            'timestamp': datetime.now().isoformat(),
+            'checks': {},
+            'overall_score': 0.0,
+            'recommendations': []
+        }
+
+        # Check 1: Environment reproducibility
+        env_check = self._validate_environment_reproducibility(experiment_path)
+        validation_result['checks']['environment'] = env_check
+
+        # Check 2: Data reproducibility
+        data_check = self._validate_data_reproducibility(experiment_path)
+        validation_result['checks']['data'] = data_check
+
+        # Check 3: Code reproducibility
+        code_check = self._validate_code_reproducibility(experiment_path)
+        validation_result['checks']['code'] = code_check
+
+        # Check 4: Results reproducibility
+        results_check = self._validate_results_reproducibility(experiment_path)
+        validation_result['checks']['results'] = results_check
+
+        # Check 5: Documentation completeness
+        docs_check = self._validate_documentation_completeness(experiment_path)
+        validation_result['checks']['documentation'] = docs_check
+
+        # Calculate overall score
+        check_scores = [check['score'] for check in validation_result['checks'].values()]
+        validation_result['overall_score'] = np.mean(check_scores)
+
+        # Generate recommendations
+        validation_result['recommendations'] = self._generate_recommendations(
+            validation_result['checks']
+        )
+
+        self.validation_results.append(validation_result)
+
+        return validation_result
+
+    def _validate_environment_reproducibility(self, experiment_path: Path) -> Dict:
+        """Validate environment reproducibility."""
+        env_file = experiment_path / 'environment_snapshot.json'
+
+        if not env_file.exists():
+            return {
+                'status': 'failed',
+                'score': 0.0,
+                'message': 'Environment snapshot not found'
+            }
+
+        try:
+            with open(env_file, 'r') as f:
+                env_snapshot = json.load(f)
+
+            # Validate required environment components
+            required_keys = [
+                'python_version', 'platform', 'packages',
+                'cuda_version', 'gpu_info', 'timestamp'
+            ]
+
+            missing_keys = [key for key in required_keys if key not in env_snapshot]
+            if missing_keys:
+                return {
+                    'status': 'partial',
+                    'score': 0.7,
+                    'message': f'Missing environment keys: {missing_keys}'
+                }
+
+            return {
+                'status': 'passed',
+                'score': 1.0,
+                'message': 'Environment snapshot complete'
+            }
+
+        except Exception as e:
+            return {
+                'status': 'error',
+                'score': 0.0,
+                'message': f'Error reading environment snapshot: {e}'
+            }
+
+    def _validate_data_reproducibility(self, experiment_path: Path) -> Dict:
+        """Validate data reproducibility."""
+        data_dir = experiment_path / 'data'
+
+        if not data_dir.exists():
+            return {
+                'status': 'failed',
+                'score': 0.0,
+                'message': 'Data directory not found'
+            }
+
+        # Check for data versioning
+        dvc_files = list(data_dir.glob('*.dvc'))
+        provenance_files = list(data_dir.glob('*_provenance.json'))
+
+        score = 0.0
+        messages = []
+
+        if dvc_files:
+            score += 0.4
+            messages.append(f'Found {len(dvc_files)} DVC-tracked files')
+        else:
+            messages.append('No DVC-tracked files found')
+
+        if provenance_files:
+            score += 0.4
+            messages.append(f'Found {len(provenance_files)} provenance records')
+        else:
+            messages.append('No provenance records found')
+
+        # Check data integrity
+        integrity_file = data_dir / 'data_integrity.sha256'
+        if integrity_file.exists():
+            score += 0.2
+            messages.append('Data integrity file found')
+        else:
+            messages.append('Data integrity file missing')
+
+        status = 'passed' if score >= 0.8 else 'partial' if score >= 0.4 else 'failed'
+
+        return {
+            'status': status,
+            'score': score,
+            'message': '; '.join(messages)
+        }
+
+    def _validate_code_reproducibility(self, experiment_path: Path) -> Dict:
+        """Validate code reproducibility."""
+        # Check for reproduction script
+        reproduce_script = experiment_path / 'reproduce_experiment.py'
+
+        if not reproduce_script.exists():
+            return {
+                'status': 'failed',
+                'score': 0.0,
+                'message': 'Reproduction script not found'
+            }
+
+        # Check script completeness
+        with open(reproduce_script, 'r') as f:
+            script_content = f.read()
+
+        required_elements = [
+            'setup_environment',
+            'load_data',
+            'create_model',
+            'reproduce_experiment',
+            'random_seed',
+            'deterministic'
+        ]
+
+        found_elements = [elem for elem in required_elements if elem in script_content]
+        completeness_score = len(found_elements) / len(required_elements)
+
+        if completeness_score >= 0.8:
+            status = 'passed'
+            message = f'Reproduction script complete ({len(found_elements)}/{len(required_elements)} elements)'
+        elif completeness_score >= 0.5:
+            status = 'partial'
+            message = f'Reproduction script partial ({len(found_elements)}/{len(required_elements)} elements)'
+        else:
+            status = 'failed'
+            message = f'Reproduction script incomplete ({len(found_elements)}/{len(required_elements)} elements)'
+
+        return {
+            'status': status,
+            'score': completeness_score,
+            'message': message
+        }
+
+    def _validate_results_reproducibility(self, experiment_path: Path) -> Dict:
+        """Validate results reproducibility."""
+        results_dir = experiment_path / 'results'
+
+        if not results_dir.exists():
+            return {
+                'status': 'failed',
+                'score': 0.0,
+                'message': 'Results directory not found'
+            }
+
+        # Check for key result files
+        required_files = ['metrics.json', 'plots', 'model_checkpoints']
+        found_files = []
+
+        for req_file in required_files:
+            if (results_dir / req_file).exists() or list(results_dir.glob(f'*{req_file}*')):
+                found_files.append(req_file)
+
+        completeness_score = len(found_files) / len(required_files)
+
+        # Check for reproducibility metrics
+        metrics_file = results_dir / 'reproducibility_metrics.json'
+        if metrics_file.exists():
+            completeness_score = min(1.0, completeness_score + 0.2)
+
+        status = 'passed' if completeness_score >= 0.8 else 'partial' if completeness_score >= 0.4 else 'failed'
+
+        return {
+            'status': status,
+            'score': completeness_score,
+            'message': f'Results completeness: {completeness_score:.1f} ({len(found_files)}/{len(required_files)} files)'
+        }
+
+    def _validate_documentation_completeness(self, experiment_path: Path) -> Dict:
+        """Validate documentation completeness."""
+        docs_dir = experiment_path / 'docs'
+
+        if not docs_dir.exists():
+            return {
+                'status': 'failed',
+                'score': 0.0,
+                'message': 'Documentation directory not found'
+            }
+
+        # Check for required documentation files
+        required_docs = [
+            'experiment_description.md',
+            'methodology.md',
+            'results_analysis.md',
+            'reproducibility_guide.md'
+        ]
+
+        found_docs = [doc for doc in required_docs if (docs_dir / doc).exists()]
+        completeness_score = len(found_docs) / len(required_docs)
+
+        # Check documentation quality
+        quality_score = 0.0
+        for doc_file in found_docs:
+            doc_path = docs_dir / doc_file
+            with open(doc_path, 'r') as f:
+                content = f.read()
+
+            # Simple quality checks
+            if len(content) > 500:  # Minimum length
+                quality_score += 0.25
+            if '## ' in content:  # Has sections
+                quality_score += 0.25
+            if '```' in content:  # Has code examples
+                quality_score += 0.25
+            if 'References' in content or 'Bibliography' in content:
+                quality_score += 0.25
+
+        quality_score = quality_score / len(found_docs) if found_docs else 0.0
+
+        overall_score = (completeness_score + quality_score) / 2
+
+        status = 'passed' if overall_score >= 0.8 else 'partial' if overall_score >= 0.4 else 'failed'
+
+        return {
+            'status': status,
+            'score': overall_score,
+            'message': f'Documentation completeness: {completeness_score:.1f}, quality: {quality_score:.1f}'
+        }
+
+    def _generate_recommendations(self, checks: Dict) -> List[str]:
+        """Generate recommendations based on validation checks."""
+        recommendations = []
+
+        # Environment recommendations
+        if checks['environment']['status'] != 'passed':
+            recommendations.append("Create comprehensive environment snapshot with all dependencies")
+
+        # Data recommendations
+        if checks['data']['status'] != 'passed':
+            recommendations.append("Implement DVC for data versioning and create provenance records")
+
+        # Code recommendations
+        if checks['code']['status'] != 'passed':
+            recommendations.append("Generate complete reproduction script with all required components")
+
+        # Results recommendations
+        if checks['results']['status'] != 'passed':
+            recommendations.append("Save all intermediate results and create reproducibility metrics")
+
+        # Documentation recommendations
+        if checks['documentation']['status'] != 'passed':
+            recommendations.append("Create comprehensive documentation with methodology and analysis")
+
+        return recommendations
+
+    def generate_reproducibility_report(self) -> Dict[str, Any]:
+        """Generate comprehensive reproducibility report."""
+        if not self.validation_results:
+            return {'error': 'No validation results available'}
+
+        # Aggregate results across all experiments
+        total_experiments = len(self.validation_results)
+        average_scores = {}
+
+        for check_name in ['environment', 'data', 'code', 'results', 'documentation']:
+            scores = [exp['checks'][check_name]['score'] for exp in self.validation_results]
+            average_scores[check_name] = np.mean(scores)
+
+        overall_average_score = np.mean(list(average_scores.values()))
+
+        # Generate recommendations
+        all_recommendations = []
+        for exp in self.validation_results:
+            all_recommendations.extend(exp['recommendations'])
+
+        # Remove duplicates and count frequency
+        recommendation_counts = {}
+        for rec in all_recommendations:
+            recommendation_counts[rec] = recommendation_counts.get(rec, 0) + 1
+
+        top_recommendations = sorted(recommendation_counts.items(),
+                                   key=lambda x: x[1], reverse=True)[:5]
+
+        report = {
+            'timestamp': datetime.now().isoformat(),
+            'total_experiments': total_experiments,
+            'average_scores': average_scores,
+            'overall_average_score': overall_average_score,
+            'top_recommendations': top_recommendations,
+            'validation_distribution': {
+                'passed': len([exp for exp in self.validation_results if exp['overall_score'] >= 0.8]),
+                'partial': len([exp for exp in self.validation_results if 0.4 <= exp['overall_score'] < 0.8]),
+                'failed': len([exp for exp in self.validation_results if exp['overall_score'] < 0.4])
+            }
+        }
+
+        return report
+
+# Usage example
+def create_comprehensive_reproducibility_validation():
+    """Create comprehensive reproducibility validation system."""
+    validator = ReproducibilityValidator()
+
+    # Validate experiment reproducibility
+    validation_result = validator.validate_experiment_reproducibility(
+        experiment_name="hybrid_uq_experiment_001"
+    )
+
+    print(f"Reproducibility validation score: {validation_result['overall_score']:.3f}")
+    print("Validation checks:")
+    for check_name, check_result in validation_result['checks'].items():
+        status_icon = {'passed': '✅', 'partial': '⚠️', 'failed': '❌'}[check_result['status']]
+        print(f"  {status_icon} {check_name}: {check_result['message']}")
+
+    if validation_result['recommendations']:
+        print("\nRecommendations:")
+        for rec in validation_result['recommendations']:
+            print(f"  • {rec}")
+
+    # Generate reproducibility report
+    report = validator.generate_reproducibility_report()
+    print(f"\nOverall reproducibility score: {report['overall_average_score']:.3f}")
+
+    return validator, validation_result, report
+```
+
+## References
+- [hybrid_uq_validation_verification.tex](mdc:hybrid_uq_validation_verification.tex) - Validation framework
+- [integrated_framework_testing_coverage.md](mdc:integrated_framework_testing_coverage.md) - Testing coverage
+- [scientific-integration-patterns.mdc](mdc:scientific-integration-patterns.mdc) - Integration patterns
+- [performance-optimization-patterns.mdc](mdc:performance-optimization-patterns.mdc) - Performance optimization

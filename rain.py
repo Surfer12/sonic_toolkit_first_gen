@@ -209,7 +209,7 @@ framework for testing various message types and security protocols.
 +    200:             security_level=SecurityLevel.HIGH,
 +    201:             metadata={
 +    202:                 "test_type": "integration",
-+    203:                 "algorithms": ["levenberg_marquardt", "trust_region", "bayesian_mcmc"],
++    203:                 "algorithms": ["levenberg_marquardt", "trust_region", "differential_evolution"],
 +    204:                 "depth_amplification": "6.0x",
 +    205:                 "expected_convergence": "1e-6"
 +    206:             }

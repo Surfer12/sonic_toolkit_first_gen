@@ -1,0 +1,1161 @@
+---
+alwaysApply: false
+description: "Deployment and production patterns for scientific computing frameworks"
+globs: deployment/**,docker/**,*deployment*,*production*,Dockerfile*,docker-compose*
+---
+# Deployment and Production Patterns
+
+## Overview
+This rule establishes comprehensive patterns for deploying scientific computing frameworks in production environments. It covers containerization, orchestration, monitoring, scaling, and operational best practices optimized for research-grade scientific applications.
+
+## Containerization Framework
+
+### Scientific Docker Configuration
+```dockerfile
+# Multi-stage Docker build for scientific computing
+FROM nvidia/cuda:11.8-devel-ubuntu20.04 AS base
+
+# Install system dependencies for scientific computing
+RUN apt-get update && apt-get install -y \
+    python3.9 \
+    python3.9-dev \
+    python3-pip \
+    git \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    libgomp1 \
+    libopenmpi-dev \
+    openmpi-bin \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python scientific stack
+RUN pip install --no-cache-dir \
+    numpy==1.24.3 \
+    scipy==1.11.1 \
+    pandas==2.0.3 \
+    matplotlib==3.7.2 \
+    scikit-learn==1.3.0 \
+    torch==2.0.1+cu118 \
+    torchvision==0.15.2+cu118 \
+    torchaudio==2.0.1 \
+    --index-url https://download.pytorch.org/whl/cu118
+
+# Create scientific user
+RUN useradd -m -s /bin/bash scientific && \
+    mkdir -p /workspace && \
+    chown scientific:scientific /workspace
+
+USER scientific
+WORKDIR /workspace
+
+# Development stage with additional tools
+FROM base AS development
+
+USER root
+RUN apt-get update && apt-get install -y \
+    vim \
+    htop \
+    git-lfs \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install development dependencies
+RUN pip install --no-cache-dir \
+    jupyter==1.0.0 \
+    jupyterlab==4.0.2 \
+    ipython==8.14.0 \
+    pytest==7.4.0 \
+    black==23.7.0 \
+    flake8==6.0.0 \
+    mypy==1.5.1
+
+USER scientific
+
+# Copy development configuration
+COPY --chown=scientific:scientific .jupyter/ /home/scientific/.jupyter/
+COPY --chown=scientific:scientific .vscode/ /home/scientific/.vscode/
+
+# Production stage optimized for inference
+FROM base AS production
+
+# Copy model and application code
+COPY --chown=scientific:scientific requirements.txt /workspace/
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY --chown=scientific:scientific hybrid_uq/ /workspace/hybrid_uq/
+COPY --chown=scientific:scientific integrated/ /workspace/integrated/
+COPY --chown=scientific:scientific app.py /workspace/
+
+# Create non-root user for security
+RUN useradd -m -s /bin/bash appuser && \
+    chown -R appuser:appuser /workspace
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+EXPOSE 8000
+
+CMD ["python", "app.py"]
+
+# Export stage for model artifacts
+FROM scratch AS export
+
+COPY --from=production /workspace/hybrid_uq/ /models/
+COPY --from=production /workspace/integrated/ /models/
+```
+
+### Multi-Container Orchestration
+```yaml
+# docker-compose.yml for scientific computing stack
+version: '3.8'
+
+services:
+  scientific-api:
+    build:
+      context: .
+      target: production
+    ports:
+      - "8000:8000"
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - MODEL_PATH=/workspace/models
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./data:/workspace/data:ro
+      - ./models:/workspace/models:ro
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - scientific-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 8G
+        reservations:
+          cpus: '1.0'
+          memory: 4G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  scientific-worker:
+    build:
+      context: .
+      target: production
+    command: ["python", "worker.py"]
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - scientific-network
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 4G
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - scientific-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: scientific_db
+      POSTGRES_USER: scientific_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - scientific-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+
+  monitoring:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - scientific-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - scientific-network
+
+volumes:
+  redis_data:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  scientific-network:
+    driver: bridge
+```
+
+## Production Application Framework
+
+### FastAPI-based Scientific API
+```python
+from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+import torch
+import logging
+from typing import List, Optional, Dict, Any
+from datetime import datetime
+
+# Import scientific frameworks
+from hybrid_uq import HybridModel, ModelConfig
+from integrated import IntegratedFramework
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(
+    title="Scientific Computing API",
+    description="Production API for scientific computing frameworks",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Configure for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Global model instances (load once)
+model_config = ModelConfig(grid_metrics={'dx': 1.0, 'dy': 1.0})
+hybrid_model = None
+integrated_framework = None
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize models on startup."""
+    global hybrid_model, integrated_framework
+
+    try:
+        # Initialize hybrid UQ model
+        hybrid_model = HybridModel(**model_config)
+        if torch.cuda.is_available():
+            hybrid_model = hybrid_model.cuda()
+
+        # Initialize integrated framework
+        integrated_framework = IntegratedFramework()
+
+        logger.info("Models initialized successfully")
+
+    except Exception as e:
+        logger.error(f"Failed to initialize models: {e}")
+        raise
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown."""
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    logger.info("Application shutdown complete")
+
+# Request/Response models
+class PredictionRequest(BaseModel):
+    """Request model for predictions."""
+    inputs: List[List[List[float]]] = Field(
+        ...,
+        description="Input tensor data [B, C, H, W]",
+        example=[[[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]]
+    )
+    grid_metrics: Optional[Dict[str, float]] = Field(
+        default={'dx': 1.0, 'dy': 1.0},
+        description="Grid spacing parameters"
+    )
+    return_diagnostics: bool = Field(
+        default=True,
+        description="Include diagnostic information"
+    )
+    confidence_threshold: float = Field(
+        default=0.8,
+        description="Confidence threshold for results",
+        ge=0.0, le=1.0
+    )
+
+class PredictionResponse(BaseModel):
+    """Response model for predictions."""
+    predictions: List[List[List[float]]]
+    uncertainty: List[List[List[float]]]
+    psi_confidence: List[List[List[float]]]
+    processing_time: float
+    confidence_level: float
+    diagnostics: Optional[Dict[str, Any]] = None
+    timestamp: str
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    gpu_memory = 0
+    if torch.cuda.is_available():
+        gpu_memory = torch.cuda.memory_allocated() / 1024**3  # GB
+
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "gpu_available": torch.cuda.is_available(),
+        "gpu_memory_used": f"{gpu_memory:.2f}GB",
+        "cpu_memory_used": f"{psutil.virtual_memory().percent}%",
+        "models_loaded": {
+            "hybrid_uq": hybrid_model is not None,
+            "integrated_framework": integrated_framework is not None
+        }
+    }
+
+@app.post("/predict", response_model=PredictionResponse)
+async def predict(request: PredictionRequest):
+    """Generate predictions with uncertainty quantification."""
+    start_time = datetime.now()
+
+    try:
+        if hybrid_model is None:
+            raise HTTPException(status_code=503, detail="Model not initialized")
+
+        # Convert inputs to tensor
+        inputs = torch.tensor(request.inputs, dtype=torch.float32)
+        if torch.cuda.is_available():
+            inputs = inputs.cuda()
+
+        # Generate predictions
+        with torch.no_grad():
+            outputs = hybrid_model(inputs)
+
+        # Convert results to CPU for JSON serialization
+        predictions = outputs['O'].cpu().numpy().tolist()
+        uncertainty = outputs['sigma_res'].cpu().numpy().tolist()
+        psi_confidence = outputs['psi'].cpu().numpy().tolist()
+
+        # Calculate overall confidence
+        confidence_level = float(np.mean(psi_confidence))
+
+        # Prepare diagnostics if requested
+        diagnostics = None
+        if request.return_diagnostics:
+            diagnostics = {
+                "cognitive_risk": float(outputs['R_cog'].cpu().numpy()),
+                "efficiency_risk": float(outputs['R_eff'].cpu().numpy()),
+                "hybrid_weighting": float(hybrid_model.alpha.cpu().numpy()),
+                "model_version": "hybrid_uq-v1.3.0"
+            }
+
+        processing_time = (datetime.now() - start_time).total_seconds()
+
+        # Validate confidence threshold
+        if confidence_level < request.confidence_threshold:
+            logger.warning(f"Low confidence prediction: {confidence_level:.3f}")
+
+        return PredictionResponse(
+            predictions=predictions,
+            uncertainty=uncertainty,
+            psi_confidence=psi_confidence,
+            processing_time=processing_time,
+            confidence_level=confidence_level,
+            diagnostics=diagnostics,
+            timestamp=datetime.now().isoformat()
+        )
+
+    except Exception as e:
+        logger.error(f"Prediction error: {e}")
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
+@app.post("/analyze")
+async def analyze_data(request: PredictionRequest, background_tasks: BackgroundTasks):
+    """Perform comprehensive data analysis."""
+    try:
+        # Schedule background analysis
+        background_tasks.add_task(
+            perform_comprehensive_analysis,
+            request.inputs,
+            request.grid_metrics
+        )
+
+        return {
+            "status": "analysis_started",
+            "message": "Comprehensive analysis has been scheduled",
+            "estimated_completion": "30-60 seconds"
+        }
+
+    except Exception as e:
+        logger.error(f"Analysis scheduling error: {e}")
+        raise HTTPException(status_code=500, detail=f"Analysis scheduling failed: {str(e)}")
+
+async def perform_comprehensive_analysis(inputs: List, grid_metrics: Dict):
+    """Perform comprehensive analysis in background."""
+    try:
+        # Convert inputs
+        tensor_inputs = torch.tensor(inputs, dtype=torch.float32)
+        if torch.cuda.is_available():
+            tensor_inputs = tensor_inputs.cuda()
+
+        # Perform integrated analysis
+        if integrated_framework is not None:
+            analysis_results = integrated_framework.analyze(tensor_inputs)
+
+            # Store results (implement persistent storage)
+            logger.info(f"Analysis completed: {analysis_results}")
+
+        logger.info("Comprehensive analysis completed successfully")
+
+    except Exception as e:
+        logger.error(f"Background analysis error: {e}")
+
+@app.get("/metrics")
+async def get_metrics():
+    """Get application performance metrics."""
+    return {
+        "uptime": "24h",  # Implement actual uptime tracking
+        "total_requests": 1500,  # Implement request counting
+        "average_response_time": 0.0234,
+        "error_rate": 0.02,
+        "gpu_utilization": 75.5,
+        "memory_usage": 65.2
+    }
+
+@app.get("/version")
+async def get_version():
+    """Get application version information."""
+    return {
+        "version": "1.0.0",
+        "build_date": "2025-08-26",
+        "frameworks": {
+            "hybrid_uq": "v1.3.0",
+            "integrated": "v1.8.0",
+            "torch": torch.__version__,
+            "cuda": torch.version.cuda if torch.cuda.is_available() else None
+        },
+        "python": "3.9.0"
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "app:app",
+        host="0.0.0.0",
+        port=8000,
+        workers=4,
+        reload=False
+    )
+```
+
+## Monitoring and Observability
+
+### Prometheus Metrics Integration
+```python
+from prometheus_client import Counter, Histogram, Gauge, generate_latest
+from fastapi import Request, Response
+from fastapi.middleware.base import BaseHTTPMiddleware
+
+# Define metrics
+REQUEST_COUNT = Counter(
+    'http_requests_total',
+    'Total HTTP requests',
+    ['method', 'endpoint', 'status']
+)
+
+REQUEST_LATENCY = Histogram(
+    'http_request_duration_seconds',
+    'HTTP request latency',
+    ['method', 'endpoint']
+)
+
+ACTIVE_CONNECTIONS = Gauge(
+    'active_connections',
+    'Number of active connections'
+)
+
+MODEL_INFERENCE_TIME = Histogram(
+    'model_inference_duration_seconds',
+    'Model inference time',
+    ['model_name']
+)
+
+GPU_MEMORY_USAGE = Gauge(
+    'gpu_memory_usage_bytes',
+    'GPU memory usage in bytes'
+)
+
+class MetricsMiddleware(BaseHTTPMiddleware):
+    """Middleware to collect HTTP metrics."""
+
+    async def dispatch(self, request: Request, call_next):
+        ACTIVE_CONNECTIONS.inc()
+
+        start_time = time.time()
+        response = await call_next(request)
+        duration = time.time() - start_time
+
+        REQUEST_COUNT.labels(
+            method=request.method,
+            endpoint=request.url.path,
+            status=response.status_code
+        ).inc()
+
+        REQUEST_LATENCY.labels(
+            method=request.method,
+            endpoint=request.url.path
+        ).observe(duration)
+
+        ACTIVE_CONNECTIONS.dec()
+
+        return response
+
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint."""
+    # Update GPU metrics
+    if torch.cuda.is_available():
+        GPU_MEMORY_USAGE.set(torch.cuda.memory_allocated())
+
+    return Response(
+        generate_latest(),
+        media_type="text/plain"
+    )
+
+# Add metrics middleware
+app.add_middleware(MetricsMiddleware)
+
+def record_model_inference_time(model_name: str, duration: float):
+    """Record model inference time."""
+    MODEL_INFERENCE_TIME.labels(model_name=model_name).observe(duration)
+```
+
+### Grafana Dashboard Configuration
+```yaml
+# grafana/provisioning/dashboards/scientific-dashboard.json
+{
+  "dashboard": {
+    "title": "Scientific Computing Dashboard",
+    "tags": ["scientific", "ml", "monitoring"],
+    "timezone": "UTC",
+    "panels": [
+      {
+        "title": "Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "legendFormat": "{{method}} {{endpoint}}"
+          }
+        ]
+      },
+      {
+        "title": "Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile"
+          }
+        ]
+      },
+      {
+        "title": "GPU Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gpu_memory_usage_bytes / 1024 / 1024 / 1024",
+            "legendFormat": "GPU Memory (GB)"
+          }
+        ]
+      },
+      {
+        "title": "Model Inference Time",
+        "type": "heatmap",
+        "targets": [
+          {
+            "expr": "rate(model_inference_duration_seconds_bucket[5m])",
+            "legendFormat": "{{model_name}}"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Scaling and Load Balancing
+
+### Kubernetes Deployment
+```yaml
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scientific-api
+  labels:
+    app: scientific-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: scientific-api
+  template:
+    metadata:
+      labels:
+        app: scientific-api
+    spec:
+      containers:
+      - name: api
+        image: scientific-api:latest
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            cpu: "2"
+            memory: "8Gi"
+            nvidia.com/gpu: "1"
+          requests:
+            cpu: "1"
+            memory: "4Gi"
+            nvidia.com/gpu: "1"
+        env:
+        - name: CUDA_VISIBLE_DEVICES
+          value: "0"
+        - name: MODEL_PATH
+          value: "/models"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scientific-api-service
+spec:
+  selector:
+    app: scientific-api
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: LoadBalancer
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: scientific-api-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: scientific-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+```
+
+### Horizontal Pod Autoscaler Configuration
+```yaml
+# Advanced HPA with custom metrics
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: scientific-api-advanced-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: scientific-api
+  minReplicas: 3
+  maxReplicas: 20
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 3
+        periodSeconds: 60
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Pods
+    pods:
+      metric:
+        name: packets_per_second
+      target:
+        type: AverageValue
+        averageValue: "1000"
+```
+
+## Security and Compliance
+
+### Production Security Configuration
+```python
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends, HTTPException, Security
+import jwt
+from datetime import datetime, timedelta
+import os
+
+# Security configuration
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+security = HTTPBearer()
+
+def create_access_token(data: dict):
+    """Create JWT access token."""
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def verify_token(credentials: HTTPAuthorizationCredentials = Security(security)):
+    """Verify JWT token."""
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return username
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+@app.post("/token")
+async def login(username: str, password: str):
+    """Authenticate user and return access token."""
+    # Implement user authentication logic
+    if authenticate_user(username, password):
+        access_token = create_access_token({"sub": username})
+        return {"access_token": access_token, "token_type": "bearer"}
+    else:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+@app.get("/protected-endpoint")
+async def protected_endpoint(username: str = Depends(verify_token)):
+    """Protected endpoint requiring authentication."""
+    return {"message": f"Hello {username}, this is a protected endpoint"}
+
+def authenticate_user(username: str, password: str) -> bool:
+    """Authenticate user credentials."""
+    # Implement secure authentication (database, LDAP, etc.)
+    # This is a placeholder implementation
+    return username == "admin" and password == "secure_password"
+```
+
+### Rate Limiting and Throttling
+```python
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
+
+# Configure rate limits
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+
+@app.get("/limited-endpoint")
+@limiter.limit("10/minute")
+async def limited_endpoint():
+    """Rate-limited endpoint."""
+    return {"message": "This endpoint is rate limited to 10 requests per minute"}
+
+@app.post("/predict")
+@limiter.limit("100/minute")
+async def predict_with_rate_limit(request: PredictionRequest):
+    """Rate-limited prediction endpoint."""
+    # Implementation remains the same
+    # Rate limiting is handled automatically
+    pass
+```
+
+## Disaster Recovery and Backup
+
+### Automated Backup Strategy
+```python
+import boto3
+from datetime import datetime
+import os
+from pathlib import Path
+
+class BackupManager:
+    """Automated backup manager for scientific models and data."""
+
+    def __init__(self, s3_bucket: str, local_backup_dir: str = "./backups"):
+        self.s3_bucket = s3_bucket
+        self.local_backup_dir = Path(local_backup_dir)
+        self.local_backup_dir.mkdir(exist_ok=True)
+
+        # Initialize S3 client
+        self.s3_client = boto3.client('s3')
+
+    def create_model_backup(self, model_path: str, model_name: str):
+        """Create backup of trained model."""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_name = f"{model_name}_{timestamp}.pth"
+
+        # Save model locally first
+        local_backup_path = self.local_backup_dir / backup_name
+        torch.save(torch.load(model_path), local_backup_path)
+
+        # Upload to S3
+        self.s3_client.upload_file(
+            str(local_backup_path),
+            self.s3_bucket,
+            f"models/{backup_name}"
+        )
+
+        # Cleanup local backup
+        local_backup_path.unlink()
+
+        return backup_name
+
+    def backup_experiment_data(self, experiment_dir: str, experiment_name: str):
+        """Backup experiment data and results."""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_name = f"{experiment_name}_{timestamp}.tar.gz"
+
+        # Create compressed archive
+        import tarfile
+        with tarfile.open(self.local_backup_dir / backup_name, "w:gz") as tar:
+            tar.add(experiment_dir, arcname=experiment_name)
+
+        # Upload to S3
+        self.s3_client.upload_file(
+            str(self.local_backup_dir / backup_name),
+            self.s3_bucket,
+            f"experiments/{backup_name}"
+        )
+
+        # Cleanup
+        (self.local_backup_dir / backup_name).unlink()
+
+        return backup_name
+
+    def restore_model(self, backup_name: str, restore_path: str):
+        """Restore model from backup."""
+        # Download from S3
+        local_path = self.local_backup_dir / backup_name
+        self.s3_client.download_file(
+            self.s3_bucket,
+            f"models/{backup_name}",
+            str(local_path)
+        )
+
+        # Load model
+        model = torch.load(local_path)
+
+        # Save to restore path
+        torch.save(model, restore_path)
+
+        # Cleanup
+        local_path.unlink()
+
+        return model
+
+# Usage example
+backup_manager = BackupManager(s3_bucket="scientific-models-backup")
+
+# Backup trained model
+backup_name = backup_manager.create_model_backup(
+    model_path="./models/hybrid_uq_final.pth",
+    model_name="hybrid_uq_v1.3.0"
+)
+
+# Backup experiment results
+experiment_backup = backup_manager.backup_experiment_data(
+    experiment_dir="./experiments/exp_001",
+    experiment_name="hybrid_uq_validation"
+)
+```
+
+## Production Monitoring Dashboard
+
+### Real-time Monitoring Setup
+```python
+import psutil
+import GPUtil
+from datetime import datetime, timedelta
+import threading
+import time
+
+class ProductionMonitor:
+    """Real-time production monitoring for scientific applications."""
+
+    def __init__(self, monitoring_interval: int = 60):
+        self.monitoring_interval = monitoring_interval
+        self.metrics_history = []
+        self.is_monitoring = False
+        self.monitor_thread = None
+
+    def start_monitoring(self):
+        """Start real-time monitoring."""
+        if not self.is_monitoring:
+            self.is_monitoring = True
+            self.monitor_thread = threading.Thread(target=self._monitoring_loop)
+            self.monitor_thread.daemon = True
+            self.monitor_thread.start()
+
+    def stop_monitoring(self):
+        """Stop monitoring."""
+        self.is_monitoring = False
+        if self.monitor_thread:
+            self.monitor_thread.join()
+
+    def _monitoring_loop(self):
+        """Main monitoring loop."""
+        while self.is_monitoring:
+            metrics = self._collect_metrics()
+            self.metrics_history.append(metrics)
+
+            # Keep only last 24 hours of data
+            cutoff_time = datetime.now() - timedelta(hours=24)
+            self.metrics_history = [
+                m for m in self.metrics_history
+                if m['timestamp'] > cutoff_time
+            ]
+
+            time.sleep(self.monitoring_interval)
+
+    def _collect_metrics(self) -> Dict[str, Any]:
+        """Collect comprehensive system and application metrics."""
+        metrics = {
+            'timestamp': datetime.now(),
+            'system': self._get_system_metrics(),
+            'gpu': self._get_gpu_metrics(),
+            'application': self._get_application_metrics(),
+            'performance': self._get_performance_metrics()
+        }
+        return metrics
+
+    def _get_system_metrics(self) -> Dict[str, float]:
+        """Get system-level metrics."""
+        return {
+            'cpu_percent': psutil.cpu_percent(interval=1),
+            'memory_percent': psutil.virtual_memory().percent,
+            'memory_used_gb': psutil.virtual_memory().used / (1024**3),
+            'disk_usage_percent': psutil.disk_usage('/').percent,
+            'network_connections': len(psutil.net_connections())
+        }
+
+    def _get_gpu_metrics(self) -> Dict[str, Any]:
+        """Get GPU metrics."""
+        try:
+            gpus = GPUtil.getGPUs()
+            if gpus:
+                gpu = gpus[0]  # Primary GPU
+                return {
+                    'gpu_utilization': gpu.load * 100,
+                    'gpu_memory_used': gpu.memoryUsed,
+                    'gpu_memory_total': gpu.memoryTotal,
+                    'gpu_temperature': gpu.temperature
+                }
+            else:
+                return {'gpu_available': False}
+        except:
+            return {'gpu_error': True}
+
+    def _get_application_metrics(self) -> Dict[str, Any]:
+        """Get application-specific metrics."""
+        return {
+            'active_requests': getattr(app, 'active_requests', 0),
+            'total_requests': getattr(app, 'total_requests', 0),
+            'error_rate': getattr(app, 'error_rate', 0.0),
+            'avg_response_time': getattr(app, 'avg_response_time', 0.0)
+        }
+
+    def _get_performance_metrics(self) -> Dict[str, Any]:
+        """Get performance-specific metrics."""
+        return {
+            'model_inference_time': getattr(app, 'model_inference_time', 0.0),
+            'memory_usage_mb': psutil.Process().memory_info().rss / (1024**2),
+            'cpu_usage_percent': psutil.Process().cpu_percent(),
+            'thread_count': threading.active_count()
+        }
+
+    def get_monitoring_report(self, hours: int = 1) -> Dict[str, Any]:
+        """Generate monitoring report for specified time period."""
+        cutoff_time = datetime.now() - timedelta(hours=hours)
+
+        recent_metrics = [
+            m for m in self.metrics_history
+            if m['timestamp'] > cutoff_time
+        ]
+
+        if not recent_metrics:
+            return {'error': 'No metrics available for specified time period'}
+
+        # Calculate summary statistics
+        report = {
+            'time_period': f"{hours} hours",
+            'total_samples': len(recent_metrics),
+            'summary': self._calculate_summary_stats(recent_metrics),
+            'alerts': self._check_alerts(recent_metrics),
+            'recommendations': self._generate_recommendations(recent_metrics)
+        }
+
+        return report
+
+    def _calculate_summary_stats(self, metrics: List[Dict]) -> Dict[str, Any]:
+        """Calculate summary statistics from metrics."""
+        if not metrics:
+            return {}
+
+        # Extract numeric metrics
+        cpu_usage = [m['system']['cpu_percent'] for m in metrics]
+        memory_usage = [m['system']['memory_percent'] for m in metrics]
+
+        return {
+            'cpu_usage': {
+                'mean': np.mean(cpu_usage),
+                'max': np.max(cpu_usage),
+                'min': np.min(cpu_usage),
+                'std': np.std(cpu_usage)
+            },
+            'memory_usage': {
+                'mean': np.mean(memory_usage),
+                'max': np.max(memory_usage),
+                'min': np.min(memory_usage),
+                'std': np.std(memory_usage)
+            }
+        }
+
+    def _check_alerts(self, metrics: List[Dict]) -> List[str]:
+        """Check for system alerts."""
+        alerts = []
+
+        for metric in metrics[-10:]:  # Check last 10 samples
+            if metric['system']['cpu_percent'] > 90:
+                alerts.append(f"High CPU usage: {metric['system']['cpu_percent']:.1f}%")
+
+            if metric['system']['memory_percent'] > 85:
+                alerts.append(f"High memory usage: {metric['system']['memory_percent']:.1f}%")
+
+            if metric.get('gpu', {}).get('gpu_utilization', 0) > 95:
+                alerts.append(f"High GPU utilization: {metric['gpu']['gpu_utilization']:.1f}%")
+
+        return list(set(alerts))  # Remove duplicates
+
+    def _generate_recommendations(self, metrics: List[Dict]) -> List[str]:
+        """Generate system recommendations based on metrics."""
+        recommendations = []
+
+        avg_cpu = np.mean([m['system']['cpu_percent'] for m in metrics])
+        avg_memory = np.mean([m['system']['memory_percent'] for m in metrics])
+
+        if avg_cpu > 70:
+            recommendations.append("Consider scaling up CPU resources or optimizing compute-intensive operations")
+
+        if avg_memory > 75:
+            recommendations.append("Consider increasing memory allocation or implementing memory optimization techniques")
+
+        if len(metrics) > 0 and metrics[-1].get('gpu', {}).get('gpu_memory_used', 0) > 0.8 * metrics[-1].get('gpu', {}).get('gpu_memory_total', 1):
+            recommendations.append("GPU memory usage is high, consider model quantization or smaller batch sizes")
+
+        return recommendations
+
+# Global monitor instance
+production_monitor = ProductionMonitor()
+
+@app.on_event("startup")
+async def startup_monitoring():
+    """Start monitoring on application startup."""
+    production_monitor.start_monitoring()
+
+@app.on_event("shutdown")
+async def shutdown_monitoring():
+    """Stop monitoring on application shutdown."""
+    production_monitor.stop_monitoring()
+
+@app.get("/monitoring/report")
+async def get_monitoring_report(hours: int = 1):
+    """Get monitoring report."""
+    return production_monitor.get_monitoring_report(hours)
+```
+
+## References
+- [integrated_framework_testing_coverage.md](mdc:integrated_framework_testing_coverage.md) - Testing and validation patterns
+- [hybrid_uq_api_reference.md](mdc:hybrid_uq_api_reference.md) - API patterns for deployment
+- [performance-optimization-patterns.mdc](mdc:performance-optimization-patterns.mdc) - Production optimization patterns
