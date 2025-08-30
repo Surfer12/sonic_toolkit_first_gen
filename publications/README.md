@@ -87,20 +87,67 @@ Each publication document follows academic standards with:
 
 **Total Publications: 19 publication-ready LaTeX documents**
 
+## 📖 Supplementary Materials Catalog
+
+This section provides a comprehensive catalog of supplementary materials that enhance the academic value of the publication portfolio. These materials offer additional context, technical details, and implementation guidance for researchers, practitioners, and reviewers.
+
+### 🎯 **Supplementary Material Categories**
+
+#### **A. Publication Overviews & Summaries**
+**Purpose**: Quick reference guides and executive summaries for complex publications
+**Target Audience**: Researchers, reviewers, and readers seeking rapid understanding
+
+| Publication | Supplementary Material | Purpose | Access |
+|-------------|----------------------|---------|--------|
+| `algorithmic_prescient_analysis.tex` | `docs/frameworks/algo-precience.md` | Complete publication overview, theorem index, performance data | [📖 View](docs/frameworks/algo-precience.md) |
+| `fundamental_computational_laws.tex` | `docs/frameworks/Fundamental_laws.md` | Philosophical implications, universal constants, convergence prophecy | [📖 View](docs/frameworks/Fundamental_laws.md) |
+| `scientific_computing_toolkit_publication.tex` | `docs/frameworks/inverse-precision.md` | Technical implementation, integration patterns, best practices | [📖 View](docs/frameworks/inverse-precision.md) |
+| `precision_convergence_mechanism.tex` | `docs/frameworks/inverse-precision.md` | Algorithm implementations, validation procedures, troubleshooting | [📖 View](docs/frameworks/inverse-precision.md) |
+| `core_algorithms_publication.tex` | `docs/frameworks/inverse-precision.md` | LM, Trust Region, DE, BH algorithm details and performance | [📖 View](docs/frameworks/inverse-precision.md) |
+
+#### **B. Technical Implementation Guides**
+**Purpose**: Detailed technical specifications and practical implementation guidance
+**Target Audience**: Practitioners, developers, and advanced researchers
+
+| Material | Content Focus | Key Features |
+|----------|----------------|--------------|
+| **Inverse Precision Framework** | Complete mathematical formulations, algorithm implementations, performance benchmarks | ✅ Python code examples, ✅ API documentation, ✅ Integration patterns, ✅ Best practices |
+| **Algorithmic Prescience Overview** | Publication summary, theorem catalog, performance validation | ✅ Executive summary, ✅ Mathematical rigor, ✅ Impact assessment |
+| **Fundamental Computational Laws** | Philosophical implications, universal constants, future predictions | ✅ Paradigm shift analysis, ✅ Cross-domain evidence, ✅ Convergence prophecy |
+
+#### **C. Cross-Reference Integration**
+
+```latex
+% Recommended appendix inclusion for publications
+\appendix
+\section{Supplementary Materials}
+\label{appendix:supplementary}
+
+For additional context and implementation details, please refer to:
+\begin{itemize}
+\item \textbf{Publication Overview}: \texttt{docs/frameworks/[summary].md}
+\item \textbf{Technical Implementation}: \texttt{docs/frameworks/inverse-precision.md}
+\item \textbf{Repository Documentation}: \url{https://github.com/Surfer12/sonic_toolkit_first_gen}
+\end{itemize}
+```
+
 ## 🚀 Usage Guidelines
 
 ### For Academic Publication
 1. **Select appropriate document** based on research focus
 2. **Review LaTeX formatting** and compile with `pdflatex`
-3. **Update references** in `references.bib` if needed
-4. **Customize author information** and affiliations
-5. **Submit to appropriate journals** based on document focus
+3. **Include supplementary materials** in appendices (see template above)
+4. **Update references** in `references.bib` if needed
+5. **Customize author information** and affiliations
+6. **Reference supplementary materials** in cover letter for journal submissions
+7. **Submit to appropriate journals** based on document focus
 
 ### For Research Reference
 1. **Use cross-references** between related documents
 2. **Leverage shared theorems** and mathematical foundations
 3. **Apply consistent notation** across publications
-4. **Maintain research excellence standards**
+4. **Access supplementary materials** for implementation details
+5. **Maintain research excellence standards**
 
 ## 📈 Publication Impact
 
