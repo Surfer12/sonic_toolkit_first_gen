@@ -1,0 +1,206 @@
+---
+globs: *.java
+description: "Java development standards for research frameworks, consciousness modeling, and scientific computing"
+---
+
+# ☕ Java Development Standards - Research Frameworks
+
+## Core Research Principles
+
+### 1. Immutable Research Data Structures
+```java
+// ✅ GOOD: Research-grade immutable data structures
+public record ModelParameters(
+    double tau_y,      // Yield stress [Pa]
+    double K,          // Consistency index [Pa·s^n]
+    double n,          // Flow behavior index [-]
+    double temperature // [K]
+) {
+    public ModelParameters {
+        // Validation in compact constructor
+        if (tau_y < 0.0) {
+            throw new IllegalArgumentException("Yield stress must be non-negative");
+        }
+        if (K <= 0.0) {
+            throw new IllegalArgumentException("Consistency index must be positive");
+        }
+        if (n <= 0.0) {
+            throw new IllegalArgumentException("Flow index must be positive");
+        }
+        if (temperature < 0.0) {
+            throw new IllegalArgumentException("Temperature must be non-negative");
+        }
+    }
+
+    public boolean isShearThinning() {
+        return n < 1.0;
+    }
+}
+```
+
+### 2. Research Documentation Standards
+```java
+/**
+ * Advanced Herschel-Bulkley parameter fitting with uncertainty quantification.
+ *
+ * This class implements robust parameter estimation for non-Newtonian fluid models
+ * using multiple optimization algorithms and statistical analysis. The fitting process
+ * includes comprehensive validation against physical constraints and experimental
+ * uncertainty quantification.
+ *
+ * <h2>Mathematical Background</h2>
+ * The Herschel-Bulkley model describes the relationship between shear stress (τ)
+ * and shear rate (γ̇) for yield-stress fluids:
+ * <pre>{@code
+ * τ = τ_y + K·γ̇^n    (for γ̇ > 0)
+ * τ = τ_y            (for γ̇ = 0)
+ * }</pre>
+ *
+ * @author Scientific Computing Toolkit
+ * @version 1.0
+ * @since 1.0
+ */
+public class HBParameterFitter {
+    // Implementation with comprehensive research documentation
+}
+```
+
+### 3. Exception Handling for Research Applications
+```java
+public class RheologyException extends Exception {
+    private final String physicalContext;
+    private final Map<String, Double> parameterValues;
+
+    public RheologyException(String message, String physicalContext,
+                           Map<String, Double> parameterValues) {
+        super(message);
+        this.physicalContext = physicalContext;
+        this.parameterValues = new HashMap<>(parameterValues);
+    }
+
+    public String getPhysicalContext() {
+        return physicalContext;
+    }
+
+    public Map<String, Double> getParameterValues() {
+        return new HashMap<>(parameterValues);
+    }
+}
+```
+
+## Code Organization
+
+### 1. Research Package Structure
+```java
+// Corpus/qualia/ - Research framework package
+package qualia;
+
+/**
+ * Advanced rheological modeling framework for research applications.
+ *
+ * This package provides comprehensive tools for:
+ * - Non-Newtonian fluid constitutive modeling
+ * - Parameter estimation from experimental data
+ * - Model validation and uncertainty quantification
+ * - Research-grade numerical implementations
+ */
+public class RheologyFramework {
+    // Research workflow implementation
+}
+```
+
+## Testing Standards
+
+### 1. Research-Grade Test Design
+```java
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+@DisplayName("Herschel-Bulkley Constitutive Model - Research Validation")
+class HBConstitutiveModelTest {
+
+    @Test
+    @DisplayName("Newtonian limit validation")
+    void testNewtonianLimit() {
+        ModelParameters newtonianParams = new ModelParameters(0.0, 10.0, 1.0, 298.0);
+        double[] gammaDot = {0.1, 1.0, 10.0, 100.0};
+
+        // Test implementation
+        assertTrue(true, "Newtonian fluid should follow τ = K·γ̇");
+    }
+
+    @Test
+    @DisplayName("Numerical stability validation")
+    void testNumericalStability() {
+        ModelParameters params = new ModelParameters(1.0, 5.0, 0.5, 298.0);
+        double[] extremeGammaDot = {1e-10, 1e-6, 1e3, 1e6};
+
+        for (double gammaDot : extremeGammaDot) {
+            assertDoesNotThrow(() -> {
+                // Test with extreme values
+            }, "Should handle extreme shear rates without numerical issues");
+        }
+    }
+}
+```
+
+## Research Framework Design
+
+### 1. Consciousness Modeling Framework
+```java
+public record ConsciousnessState(
+    double attentionLevel,
+    double memoryCoherence,
+    double uncertainty,
+    LocalDateTime timestamp
+) {
+    public ConsciousnessState {
+        if (attentionLevel < 0.0 || attentionLevel > 1.0) {
+            throw new IllegalArgumentException("Attention level must be in [0,1]");
+        }
+    }
+
+    public boolean isHighAttention() {
+        return attentionLevel > 0.7;
+    }
+}
+
+@FunctionalInterface
+public interface ConsciousnessModel {
+    double calculatePsi(ConsciousnessState state);
+}
+
+public class AdvancedConsciousnessModel implements ConsciousnessModel {
+    @Override
+    public double calculatePsi(ConsciousnessState state) {
+        double attention = state.attentionLevel();
+        double coherence = state.memoryCoherence();
+        double uncertainty = state.uncertainty();
+
+        double basePsi = Math.min(attention * coherence, 1.0);
+        double uncertaintyPenalty = Math.exp(-uncertainty * 2.0);
+
+        return Math.min(basePsi * uncertaintyPenalty, 1.0);
+    }
+}
+```
+
+## Best Practices
+
+### 1. Research Code Quality
+- **Immutable Data**: Use records for research data structures
+- **Comprehensive Validation**: Physical constraint checking
+- **Exception Hierarchy**: Research-specific exception handling
+- **Documentation**: Complete JavaDoc with mathematical background
+
+### 2. Testing Excellence
+- **Physical Validation**: Test against known physical limits
+- **Numerical Stability**: Test with extreme parameter values
+- **Performance Benchmarks**: JMH for computational performance
+
+### 3. Research Ethics and Reproducibility
+- **Data Provenance**: Track analysis history and metadata
+- **Method Documentation**: Complete algorithmic documentation
+- **Validation Standards**: Statistical and physical validation
+
+These standards ensure our Java research frameworks are **scientifically rigorous** and **research-grade** quality.

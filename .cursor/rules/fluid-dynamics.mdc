@@ -1,0 +1,320 @@
+---
+alwaysApply: false
+globs: *flow*.py,*rheology*.py,hbflow/**/*
+description: Fluid dynamics and rheological modeling patterns and frameworks
+---
+
+# 🌊 Fluid Dynamics & Rheological Modeling Guide
+
+## Core Frameworks
+
+### Multi-Phase Flow Analysis
+**File**: [multi_phase_flow_analysis.py](mdc:multi_phase_flow_analysis.py)
+
+#### Key Classes:
+```python
+class MultiPhaseFlowAnalyzer:
+    """Advanced multi-phase flow analyzer with rheological modeling."""
+
+    def __init__(self, config: MultiPhaseFlowConfig):
+        # VOF interface tracking, phase-specific rheology
+        # Mesh generation, boundary conditions
+
+    def add_phase(self, phase: PhaseProperties):
+        # Define phase properties (density, viscosity, HB parameters)
+
+    def initialize_droplet(self, center, radius, cont_phase, drop_phase):
+        # Initialize circular/droplet geometries
+
+    def solve_flow(self, inlet_velocity) -> Dict[str, np.ndarray]:
+        # Solve momentum equations with rheological effects
+```
+
+#### Usage Pattern:
+```python
+# Configure simulation
+config = MultiPhaseFlowConfig(
+    domain_size=(0.02, 0.01),  # 2cm × 1cm channel
+    grid_points=(50, 25),
+    surface_tension=0.025
+)
+
+# Initialize analyzer
+analyzer = MultiPhaseFlowAnalyzer(config)
+
+# Add phases
+oil = PhaseProperties(name="Oil", density=800, viscosity=0.1)
+water = PhaseProperties(name="Water", density=1000, viscosity=0.001)
+analyzer.add_phase(oil)
+analyzer.add_phase(water)
+
+# Initialize geometry
+analyzer.initialize_droplet((0.01, 0.005), 0.002, "Water", "Oil")
+
+# Solve
+solution = analyzer.solve_flow(inlet_velocity=0.05)
+```
+
+### Herschel-Bulkley Flow Package
+**Directory**: [hbflow/](mdc:hbflow/)
+
+#### Core Modules:
+- **[models.py](mdc:hbflow/models.py)**: Constitutive equations
+- **[fit.py](mdc:hbflow/fit.py)**: Parameter fitting with uncertainty
+- **[duct.py](mdc:hbflow/duct.py)**: Flow solvers for ducts
+- **[viscoelastic.py](mdc:hbflow/viscoelastic.py)**: Advanced rheological models
+
+#### Key Functions:
+```python
+# Constitutive equations
+def hb_tau_from_gamma(tau_y, K, n, gamma_dot):
+    """Herschel-Bulkley stress from shear rate."""
+    return tau_y + K * (gamma_dot ** n)
+
+def hb_gamma_from_tau(tau_y, K, n, tau):
+    """Inverse: shear rate from stress."""
+    if tau <= tau_y:
+        return 0.0
+    return ((tau - tau_y) / K) ** (1/n)
+
+# Parameter fitting
+def fit_herschel_bulkley(shear_rates, stresses):
+    """Fit HB parameters with cross-validation."""
+    return fitted_params, uncertainties, cv_score
+
+# Flow solvers
+def solve_elliptical_duct_flow(tau_y, K, n, dp_dx, a, b):
+    """Solve HB flow in elliptical duct."""
+    return velocity_profile, flow_rate, wall_shear_stress
+```
+
+### Biological Flow Systems
+**File**: [flower_biological_flow.py](mdc:flower_biological_flow.py)
+
+#### Applications:
+- **Plant Vascular Systems**: Xylem/phloem transport
+- **Leaf Venation Networks**: Complex branching flows
+- **Flower Petal Dynamics**: Pigment and fluid transport
+
+## Rheological Modeling Patterns
+
+### Material Property Definitions:
+```python
+# Herschel-Bulkley fluid
+hb_params = {
+    'tau_y': 150.0,  # Yield stress [Pa]
+    'K': 25.0,       # Consistency index [Pa·s^n]
+    'n': 0.4         # Power-law index
+}
+
+# Viscoelastic fluid
+viscoelastic_params = {
+    'relaxation_time': 0.1,      # λ [s]
+    'elastic_modulus': 2000.0,   # G [Pa]
+    'viscous_modulus': 500.0     # η [Pa·s]
+}
+
+# Thixotropic fluid
+thixotropic_params = {
+    'structure_parameter': 0.8,    # λ [-]
+    'breakdown_rate': 2.0,         # k_break [1/s]
+    'buildup_rate': 0.5,           # k_build [1/s]
+    'tau_y_base': 100.0,           # Base yield stress [Pa]
+    'K_base': 20.0                 # Base consistency [Pa·s^n]
+}
+```
+
+### Flow Simulation Patterns:
+
+#### 1. Simple Poiseuille Flow:
+```python
+# Hagen-Poiseuille for Newtonian
+def poiseuille_velocity(radius, dp_dx, viscosity):
+    return (dp_dx / (4 * viscosity)) * (radius**2 - r**2)
+
+# Herschel-Bulkley modification
+def hb_poiseuille_velocity(radius, dp_dx, tau_y, K, n):
+    # Iterative solution required for HB fluids
+    return velocity_profile
+```
+
+#### 2. Complex Geometry Flow:
+```python
+# Slot die flow
+def slot_die_flow(width, gap, length, dp_dx, tau_y, K, n):
+    # Solve for velocity profile in rectangular cross-section
+    return velocity_profile, flow_rate
+
+# Annular flow (concentric cylinders)
+def annular_flow(Ri, Ro, dp_dx, tau_y, K, n):
+    # Solve for velocity profile in annular geometry
+    return velocity_profile, flow_rate
+```
+
+#### 3. Scale-up Considerations:
+```python
+# Dimensionless numbers for scale-up
+def calculate_reynolds_number(rho, U, D, mu):
+    return (rho * U * D) / mu
+
+def calculate_power_number(P, rho, n, D):
+    return P / (rho * n**3 * D**5)
+
+# Scale-up criteria
+def scale_constant_shear_rate(lab_flow_rate, lab_dimensions, prod_dimensions):
+    # Calculate production flow rate for constant shear rate
+    scale_factor = (prod_dimensions['length'] / lab_dimensions['length'])**3
+    return lab_flow_rate * scale_factor
+```
+
+## Numerical Methods
+
+### Mesh Generation:
+```python
+# Structured mesh for simple geometries
+def create_structured_mesh(nx, ny, Lx, Ly):
+    x = np.linspace(0, Lx, nx)
+    y = np.linspace(0, Ly, ny)
+    return np.meshgrid(x, y)
+
+# Unstructured mesh for complex geometries
+def create_unstructured_mesh(points, triangles):
+    # Delaunay triangulation
+    tri = Delaunay(points)
+    return tri.simplices, tri.neighbors
+```
+
+### Solver Patterns:
+
+#### Finite Volume Method:
+```python
+def solve_finite_volume(velocity, pressure, mesh, dt, material_props):
+    # 1. Calculate fluxes at cell faces
+    # 2. Apply momentum equations
+    # 3. Solve pressure-velocity coupling
+    # 4. Update boundary conditions
+    return new_velocity, new_pressure
+```
+
+#### Rheological Stress Calculation:
+```python
+def calculate_rheological_stress(velocity_gradient, material_params):
+    # 1. Compute strain rate tensor
+    strain_rate = 0.5 * (grad_u + grad_u.T)
+
+    # 2. Calculate shear rate (second invariant)
+    gamma_dot = np.sqrt(2 * np.sum(strain_rate**2))
+
+    # 3. Apply constitutive equation
+    if 'tau_y' in material_params:  # HB fluid
+        tau = material_params['tau_y'] + \
+              material_params['K'] * (gamma_dot + 1e-10)**material_params['n']
+    else:  # Newtonian
+        tau = material_params['viscosity'] * gamma_dot
+
+    # 4. Compute stress tensor
+    stress = 2 * strain_rate * (tau / (gamma_dot + 1e-10))
+
+    return stress
+```
+
+## Validation and Testing
+
+### Benchmark Cases:
+```python
+# Analytical solutions for validation
+def newtonian_analytical_solution(radius, dp_dx, viscosity):
+    """Hagen-Poiseuille solution."""
+    return (dp_dx / (4 * viscosity)) * (radius**2 - r**2)
+
+def power_law_analytical_solution(radius, dp_dx, K, n):
+    """Power-law fluid solution."""
+    m = 1/n
+    return ((dp_dx / (2*K)) * (radius**(m+1) - r**(m+1))) ** m
+
+# Validation metrics
+def calculate_error_percentage(numerical, analytical):
+    return 100 * np.mean(np.abs(numerical - analytical) / analytical)
+```
+
+### Performance Benchmarks:
+```python
+def benchmark_solver_performance(geometry_sizes, mesh_resolutions):
+    """Benchmark computational performance."""
+    times = []
+    accuracies = []
+
+    for size, resolution in zip(geometry_sizes, mesh_resolutions):
+        start_time = time.time()
+
+        # Run simulation
+        solution = run_simulation(size, resolution)
+
+        times.append(time.time() - start_time)
+
+        # Calculate accuracy
+        analytical = analytical_solution(size)
+        accuracy = calculate_error_percentage(solution, analytical)
+        accuracies.append(accuracy)
+
+    return times, accuracies
+```
+
+## Integration with Process Design
+
+### Complete Workflow:
+```python
+# 1. Define material properties
+material = MaterialProperties(
+    name="Toothpaste",
+    density=1300,
+    hb_params={'tau_y': 150, 'K': 25, 'n': 0.4}
+)
+
+# 2. Create geometry
+geometry = ProcessGeometry(
+    type=GeometryType.SLOT_DIE,
+    dimensions={'length': 0.05, 'width': 0.01, 'gap': 0.001}
+)
+
+# 3. Set operating conditions
+conditions = OperatingConditions(
+    flow_rate=5e-6,  # 5 mL/s
+    temperature=298.0
+)
+
+# 4. Run flow simulation
+simulator = FlowSimulator(geometry, material)
+solution = simulator.simulate_flow(conditions)
+
+# 5. Analyze results
+analyzer = FlowAnalyzer()
+analysis = analyzer.analyze_flow(solution)
+
+# 6. Generate visualization
+visualizer = FlowVisualizer()
+visualizer.plot_velocity_profile(solution)
+visualizer.plot_stress_distribution(solution)
+```
+
+## Best Practices
+
+### Code Organization:
+- **Separate physics from numerics**: Keep constitutive equations independent of solvers
+- **Modular material models**: Easy addition of new rheological models
+- **Consistent units**: SI units throughout
+- **Error handling**: Robust handling of numerical instabilities
+
+### Performance Optimization:
+- **Vectorized operations**: Use NumPy for array operations
+- **Efficient solvers**: Choose appropriate numerical methods
+- **Mesh optimization**: Balance accuracy with computational cost
+- **Parallel computation**: Utilize multiple cores when possible
+
+### Validation Standards:
+- **Analytical benchmarks**: Compare with known solutions
+- **Mesh convergence**: Ensure grid-independent results
+- **Material property validation**: Experimental correlation
+- **Conservation principles**: Check mass/momentum conservation
+
+This guide provides the foundation for implementing advanced fluid dynamics and rheological modeling in the scientific computing toolkit.

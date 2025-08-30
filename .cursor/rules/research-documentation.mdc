@@ -1,0 +1,237 @@
+---
+globs: *.md,*.tex,*.rst
+description: "Research documentation patterns, academic writing standards, and knowledge organization"
+---
+
+# 📚 Research Documentation Standards
+
+## Documentation Hierarchy
+
+### Primary Documentation
+- **[README.md](mdc:README.md)** - Main project overview and navigation hub
+- **[Corpus/qualia/README.md](mdc:Corpus/qualia/README.md)** - Security framework documentation
+- **[mojo_portfolio_summary.md](mdc:mojo_portfolio_summary.md)** - AI/ML implementations overview
+
+### Research Areas
+- **[New Folder With Items copy/01_RESEARCH_FRAMEWORKS/](mdc:New Folder With Items copy/01_RESEARCH_FRAMEWORKS/)** - Consciousness and cognitive frameworks
+- **[research/publications/](mdc:research/publications/)** - Academic publications and LaTeX
+- **[docs/](mdc:docs/)** - Theoretical foundations and analysis
+
+## Academic Writing Standards
+
+### Mathematical Notation
+- **Ψ(x)**: Consciousness quantification function
+- **MECN**: Model Emergent Consciousness Notation
+- **d_MC**: Cognitive memory metric
+- **Koopman Operator**: Linear representation of nonlinear systems
+- **O(Δt²)**: Error bound notation for numerical methods
+
+### Paper Structure
+```
+# Title and Abstract
+# Introduction
+## Background and Related Work
+## Theoretical Framework
+# Methodology
+## Mathematical Foundations
+## Implementation Details
+# Results and Analysis
+## Experimental Results
+## Statistical Validation
+# Discussion and Conclusion
+## Implications
+## Future Work
+# References
+```
+
+### LaTeX Best Practices
+```latex
+% Document class and packages
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx,booktabs}
+\usepackage{algorithm,algorithmic}
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proof}{Proof}
+
+% Mathematical notation
+\newcommand{\Psi}{\Psi}  % Consciousness function
+\newcommand{\mc}{\mathcal}  % Calligraphic font
+\newcommand{\R}{\mathbb{R}}  % Real numbers
+```
+
+## Documentation Patterns
+
+### API Documentation
+```java
+/**
+ * Core security assessment engine for penetration testing.
+ *
+ * This class implements comprehensive security testing across multiple
+ * vulnerability vectors including memory safety, injection attacks,
+ * authentication weaknesses, and cryptographic vulnerabilities.
+ *
+ * <p>Usage example:
+ * <pre>
+ * JavaPenetrationTesting tester = new JavaPenetrationTesting();
+ * SecurityFinding[] findings = tester.runComprehensiveTesting();
+ * </pre>
+ *
+ * @author Ryan David Oates
+ * @version 1.0
+ * @since 2025
+ */
+public class JavaPenetrationTesting {
+    /**
+     * Runs comprehensive security assessment.
+     *
+     * @return Array of security findings with severity ratings
+     * @throws SecurityException if assessment cannot be completed
+     */
+    public SecurityFinding[] runComprehensiveTesting() throws SecurityException {
+        // Implementation
+    }
+}
+```
+
+### Research Documentation
+```markdown
+# Research Framework: Consciousness Quantification
+
+## Abstract
+This paper presents Ψ(x), a novel mathematical framework for quantifying consciousness in artificial systems through dynamical systems analysis and statistical validation.
+
+## Theoretical Foundation
+
+### Ψ(x) Definition
+```
+Ψ(x) = min{β·exp(-[λ₁Rₐ + λ₂Rᵥ])·[αS + (1-α)N], 1}
+```
+
+Where:
+- **S**: Internal signal strength ∈ [0,1]
+- **N**: Canonical evidence strength ∈ [0,1]
+- **α**: Evidence allocation parameter ∈ [0,1]
+- **Rₐ**: Authority risk ∈ [0,∞)
+- **Rᵥ**: Verifiability risk ∈ [0,∞)
+- **λ₁,λ₂**: Risk penalty weights > 0
+- **β**: Uplift factor ≥ 1
+
+### Key Properties
+- **Gauge Freedom**: Parameter reparameterizations preserve functional form
+- **Threshold Transfer**: τ' = τ·(β/β') preserves decisions
+- **Sensitivity Invariants**: Signs preserved under parameter changes
+
+## Implementation
+- [Corpus/qualia/PsiModel.java](mdc:Corpus/qualia/PsiModel.java) - Java implementation
+- [latest_news_theory_and_proof_copy_implementation.py](mdc:latest_news_theory_and_proof_copy_implementation.py) - Validation framework
+```
+
+## Knowledge Organization
+
+### File Naming Conventions
+- **Research papers**: `YYYY_topic_brief_description.tex`
+- **Documentation**: `component_name_readme.md`
+- **Implementation notes**: `feature_analysis_notes.md`
+- **API references**: `module_api_reference.md`
+
+### Directory Structure
+```
+research/
+├── publications/          # Academic papers and LaTeX
+├── analysis/             # Research analysis and methodologies
+└── notes/               # Research logs and findings
+
+docs/
+├── api/                 # API documentation
+├── guides/              # User guides and tutorials
+└── tutorials/           # Step-by-step tutorials
+
+frameworks/
+├── consciousness/       # Ψ(x) and MECN frameworks
+├── security/           # Penetration testing frameworks
+└── mathematical/       # Core mathematical implementations
+```
+
+## Citation and Reference Standards
+
+### Academic Citations
+```latex
+% BibTeX format
+@article{consciousness_framework,
+  title={Mathematical Framework for Consciousness Quantification},
+  author={Oates, Ryan David},
+  journal={Journal of Artificial Consciousness},
+  year={2025},
+  volume={1},
+  number={1},
+  pages={1--25}
+}
+
+@book{dynamical_systems,
+  title={Modern Dynamical Systems Theory},
+  author={Koopman, Bernard},
+  publisher={Academic Press},
+  year={1931}
+}
+```
+
+### Code References
+```java
+/**
+ * References:
+ * - Koopman (1931): Original operator theory
+ * - Oates (2025): Reverse Koopman applications
+ * - Kolmogorov-Smirnov: Statistical validation methods
+ *
+ * @see <a href="https://example.com/koopman-theory">Koopman Theory</a>
+ * @see ReverseKoopmanOperator#computeReverseKoopman for mathematical details
+ */
+```
+
+## Quality Assurance
+
+### Documentation Checklist
+- [ ] **Complete API documentation** for all public methods
+- [ ] **Mathematical notation** properly formatted with LaTeX
+- [ ] **Code examples** provided for complex functions
+- [ ] **References cited** for theoretical foundations
+- [ ] **File paths** use [mdc:filename](mdc:filename) format for cross-references
+- [ ] **Consistent naming** following project conventions
+- [ ] **Version information** included in implementation docs
+
+### Review Process
+1. **Technical accuracy** - Verify mathematical formulations
+2. **Code completeness** - Ensure examples compile and run
+3. **Cross-references** - Validate all [mdc:links](mdc:links) work
+4. **Consistency** - Check naming and formatting standards
+5. **Comprehensiveness** - Verify all aspects are documented
+
+## Tool Integration
+
+### Documentation Generation
+```bash
+# Generate API docs
+javadoc -d docs/api -sourcepath src -subpackages qualia
+
+# Convert LaTeX to PDF
+pdflatex research/publications/consciousness_framework.tex
+
+# Generate markdown from code
+python scripts/generate_api_docs.py
+```
+
+### Search and Navigation
+```bash
+# Find research files
+find . -name "*.md" -path "*/research/*"
+
+# Search for specific concepts
+grep -r "Ψ(x)" docs/ research/
+
+# Validate cross-references
+python scripts/validate_mdc_links.py
+```

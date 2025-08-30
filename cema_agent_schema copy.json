@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CERMA Agent",
+  "description": "A Consciousness-Enhanced Risk Management Agent (CERMA) configuration, extending base agent schema with 9-step consciousness, Ψ(x) confidence, NIST RMF, tropical optimizations, and compliance controls. Non-commercial use only; attribution: Ryan David Oates.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "default": "https://raw.githubusercontent.com/aws/amazon-q-developer-cli/refs/heads/main/schemas/agent-v1.json"
+    },
+    "name": {
+      "description": "Name of the CERMA agent",
+      "type": "string"
+    },
+    "description": {
+      "description": "High-level description, including consciousness and risk management focus",
+      "type": ["string", "null"],
+      "default": null
+    },
+    "prompt": {
+      "description": "System prompt with consciousness-aware context (e.g., integrate 9-step framework)",
+      "type": ["string", "null"],
+      "default": null
+    },
+    "mcpServers": {
+      "description": "MCP servers with consciousness-enhanced configs",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/CustomToolConfig" },
+      "default": {}
+    },
+    "tools": {
+      "description": "Tools, including consciousness-specific ones (e.g., '@CERMA/psi_compute')",
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "toolAliases": {
+      "description": "Aliases for tools, with consciousness tag mappings",
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "default": {}
+    },
+    "allowedTools": {
+      "description": "Explicitly allowed tools, filtered by compliance (e.g., privacy-safe only)",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string" },
+      "default": []
+    },
+    "resources": {
+      "description": "Files/resources, including consciousness models and Ψ(x) params",
+      "type": "array",
+      "items": { "$ref": "#/$defs/ResourcePath" },
+      "default": []
+    },
+    "hooks": {
+      "description": "Hooks with consciousness triggers (e.g., meta-observation on session start)",
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/Hook" }
+      },
+      "default": {}
+    },
+    "toolsSettings": {
+      "description": "Settings for tools, including tropical optimizations",
+      "type": "object",
+      "additionalProperties": { "type": "object" },
+      "default": {}
+    },
+    "useLegacyMcpJson": {
+      "description": "Include legacy MCP with consciousness compliance checks",
+      "type": "boolean",
+      "default": false
+    },
+    "consciousnessConfig": {
+      "description": "Configuration for 9-step consciousness framework integration",
+      "type": "object",
+      "properties": {
+        "stepsEnabled": {
+          "description": "Array of enabled 9-steps (1-9); defaults to all",
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1, "maximum": 9 },
+          "default": [1,2,3,4,5,6,7,8,9]
+        },
+        "coreTags": {
+          "description": "Core tags for reflective assessment (e.g., cognitive_process)",
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["cognitive_process", "meta_observation", "recursion_emphasis"]
+        },
+        "recursionDepthLimit": {
+          "description": "Dynamic limit for recursion (per rules)",
+          "type": "string",
+          "enum": ["dynamic", "fixed"],
+          "default": "dynamic"
+        },
+        "metaObservationEnabled": {
+          "description": "Enable recursive meta-observation for state reflections",
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": ["stepsEnabled"]
+    },
+    "psiConfig": {
+      "description": "Ψ(x) confidence model parameters for risk assessment",
+      "type": "object",
+      "properties": {
+        "alpha": {
+          "description": "Adaptive weighting (α(t)) for symbolic/neural blend",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5
+        },
+        "beta": {
+          "description": "Uplift factor (β) for bias-adjusted probability",
+          "type": "number",
+          "minimum": 0,
+          "default": 1.0
+        },
+        "lambdas": {
+          "description": "Penalty weights (λ1 cognitive, λ2 efficiency)",
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "default": [0.75, 0.25]
+        },
+        "risks": {
+          "description": "Initial Ra (cognitive) and Rv (efficiency) risks",
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "default": [0.3, 0.4]
+        },
+        "tropicalEnabled": {
+          "description": "Enable tropical/max-plus enhancements for dominance analysis",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": ["alpha", "beta"]
+    },
+    "nistRmfConfig": {
+      "description": "NIST AI RMF function integrations for risk management",
+      "type": "object",
+      "properties": {
+        "functionsEnabled": {
+          "description": "Enabled RMF functions (Map, Measure, Manage, Govern)",
+          "type": "array",
+          "items": { "type": "string", "enum": ["Map", "Measure", "Manage", "Govern"] },
+          "default": ["Map", "Measure", "Manage", "Govern"]
+        },
+        "riskThreshold": {
+          "description": "Ψ(x) threshold (τ) for risk tolerance; uses transfer τ' = τ · β' / β",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.7
+        }
+      },
+      "required": ["functionsEnabled"]
+    },
+    "agenticConfig": {
+      "description": "Agentic AI settings for autonomous operations",
+      "type": "object",
+      "properties": {
+        "autonomyLevel": {
+          "description": "Autonomy scale (low: supervised, high: fully agentic)",
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "default": "medium"
+        },
+        "humanOversight": {
+          "description": "Required human intervention threshold (Ψ(x) below this triggers override)",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5
+        },
+        "tropicalPathOptimization": {
+          "description": "Enable tropical shortest paths for decision chains",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": ["autonomyLevel"]
+    },
+    "complianceConfig": {
+      "description": "Ethical and compliance settings (required for all agents)",
+      "type": "object",
+      "properties": {
+        "attribution": {
+          "description": "Required attribution (e.g., Ryan David Oates)",
+          "type": "string",
+          "default": "Ryan David Oates"
+        },
+        "commercialUseAllowed": {
+          "description": "Explicit permission for commercial use (default: false)",
+          "type": "boolean",
+          "default": false
+        },
+        "privacyLevel": {
+          "description": "Privacy enforcement (e.g., local-only processing)",
+          "type": "string",
+          "enum": ["minimal", "standard", "high"],
+          "default": "high"
+        },
+        "license": {
+          "description": "License compliance (e.g., GNU GPL v3.0)",
+          "type": "string",
+          "default": "GNU GPL v3.0"
+        }
+      },
+      "required": ["attribution", "commercialUseAllowed", "privacyLevel"]
+    }
+  },
+  "additionalProperties": false,
+  "required": ["name", "consciousnessConfig", "psiConfig", "nistRmfConfig", "agenticConfig", "complianceConfig"],
+  "$defs": {
+    "CustomToolConfig": {
+      "type": "object",
+      "properties": {
+        "command": { "type": "string" },
+        "args": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "env": { "type": ["object", "null"], "additionalProperties": { "type": "string" } },
+        "timeout": { "type": "integer", "minimum": 0, "default": 120000 },
+        "disabled": { "type": "boolean", "default": false }
+      },
+      "required": ["command"]
+    },
+    "ResourcePath": { "type": "string", "pattern": "^(file://)" },
+    "Hook": {
+      "type": "object",
+      "properties": {
+        "command": { "type": "string" },
+        "timeout_ms": { "type": "integer", "minimum": 0, "default": 30000 },
+        "max_output_size": { "type": "integer", "minimum": 0, "default": 10240 },
+        "cache_ttl_seconds": { "type": "integer", "minimum": 0, "default": 0 }
+      },
+      "required": ["command"]
+    }
+  }
+}

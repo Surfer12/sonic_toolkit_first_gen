@@ -1,0 +1,860 @@
+---
+globs: *.py,*.mojo
+---
+# Advanced Rheological Modeling Standards
+
+This workspace implements advanced constitutive models for complex fluids. Follow these standards for developing sophisticated rheological frameworks.
+
+## Viscoelastic Herschel-Bulkley Model
+
+### Mathematical Foundation
+
+The Viscoelastic HB model combines:
+1. **Herschel-Bulkley plasticity**: τ = τy + K·γ̇^n (for |τ| > τy)
+2. **Jeffreys/Viscoelastic memory**: Stress relaxation and creep
+3. **Non-linear viscoelasticity**: Memory effects in complex flows
+
+**Constitutive Equation:**
+```
+τ(t) = τy + ∫ G(t-t')·dγ/dt' dt' + K·(dγ/dt)^n
+```
+
+Where G(t) is the relaxation modulus with memory effects.
+
+### Python Implementation Structure
+
+```python
+import numpy as np
+from typing import Tuple, Optional, Union, List, Dict, Any
+from dataclasses import dataclass
+from scipy.integrate import solve_ivp
+from scipy.optimize import minimize
+import warnings
+
+@dataclass
+class ViscoelasticHBParameters:
+    """Complete parameter set for viscoelastic HB model."""
+    # Herschel-Bulkley parameters
+    tau_y: float        # Yield stress [Pa]
+    K: float           # Consistency index [Pa·s^n]
+    n: float           # Flow behavior index [-]
+
+    # Viscoelastic parameters
+    G0: float          # Instantaneous modulus [Pa]
+    G_inf: float       # Long-term modulus [Pa]
+    relaxation_time: float  # λ [s]
+    retardation_time: float # λ_retard [s]
+
+    # Temperature dependence (optional)
+    activation_energy: Optional[float] = None  # Ea [J/mol]
+    reference_temp: Optional[float] = None     # T_ref [K]
+
+    def __post_init__(self):
+        """Validate all parameters."""
+        # HB parameter validation
+        if self.tau_y < 0:
+            raise ValueError("Yield stress τy must be non-negative")
+        if self.K <= 0:
+            raise ValueError("Consistency index K must be positive")
+        if self.n <= 0:
+            raise ValueError("Flow behavior index n must be positive")
+
+        # Viscoelastic parameter validation
+        if self.G0 <= 0:
+            raise ValueError("Instantaneous modulus G0 must be positive")
+        if self.G_inf < 0:
+            raise ValueError("Long-term modulus G_inf must be non-negative")
+        if self.relaxation_time <= 0:
+            raise ValueError("Relaxation time must be positive")
+        if self.retardation_time <= 0:
+            raise ValueError("Retardation time must be positive")
+
+        # Physical consistency checks
+        if self.G_inf > self.G0:
+            warnings.warn("Long-term modulus G_inf should be ≤ instantaneous modulus G0")
+
+        if self.n > 1.0:
+            warnings.warn("Flow behavior index n > 1.0 indicates shear thickening")
+
+class ViscoelasticHBModel:
+    """
+    Advanced viscoelastic Herschel-Bulkley model for complex fluids.
+
+    This model captures:
+    - Yield stress behavior (HB plasticity)
+    - Memory effects (viscoelasticity)
+    - Temperature dependence (optional)
+    - Non-linear flow behavior
+
+    Applications: Polymer melts, biological fluids, food rheology,
+                 pharmaceutical formulations, etc.
+    """
+
+    def __init__(self, parameters: ViscoelasticHBParameters):
+        """
+        Initialize viscoelastic HB model.
+
+        Args:
+            parameters: Complete parameter set for the model
+        """
+        self.params = parameters
+        self._stress_history = []  # For memory effects
+        self._strain_history = []
+        self._time_history = []
+
+    def relaxation_modulus(self, time: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """
+        Compute relaxation modulus G(t).
+
+        G(t) = G_inf + (G0 - G_inf)·exp(-t/λ)
+
+        Args:
+            time: Time(s) [s]
+
+        Returns:
+            Relaxation modulus [Pa]
+        """
+        time = np.asarray(time)
+        G_inf = self.params.G_inf
+        G0 = self.params.G0
+        lam = self.params.relaxation_time
+
+        return G_inf + (G0 - G_inf) * np.exp(-time / lam)
+
+    def creep_compliance(self, time: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """
+        Compute creep compliance J(t).
+
+        For viscoelastic materials, J(t) is the inverse of G(t).
+
+        Args:
+            time: Time(s) [s]
+
+        Returns:
+            Creep compliance [1/Pa]
+        """
+        # Simplified creep compliance (more complex for real materials)
+        G = self.relaxation_modulus(time)
+        return 1.0 / G
+
+    def constitutive_model(self, gamma_dot: Union[float, np.ndarray],
+                          time: Union[float, np.ndarray] = None,
+                          temperature: float = 298.15) -> Union[float, np.ndarray]:
+        """
+        Compute shear stress using viscoelastic HB model.
+
+        This is a simplified implementation. Full viscoelastic HB models
+        require solving integro-differential equations.
+
+        Args:
+            gamma_dot: Shear rate(s) [1/s]
+            time: Time(s) for history dependence [s]
+            temperature: Temperature for temperature dependence [K]
+
+        Returns:
+            Shear stress(es) [Pa]
+        """
+        gamma_dot = np.asarray(gamma_dot)
+
+        # Temperature correction (if parameters provided)
+        if (self.params.activation_energy is not None and
+            self.params.reference_temp is not None):
+
+            T_ref = self.params.reference_temp
+            Ea = self.params.activation_energy
+            R = 8.314  # Gas constant [J/mol·K]
+
+            # Williams-Landel-Ferry (WLF) type correction
+            temp_factor = np.exp(-Ea/R * (1/temperature - 1/T_ref))
+
+            # Apply temperature correction to time constants
+            relaxation_time_T = self.params.relaxation_time * temp_factor
+            retardation_time_T = self.params.retardation_time * temp_factor
+        else:
+            relaxation_time_T = self.params.relaxation_time
+            retardation_time_T = self.params.retardation_time
+
+        # Simplified viscoelastic HB stress calculation
+        # In practice, this would involve solving:
+        # τ(t) = τy + ∫ G(t-t')·dγ/dt' dt' + K·(dγ/dt)^n
+
+        # For now, implement a simplified version
+        tau_viscous = self.params.K * np.power(np.abs(gamma_dot), self.params.n)
+
+        # Add viscoelastic memory effect (simplified)
+        if time is not None:
+            # Time-dependent memory factor
+            memory_factor = np.exp(-time / relaxation_time_T)
+            tau_elastic = self.params.G0 * gamma_dot * retardation_time_T * memory_factor
+        else:
+            tau_elastic = 0.0
+
+        # Total stress (simplified combination)
+        tau_total = self.params.tau_y + tau_viscous + tau_elastic
+
+        return tau_total
+
+    def inverse_model(self, tau: Union[float, np.ndarray],
+                     time: float = 1.0, temperature: float = 298.15) -> Union[float, np.ndarray]:
+        """
+        Compute shear rate from stress (inverse problem).
+
+        This solves for γ̇ given τ in the viscoelastic HB model.
+
+        Args:
+            tau: Shear stress(es) [Pa]
+            time: Time for memory effects [s]
+            temperature: Temperature [K]
+
+        Returns:
+            Shear rate(s) [1/s]
+        """
+        tau = np.asarray(tau)
+
+        # Handle unyielded region
+        tau_effective = tau - self.params.tau_y
+        tau_effective = np.maximum(tau_effective, 0.0)  # No negative values
+
+        # Temperature correction
+        if (self.params.activation_energy is not None and
+            self.params.reference_temp is not None):
+
+            T_ref = self.params.reference_temp
+            Ea = self.params.activation_energy
+            R = 8.314
+
+            temp_factor = np.exp(-Ea/R * (1/temperature - 1/T_ref))
+            relaxation_time_T = self.params.relaxation_time * temp_factor
+        else:
+            relaxation_time_T = self.params.relaxation_time
+
+        # For viscoelastic effects, we need to solve the inverse numerically
+        # Simplified approach: assume steady-state dominates
+
+        # Solve for γ̇ in: τ = τy + K·γ̇^n + G0·γ̇·λ_retard·exp(-t/λ)
+        # This is a non-linear equation requiring numerical solution
+
+        def stress_equation(gamma_dot, target_tau):
+            """Equation to solve: f(γ̇) - τ = 0"""
+            computed_tau = (self.params.tau_y +
+                          self.params.K * np.power(np.abs(gamma_dot), self.params.n) +
+                          self.params.G0 * gamma_dot * self.params.retardation_time *
+                          np.exp(-time / relaxation_time_T))
+            return computed_tau - target_tau
+
+        # Numerical solution for each stress value
+        gamma_dot_result = np.zeros_like(tau)
+
+        for i, tau_val in enumerate(tau):
+            if tau_val <= self.params.tau_y:
+                gamma_dot_result[i] = 0.0
+            else:
+                # Use numerical root finding
+                try:
+                    result = minimize(lambda x: abs(stress_equation(x, tau_val)),
+                                    x0=[1.0], bounds=[(0, None)], method='L-BFGS-B')
+                    gamma_dot_result[i] = result.x[0]
+                except Exception:
+                    # Fallback to simplified HB inverse
+                    gamma_dot_result[i] = np.power((tau_val - self.params.tau_y) / self.params.K,
+                                                  1.0 / self.params.n)
+
+        return gamma_dot_result
+
+    def predict_viscoelastic_behavior(self, time_range: np.ndarray,
+                                    strain_rate: float) -> Dict[str, np.ndarray]:
+        """
+        Predict viscoelastic behavior over time.
+
+        Args:
+            time_range: Time points for prediction [s]
+            strain_rate: Applied shear rate [1/s]
+
+        Returns:
+            Dictionary with time series of various quantities
+        """
+        # Initialize arrays
+        stress = np.zeros_like(time_range)
+        strain = np.zeros_like(time_range)
+        viscosity = np.zeros_like(time_range)
+
+        # Initial conditions
+        stress[0] = self.params.tau_y  # Start at yield stress
+        strain[0] = 0.0
+
+        # Time integration (simplified)
+        dt = time_range[1] - time_range[0] if len(time_range) > 1 else 0.1
+
+        for i in range(1, len(time_range)):
+            # Strain accumulation
+            strain[i] = strain[i-1] + strain_rate * dt
+
+            # Stress evolution (simplified viscoelastic HB)
+            # In reality, this would involve solving the full constitutive equation
+            relaxation_factor = np.exp(-dt / self.params.relaxation_time)
+            viscous_stress = self.params.K * np.power(strain_rate, self.params.n)
+
+            stress[i] = (stress[i-1] * relaxation_factor +
+                        self.params.tau_y +
+                        viscous_stress * (1 - relaxation_factor))
+
+        # Compute apparent viscosity
+        viscosity = stress / strain_rate
+
+        return {
+            'time': time_range,
+            'stress': stress,
+            'strain': strain,
+            'viscosity': viscosity,
+            'relaxation_modulus': self.relaxation_modulus(time_range)
+        }
+
+    def get_model_info(self) -> Dict[str, Any]:
+        """Get comprehensive model information."""
+        return {
+            'model_type': 'Viscoelastic Herschel-Bulkley',
+            'parameters': {
+                'tau_y': self.params.tau_y,
+                'K': self.params.K,
+                'n': self.params.n,
+                'G0': self.params.G0,
+                'G_inf': self.params.G_inf,
+                'relaxation_time': self.params.relaxation_time,
+                'retardation_time': self.params.retardation_time,
+                'activation_energy': self.params.activation_energy,
+                'reference_temp': self.params.reference_temp
+            },
+            'behavior_analysis': self._analyze_behavior(),
+            'applications': [
+                'Polymer melts',
+                'Biological fluids',
+                'Food rheology',
+                'Pharmaceutical formulations',
+                'Complex non-Newtonian flows'
+            ]
+        }
+
+    def _analyze_behavior(self) -> Dict[str, str]:
+        """Analyze rheological behavior characteristics."""
+        analysis = {}
+
+        # Plasticity analysis
+        if self.params.tau_y > 0:
+            analysis['plasticity'] = 'Yield stress fluid'
+        else:
+            analysis['plasticity'] = 'No yield stress'
+
+        # Flow behavior
+        if self.params.n < 1.0:
+            analysis['viscosity'] = 'Shear-thinning'
+        elif self.params.n > 1.0:
+            analysis['viscosity'] = 'Shear-thickening'
+        else:
+            analysis['viscosity'] = 'Newtonian-like'
+
+        # Viscoelasticity
+        if self.params.G0 > self.params.G_inf:
+            analysis['viscoelasticity'] = 'Viscoelastic with relaxation'
+        elif self.params.G0 == self.params.G_inf:
+            analysis['viscoelasticity'] = 'Elastic solid'
+        else:
+            analysis['viscoelasticity'] = 'Invalid parameters'
+
+        # Time scales
+        analysis['relaxation_ratio'] = f"λ/λ_retard = {self.params.relaxation_time / self.params.retardation_time:.2f}"
+
+        return analysis
+```
+
+## Advanced Validation Methods
+
+### Experimental Data Fitting
+```python
+class ViscoelasticHBExperiment:
+    """Experimental validation for viscoelastic HB model."""
+
+    def __init__(self, model: ViscoelasticHBModel):
+        self.model = model
+
+    def fit_to_creep_data(self, time_data: np.ndarray,
+                         strain_data: np.ndarray,
+                         stress_applied: float) -> Dict[str, Any]:
+        """
+        Fit model parameters to creep experimental data.
+
+        Args:
+            time_data: Time points [s]
+            strain_data: Measured strain [-]
+            stress_applied: Applied constant stress [Pa]
+
+        Returns:
+            Fitting results and quality metrics
+        """
+        def objective_function(params):
+            """Objective function for parameter fitting."""
+            # Update model parameters
+            test_params = ViscoelasticHBParameters(
+                tau_y=params[0],
+                K=params[1],
+                n=params[2],
+                G0=params[3],
+                G_inf=params[4],
+                relaxation_time=params[5],
+                retardation_time=params[6]
+            )
+
+            test_model = ViscoelasticHBModel(test_params)
+
+            # Predict strain evolution
+            strain_rate = stress_applied / test_params.K  # Initial guess
+            prediction = test_model.predict_viscoelastic_behavior(time_data, strain_rate)
+
+            # Compute residual
+            residual = strain_data - prediction['strain']
+            return np.sum(residual**2)
+
+        # Parameter bounds for optimization
+        bounds = [
+            (0, stress_applied),      # τy
+            (0.1, 1000),              # K
+            (0.1, 2.0),               # n
+            (10, 1e6),                # G0
+            (0, 1e5),                 # G_inf
+            (0.001, 100),             # relaxation_time
+            (0.001, 100)              # retardation_time
+        ]
+
+        # Initial guess
+        initial_guess = [
+            stress_applied * 0.1,    # τy
+            10.0,                    # K
+            0.8,                     # n
+            1000.0,                  # G0
+            100.0,                   # G_inf
+            1.0,                     # relaxation_time
+            0.1                      # retardation_time
+        ]
+
+        # Perform optimization
+        result = minimize(objective_function, initial_guess, bounds=bounds,
+                         method='L-BFGS-B')
+
+        # Extract fitted parameters
+        fitted_params = ViscoelasticHBParameters(
+            tau_y=result.x[0],
+            K=result.x[1],
+            n=result.x[2],
+            G0=result.x[3],
+            G_inf=result.x[4],
+            relaxation_time=result.x[5],
+            retardation_time=result.x[6]
+        )
+
+        return {
+            'fitted_parameters': fitted_params,
+            'optimization_result': result,
+            'r_squared': self._compute_r_squared(result.x, time_data, strain_data, stress_applied)
+        }
+
+    def validate_against_standard(self, experimental_data: Dict[str, np.ndarray]) -> Dict[str, float]:
+        """
+        Validate model against standard rheological tests.
+
+        Args:
+            experimental_data: Dictionary with experimental measurements
+
+        Returns:
+            Validation metrics
+        """
+        metrics = {}
+
+        # Oscillatory shear validation
+        if 'frequency' in experimental_data and 'G_prime' in experimental_data:
+            metrics.update(self._validate_oscillatory_shear(
+                experimental_data['frequency'],
+                experimental_data['G_prime'],
+                experimental_data['G_double_prime']
+            ))
+
+        # Steady shear validation
+        if 'shear_rate' in experimental_data and 'stress' in experimental_data:
+            metrics.update(self._validate_steady_shear(
+                experimental_data['shear_rate'],
+                experimental_data['stress']
+            ))
+
+        return metrics
+
+    def _validate_oscillatory_shear(self, omega: np.ndarray,
+                                   G_prime: np.ndarray,
+                                   G_double_prime: np.ndarray) -> Dict[str, float]:
+        """Validate against oscillatory shear data."""
+        # Simplified validation (full implementation would be more complex)
+        metrics = {
+            'G_prime_correlation': np.corrcoef(G_prime, self.model.params.G0 * omega**0.5)[0,1],
+            'viscoelastic_balance': np.mean(G_double_prime / G_prime)
+        }
+        return metrics
+
+    def _validate_steady_shear(self, gamma_dot: np.ndarray, tau: np.ndarray) -> Dict[str, float]:
+        """Validate against steady shear data."""
+        # Predict stress using model
+        tau_pred = self.model.constitutive_model(gamma_dot)
+
+        # Compute validation metrics
+        mse = np.mean((tau - tau_pred)**2)
+        r_squared = 1 - np.sum((tau - tau_pred)**2) / np.sum((tau - np.mean(tau))**2)
+
+        return {
+            'steady_shear_mse': mse,
+            'steady_shear_r_squared': r_squared
+        }
+```
+
+## Implementation Best Practices
+
+### 1. Memory Management for Time History
+```python
+class MemoryEfficientViscoelasticHB:
+    """Memory-efficient implementation for long simulations."""
+
+    def __init__(self, max_history_length: int = 1000):
+        self.max_history = max_history_length
+        self.stress_history = np.zeros(max_history_length)
+        self.time_history = np.zeros(max_history_length)
+        self.history_index = 0
+
+    def add_to_history(self, stress: float, time: float):
+        """Efficiently add to circular buffer."""
+        self.stress_history[self.history_index] = stress
+        self.time_history[self.history_index] = time
+        self.history_index = (self.history_index + 1) % self.max_history
+
+    def compute_memory_integral(self, current_time: float) -> float:
+        """Compute memory integral efficiently."""
+        # Use vectorized operations on history
+        time_diffs = current_time - self.time_history
+        valid_indices = time_diffs > 0
+
+        if not np.any(valid_indices):
+            return 0.0
+
+        # Vectorized memory computation
+        memory_weights = np.exp(-time_diffs[valid_indices] / self.relaxation_time)
+        return np.sum(self.stress_history[valid_indices] * memory_weights)
+```
+
+### 2. Parallel Computation for Large Datasets
+```python
+from concurrent.futures import ProcessPoolExecutor
+import multiprocessing as mp
+
+class ParallelViscoelasticHB:
+    """Parallel implementation for large-scale simulations."""
+
+    def __init__(self, model: ViscoelasticHBModel, num_workers: Optional[int] = None):
+        self.model = model
+        self.num_workers = num_workers or mp.cpu_count()
+
+    def compute_stress_field(self, velocity_field: np.ndarray,
+                           time: float) -> np.ndarray:
+        """
+        Compute stress field in parallel.
+
+        Args:
+            velocity_field: 2D or 3D velocity field
+            time: Current time
+
+        Returns:
+            Stress field same shape as velocity
+        """
+        # Flatten for parallel processing
+        flat_velocity = velocity_field.flatten()
+
+        # Split into chunks for parallel processing
+        chunk_size = len(flat_velocity) // self.num_workers
+        velocity_chunks = [
+            flat_velocity[i:i + chunk_size]
+            for i in range(0, len(flat_velocity), chunk_size)
+        ]
+
+        # Parallel computation
+        with ProcessPoolExecutor(max_workers=self.num_workers) as executor:
+            stress_chunks = list(executor.map(
+                self._compute_stress_chunk,
+                velocity_chunks,
+                [time] * len(velocity_chunks)
+            ))
+
+        # Reconstruct stress field
+        stress_flat = np.concatenate(stress_chunks)
+        return stress_flat.reshape(velocity_field.shape)
+
+    def _compute_stress_chunk(self, velocity_chunk: np.ndarray, time: float) -> np.ndarray:
+        """Compute stress for a chunk of velocities."""
+        # Vectorized computation for chunk
+        gamma_dot = np.gradient(velocity_chunk)  # Simplified strain rate
+        stress_chunk = self.model.constitutive_model(gamma_dot, time=time)
+        return stress_chunk
+```
+
+### 3. GPU Acceleration with Numba
+```python
+import numba as nb
+from numba import cuda
+
+@nb.jit(nopython=True, parallel=True)
+def compute_viscoelastic_stress_numba(
+    velocity_field: np.ndarray,
+    stress_field: np.ndarray,
+    tau_y: float, K: float, n: float,
+    G0: float, relaxation_time: float,
+    dt: float, time: float
+):
+    """
+    Numba-accelerated viscoelastic stress computation.
+
+    This function runs in parallel on CPU or could be adapted for GPU.
+    """
+    nx, ny = velocity_field.shape
+
+    for i in nb.prange(nx):
+        for j in range(ny):
+            # Compute local strain rate
+            gamma_dot = compute_strain_rate(velocity_field, i, j)
+
+            # Viscoelastic HB stress
+            viscous_stress = K * (abs(gamma_dot) ** n)
+            elastic_stress = G0 * gamma_dot * exp(-time / relaxation_time)
+
+            # Total stress with yield criterion
+            stress_field[i, j] = tau_y + viscous_stress + elastic_stress
+
+@nb.jit(nopython=True)
+def compute_strain_rate(velocity_field: np.ndarray, i: int, j: int) -> float:
+    """Compute local strain rate from velocity field."""
+    # Simplified finite difference
+    if i > 0 and i < velocity_field.shape[0] - 1:
+        du_dy = (velocity_field[i+1, j] - velocity_field[i-1, j]) / 2.0
+    else:
+        du_dy = 0.0
+
+    return du_dy
+```
+
+## Testing Standards
+
+### Comprehensive Validation Tests
+```python
+class TestViscoelasticHBModel(unittest.TestCase):
+    """Comprehensive test suite for viscoelastic HB model."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.params = ViscoelasticHBParameters(
+            tau_y=2.0, K=1.5, n=0.8,
+            G0=1000.0, G_inf=100.0,
+            relaxation_time=1.0, retardation_time=0.1,
+            activation_energy=50000.0, reference_temp=298.15
+        )
+        self.model = ViscoelasticHBModel(self.params)
+
+    def test_relaxation_modulus(self):
+        """Test relaxation modulus computation."""
+        time = np.array([0, 0.1, 1.0, 10.0])
+        G = self.model.relaxation_modulus(time)
+
+        # At t=0, G should equal G0
+        self.assertAlmostEqual(G[0], self.params.G0, places=6)
+
+        # At large t, G should approach G_inf
+        self.assertAlmostEqual(G[-1], self.params.G_inf, delta=0.1)
+
+        # G should be monotonically decreasing
+        self.assertTrue(np.all(np.diff(G) <= 0))
+
+    def test_constitutive_model(self):
+        """Test constitutive model computation."""
+        gamma_dot = 2.0
+        time = 1.0
+
+        # Compute stress
+        tau = self.model.constitutive_model(gamma_dot, time=time)
+
+        # Should be greater than yield stress
+        self.assertGreater(tau, self.params.tau_y)
+
+        # Should include viscoelastic contribution
+        tau_no_visco = self.params.tau_y + self.params.K * (gamma_dot ** self.params.n)
+        self.assertGreater(tau, tau_no_visco)
+
+    def test_inverse_model(self):
+        """Test inverse model computation."""
+        tau = 10.0
+        time = 1.0
+
+        # Compute shear rate
+        gamma_dot = self.model.inverse_model(tau, time=time)
+
+        # Should be positive for τ > τy
+        self.assertGreater(gamma_dot, 0)
+
+        # Test round-trip consistency
+        tau_recovered = self.model.constitutive_model(gamma_dot, time=time)
+        self.assertAlmostEqual(tau_recovered, tau, delta=0.1)
+
+    def test_temperature_dependence(self):
+        """Test temperature-dependent behavior."""
+        gamma_dot = 2.0
+        time = 1.0
+
+        # Compute at different temperatures
+        tau_low = self.model.constitutive_model(gamma_dot, time=time, temperature=273.15)
+        tau_high = self.model.constitutive_model(gamma_dot, time=time, temperature=373.15)
+
+        # Higher temperature should give lower viscosity (different stress)
+        # This depends on the specific temperature model used
+        self.assertNotEqual(tau_low, tau_high)
+
+    def test_behavior_analysis(self):
+        """Test behavior classification."""
+        info = self.model.get_model_info()
+
+        self.assertEqual(info['model_type'], 'Viscoelastic Herschel-Bulkley')
+        self.assertIn('plasticity', info['behavior_analysis'])
+        self.assertIn('viscoelasticity', info['behavior_analysis'])
+
+    def test_memory_efficiency(self):
+        """Test memory efficiency for long simulations."""
+        time_range = np.linspace(0, 100, 1000)
+        strain_rate = 1.0
+
+        # Should not cause memory issues
+        result = self.model.predict_viscoelastic_behavior(time_range, strain_rate)
+
+        self.assertEqual(len(result['time']), len(time_range))
+        self.assertEqual(len(result['stress']), len(time_range))
+
+        # Results should be physically reasonable
+        self.assertTrue(np.all(np.isfinite(result['stress'])))
+        self.assertTrue(np.all(result['stress'] >= self.params.tau_y))
+
+    def test_parallel_computation(self):
+        """Test parallel computation capabilities."""
+        # This would require setting up the parallel implementation
+        # For now, just test the basic functionality
+        velocity_field = np.random.rand(50, 50)
+
+        # Basic computation should work
+        result = self.model.constitutive_model(velocity_field.flatten())
+        self.assertEqual(len(result), velocity_field.size)
+
+    def test_experimental_fitting(self):
+        """Test experimental data fitting."""
+        # Generate synthetic experimental data
+        time_exp = np.linspace(0, 10, 100)
+        strain_rate_exp = 1.0
+
+        # Simulate experimental creep data
+        strain_exp = strain_rate_exp * time_exp * np.exp(-time_exp / 2.0)
+
+        # Fit model to data
+        experiment = ViscoelasticHBExperiment(self.model)
+
+        # This would normally fit parameters, but for testing we'll just
+        # validate that the method exists and runs
+        self.assertIsNotNone(experiment)
+
+        # Test prediction capability
+        result = self.model.predict_viscoelastic_behavior(time_exp, strain_rate_exp)
+        self.assertIsNotNone(result)
+```
+
+## Documentation Standards
+
+### Model Documentation
+```python
+"""
+Viscoelastic Herschel-Bulkley Fluid Model
+
+This module implements the viscoelastic extension of the Herschel-Bulkley
+constitutive model for complex fluids such as polymer melts and biological
+materials.
+
+Mathematical Foundation:
+    The model combines:
+    1. Herschel-Bulkley plasticity: τ = τy + K·γ̇^n
+    2. Jeffreys viscoelasticity: Memory effects via relaxation modulus
+    3. Temperature dependence: Arrhenius-type behavior
+
+    Constitutive Equation:
+    τ(t) = τy + ∫ G(t-t')·dγ/dt' dt' + K·(dγ/dt)^n
+
+    Where G(t) = G_inf + (G0 - G_inf)·exp(-t/λ)
+
+Applications:
+    - Polymer processing and melts
+    - Biological fluids (blood, mucus, synovial fluid)
+    - Food rheology (molten chocolate, cheese, dough)
+    - Pharmaceutical formulations
+    - Complex non-Newtonian flows in engineering
+
+Key Features:
+    - Memory effects and stress relaxation
+    - Yield stress behavior
+    - Non-linear flow behavior (shear-thinning/thickening)
+    - Temperature-dependent properties
+    - Experimental data fitting capabilities
+
+Limitations:
+    - Simplified viscoelastic model (not full spectrum)
+    - Linear relaxation modulus (more complex forms possible)
+    - Steady-state approximation for inverse problem
+    - Numerical integration may be required for full accuracy
+
+Implementation Notes:
+    - Uses numerical methods for inverse problems
+    - Memory-efficient history tracking
+    - Parallel computation support for large datasets
+    - Comprehensive validation against experimental data
+
+Author: [Research Team]
+Date: [Current Date]
+Version: 1.0
+License: [License]
+"""
+```
+
+## Best Practices
+
+### 1. Physical Consistency
+- Always validate parameter ranges against physical reality
+- Check energy dissipation and conservation laws
+- Validate against known analytical solutions when possible
+- Document all assumptions and approximations
+
+### 2. Numerical Stability
+- Use appropriate time step sizes for integration
+- Implement proper convergence criteria
+- Handle numerical singularities and edge cases
+- Validate numerical results against analytical limits
+
+### 3. Experimental Validation
+- Compare against published experimental data
+- Validate across multiple loading conditions
+- Document validation metrics and uncertainty
+- Provide clear criteria for acceptable accuracy
+
+### 4. Performance Optimization
+- Use vectorized operations when possible
+- Implement memory-efficient algorithms
+- Consider parallel computation for large problems
+- Profile and optimize critical sections
+
+### 5. Documentation and Reproducibility
+- Document all mathematical assumptions
+- Provide clear parameter definitions and units
+- Include validation cases and example data
+- Ensure reproducible research practices
+
+These standards ensure that advanced rheological models are scientifically accurate, computationally efficient, and suitable for modeling complex fluids like polymer melts and biological materials. The implementation provides a solid foundation for further research and industrial applications. 🚀

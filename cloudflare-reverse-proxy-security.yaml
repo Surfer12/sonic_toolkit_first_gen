@@ -1,0 +1,383 @@
+# SPDX-License-Identifier: LicenseRef-Internal-Use-Only
+# Cloudflare Reverse Proxy Configuration for iOS Security Analysis Framework
+# Integrates ReverseKoopmanOperator and iOSPenetrationTesting for secure remote access
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ios-security-framework
+  namespace: security-tools
+  annotations:
+    # Cloudflare-specific annotations
+    external-dns.alpha.kubernetes.io/target: "security.example.com"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # Cloudflare Zero Trust Access
+    nginx.ingress.kubernetes.io/auth-url: "https://security.example.com/cdn-cgi/access/callback"
+    nginx.ingress.kubernetes.io/auth-signin: "https://security.example.com/cdn-cgi/access/login?return_url=$scheme://$host$request_uri"
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - security.example.com
+      secretName: ios-security-tls
+  rules:
+    - host: security.example.com
+      http:
+        paths:
+          - path: /api/security
+            pathType: Prefix
+            backend:
+              service:
+                name: ios-security-api
+                port:
+                  number: 8080
+          - path: /api/koopman
+            pathType: Prefix
+            backend:
+              service:
+                name: koopman-analysis
+                port:
+                  number: 8081
+          - path: /dashboard
+            pathType: Prefix
+            backend:
+              service:
+                name: security-dashboard
+                port:
+                  number: 3000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: security-webapp
+                port:
+                  number: 8080
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflare-config
+  namespace: security-tools
+data:
+  cloudflare.conf: |
+    # Cloudflare Zero Trust Integration
+    location /api/ {
+        # Cloudflare Access authentication
+        auth_request /auth;
+
+        # Rate limiting for API endpoints
+        limit_req zone=api burst=20 nodelay;
+
+        # Security headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+        # Proxy to security API
+        proxy_pass http://ios-security-api:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header CF-Connecting-IP $http_cf_connecting_ip;
+        proxy_set_header CF-IPCountry $http_cf_ipcountry;
+        proxy_set_header CF-Ray $http_cf_ray;
+    }
+
+    # Authentication endpoint for Cloudflare Access
+    location = /auth {
+        internal;
+        proxy_pass https://security.example.com/cdn-cgi/access/get-identity;
+        proxy_set_header Host security.example.com;
+        proxy_set_header X-Forwarded-Uri $request_uri;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+    }
+
+    # Koopman analysis endpoints
+    location /koopman/ {
+        auth_request /auth;
+        limit_req zone=analysis burst=10 nodelay;
+
+        proxy_pass http://koopman-analysis:8081;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header CF-Connecting-IP $http_cf_connecting_ip;
+        proxy_read_timeout 300;  # Extended timeout for analysis
+    }
+
+    # Static content with caching
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        add_header X-Frame-Options "SAMEORIGIN" always;
+
+        proxy_pass http://security-webapp:8080;
+    }
+
+    # Health check endpoint
+    location /health {
+        access_log off;
+        return 200 "healthy\n";
+        add_header Content-Type text/plain;
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-api-config
+  namespace: security-tools
+data:
+  application.yml: |
+    server:
+      port: 8080
+      ssl:
+        enabled: false  # SSL terminated by Cloudflare
+
+    spring:
+      security:
+        oauth2:
+          client:
+            provider:
+              cloudflare:
+                authorization-uri: https://security.example.com/cdn-cgi/access/authorization
+                token-uri: https://security.example.com/cdn-cgi/access/token
+                user-info-uri: https://security.example.com/cdn-cgi/access/user-info
+                user-name-attribute: email
+
+      datasource:
+        url: "jdbc:postgresql://db:5432/security_db"
+        username: "${DB_USER}"
+        password: "${DB_PASSWORD}"
+
+    cloudflare:
+      access:
+        enabled: true
+        team-name: "your-team"
+        policy-aud: "your-policy-aud"
+
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,metrics
+      endpoint:
+        health:
+          show-details: when_authorized
+
+    logging:
+      level:
+        com.example.security: DEBUG
+      config: "classpath:logback-spring.xml"
+
+    # Rate limiting
+    bucket4j:
+      enabled: true
+      filters:
+        - cache-name: security-api
+          url: /api/.*
+          rate-limits:
+            - bandwidths:
+                - capacity: 100
+                  time: 1
+                  unit: minutes
+                  refill-speed: interval
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ios-security-api
+  namespace: security-tools
+  labels:
+    app: ios-security-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ios-security-api
+  template:
+    metadata:
+      labels:
+        app: ios-security-api
+    spec:
+      containers:
+        - name: api
+          image: security/ios-security-api:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: CF_ACCESS_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-secrets
+                  key: client-id
+            - name: CF_ACCESS_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-secrets
+                  key: client-secret
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: password
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: koopman-analysis
+  namespace: security-tools
+  labels:
+    app: koopman-analysis
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: koopman-analysis
+  template:
+    metadata:
+      labels:
+        app: koopman-analysis
+    spec:
+      containers:
+        - name: analysis
+          image: security/koopman-analysis:latest
+          ports:
+            - containerPort: 8081
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ios-security-api
+  namespace: security-tools
+spec:
+  selector:
+    app: ios-security-api
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: koopman-analysis
+  namespace: security-tools
+spec:
+  selector:
+    app: koopman-analysis
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: security-dashboard
+  namespace: security-tools
+spec:
+  selector:
+    app: security-dashboard
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: security-tools-network-policy
+  namespace: security-tools
+spec:
+  podSelector:
+    matchLabels:
+      app: ios-security-api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: koopman-analysis
+      ports:
+        - protocol: TCP
+          port: 8081
+    - to: []  # Deny all other egress by default
+      ports: []

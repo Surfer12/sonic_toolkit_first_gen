@@ -1,0 +1,261 @@
+{
+  "timestamp": "2025-08-26T08:13:20.920899",
+  "algorithm": "Rainbow Multivariate Cryptography",
+  "optimal_parameters": {
+    "v1": 29,
+    "o1": 14,
+    "o2": 14,
+    "q": 31
+  },
+  "optimization_results": {
+    "individual_results": {
+      "differential_evolution": {
+        "success": false,
+        "converged": false,
+        "optimal_value": -357.07139958910255,
+        "optimal_parameters": [
+          44,
+          23,
+          23
+        ],
+        "iterations": 100,
+        "convergence_threshold": 1e-06
+      },
+      "basinhopping": {
+        "success": true,
+        "converged": "True",
+        "optimal_value": -215.54948358004927,
+        "optimal_parameters": [
+          29,
+          14,
+          14
+        ],
+        "iterations": 50,
+        "convergence_threshold": 1e-06
+      }
+    },
+    "best_result": {
+      "success": true,
+      "converged": "True",
+      "optimal_value": -215.54948358004927,
+      "optimal_parameters": [
+        29,
+        14,
+        14
+      ],
+      "iterations": 50,
+      "convergence_threshold": 1e-06
+    },
+    "success_rate": 0.5,
+    "exceptional_primes_used": [
+      [
+        179,
+        181
+      ],
+      [
+        29,
+        31
+      ]
+    ]
+  },
+  "key_info": {
+    "parameters": {
+      "v1": 29,
+      "o1": 14,
+      "o2": 14,
+      "q": 31
+    },
+    "key_sizes": {
+      "public_key_polynomials": 14,
+      "signature_size_bytes": 86,
+      "security_level": "LOW"
+    },
+    "exceptional_prime_enhancement": true,
+    "prime_pairs_used": [
+      [
+        179,
+        181
+      ],
+      [
+        29,
+        31
+      ]
+    ]
+  },
+  "signatures": [
+    {
+      "signature_vector": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "signature_size_bytes": 86,
+      "verification_hash": "mock_hash_0",
+      "timestamp": "2025-08-26T08:13:20.920713",
+      "algorithm": "Rainbow",
+      "parameters": {
+        "v1": 29,
+        "o1": 14,
+        "o2": 14,
+        "q": 31
+      }
+    },
+    {
+      "signature_vector": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "signature_size_bytes": 86,
+      "verification_hash": "mock_hash_1",
+      "timestamp": "2025-08-26T08:13:20.920726",
+      "algorithm": "Rainbow",
+      "parameters": {
+        "v1": 29,
+        "o1": 14,
+        "o2": 14,
+        "q": 31
+      }
+    }
+  ],
+  "benchmark": {
+    "fast_mode": true,
+    "key_generation_time": 0
+  },
+  "quantum_analysis": {
+    "mq_problem_complexity": 23170.47500592079,
+    "prime_enhancement_factor": 1.6900000000000002,
+    "depth_enhancement_factor": 3.1575372243034123,
+    "total_enhancement_factor": 5.336237909072767,
+    "enhanced_complexity": 123643.16709781757,
+    "quantum_resistance_years": 3.918015536600299e-15,
+    "resistance_level": "MEDIUM",
+    "enhanced_security_bits": 59.41582298859673,
+    "exceptional_primes_used": [
+      [
+        179,
+        181
+      ],
+      [
+        29,
+        31
+      ]
+    ],
+    "depth_amplification_methods": [
+      "adaptive",
+      "wavelet",
+      "optimization"
+    ],
+    "depth_field_statistics": {
+      "range": 0.01996179596799287,
+      "std": 0.005752519479562905,
+      "enhancement_contribution": 2.1575372243034123
+    }
+  },
+  "exceptional_primes": [
+    [
+      179,
+      181
+    ],
+    [
+      29,
+      31
+    ]
+  ],
+  "depth_amplification_system": {
+    "enabled": true,
+    "convergence_threshold": 1e-06,
+    "methods_used": [
+      "adaptive",
+      "wavelet",
+      "optimization"
+    ],
+    "enhancement_factor": 3.1575372243034123,
+    "field_statistics": {
+      "range": 0.01996179596799287,
+      "std": 0.005752519479562905,
+      "enhancement_contribution": 2.1575372243034123
+    }
+  },
+  "research_framework_version": "3.0 - Depth Enhanced"
+}

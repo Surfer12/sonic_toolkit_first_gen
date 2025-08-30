@@ -1,0 +1,372 @@
+---
+globs: *.swift,*.java,*.mojo,*.py
+description: "Multi-language code style and conventions for Swift, Java, Mojo, and Python development"
+---
+
+# Multi-Language Code Style and Conventions
+
+This workspace integrates multiple programming languages for research and development. Consistent style across languages ensures maintainability and collaboration.
+
+## Swift Development Standards
+
+### Naming Conventions
+- **Classes/Structs**: PascalCase with descriptive names (e.g., `ReverseKoopmanOperator`)
+- **Functions/Methods**: camelCase with clear verbs (e.g., `computeEigenvalues()`, `analyzeStability()`)
+- **Variables/Properties**: camelCase with descriptive nouns (e.g., `eigenvalues`, `conditionNumber`)
+- **Constants**: PascalCase with descriptive prefixes (e.g., `MaxModes`, `TimeStep`)
+
+### Code Structure
+```swift
+// Good: Clear structure with documentation
+struct SecurityFinding: Codable, Identifiable {
+    /// Unique identifier for the finding
+    let id: UUID
+
+    /// Timestamp when the finding was created
+    let timestamp: Date
+
+    /// Type of vulnerability identified
+    let vulnerabilityType: VulnerabilityType
+
+    /// Severity level assessment
+    let severity: SeverityLevel
+
+    // MARK: - Initialization
+
+    init(...) {
+        // Implementation with clear parameter validation
+    }
+
+    // MARK: - Public Methods
+
+    func generateReport() -> String {
+        // Implementation with descriptive variable names
+    }
+
+    // MARK: - Private Methods
+
+    private func validateInputs() throws {
+        // Implementation with guard statements
+        guard !title.isEmpty else {
+            throw ValidationError.emptyTitle
+        }
+    }
+}
+```
+
+### Best Practices
+- **Error Handling**: Use Swift's `Result` type and `throws` for error propagation
+- **Optionals**: Explicit optional handling with `guard` statements
+- **Access Control**: Use appropriate access modifiers (`private`, `internal`, `public`)
+- **Documentation**: Comprehensive docstrings for all public APIs
+- **Extensions**: Use extensions for protocol conformance and utility methods
+
+## Java Development Standards
+
+### Naming Conventions
+- **Classes**: PascalCase with descriptive names (e.g., `InverseHierarchicalBayesianModel`)
+- **Methods**: camelCase with clear verbs (e.g., `recoverParameters()`, `validateAggregation()`)
+- **Variables**: camelCase with descriptive nouns (e.g., `confidenceThreshold`, `parameterErrors`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_ITERATIONS`, `DEFAULT_TOLERANCE`)
+
+### Code Structure
+```java
+/**
+ * Comprehensive documentation for the class purpose,
+ * implementation details, and usage examples.
+ */
+public final class InverseHierarchicalBayesianModel {
+
+    // Constants with clear documentation
+    private static final double DEFAULT_LEARNING_RATE = 0.01;
+    private static final int MAX_ITERATIONS = 1000;
+
+    // Instance variables with descriptive names
+    private final List<Observation> observations;
+    private final ModelParameters recoveredParameters;
+    private final double logEvidence;
+
+    // Constructor with parameter validation
+    public InverseHierarchicalBayesianModel(List<Observation> observations) {
+        this.observations = validateObservations(observations);
+        this.recoveredParameters = new ModelParameters();
+        this.logEvidence = Double.NaN;
+    }
+
+    // Public methods with comprehensive documentation
+    /**
+     * Recovers model parameters from observed Ψ scores using inverse methods.
+     *
+     * @param observations List of observation data with claims and scores
+     * @return Result containing recovered parameters and confidence metrics
+     * @throws IllegalArgumentException if observations are null or empty
+     */
+    public InverseResult recoverParameters(List<Observation> observations) {
+        // Implementation with clear variable names and comments
+        validateInputs(observations);
+
+        // Core algorithm implementation
+        ModelParameters parameters = performParameterRecovery(observations);
+        double confidence = calculateConfidence(parameters, observations);
+
+        return new InverseResult(parameters, confidence, logEvidence);
+    }
+
+    // Private methods with focused responsibilities
+    private void validateInputs(List<Observation> observations) {
+        if (observations == null || observations.isEmpty()) {
+            throw new IllegalArgumentException("Observations cannot be null or empty");
+        }
+    }
+}
+```
+
+### Best Practices
+- **Immutability**: Use `final` for constants and immutable references
+- **Exception Handling**: Specific exception types with meaningful messages
+- **Documentation**: JavaDoc for all public classes and methods
+- **Input Validation**: Guard clauses at method boundaries
+- **Resource Management**: Proper try-with-resources for file operations
+
+## Mojo Development Standards
+
+### Naming Conventions
+- **Structs/Functions**: snake_case with descriptive names (e.g., `news_aggregation_inverse`)
+- **Variables**: snake_case with clear meanings (e.g., `coverage_next`, `k4_extracted`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_MODES`, `DEFAULT_DELTA_T`)
+
+### Code Structure
+```mojo
+"""
+Comprehensive documentation for structs and functions.
+Includes purpose, parameters, return values, and usage examples.
+"""
+struct NewsAggregationInverse:
+    """
+    Mojo implementation of inverse news aggregation operations.
+    Provides high-performance inverse operations for the news aggregation framework.
+    """
+
+    var time_step: Float64
+    var max_modes: Int
+    var polynomial_degree: Int
+
+    fn __init__(inout self, time_step: Float64 = 0.1, max_modes: Int = 20, polynomial_degree: Int = 3):
+        """
+        Initialize the inverse news aggregation system.
+
+        Args:
+            time_step: Time step for koopman operator Δt
+            max_modes: Maximum number of spectral modes
+            polynomial_degree: Degree for polynomial observables
+        """
+        self.time_step = time_step
+        self.max_modes = max_modes
+        self.polynomial_degree = polynomial_degree
+
+    fn inverse_news_aggregation(
+        self,
+        coverage_next: Float64,
+        headlines_current: Float64,
+        delta_t: Float64,
+        k1: Float64,
+        k2: Float64,
+        k3: Float64
+    ) -> Float64:
+        """
+        Extract k4 from aggregated coverage data.
+
+        Mathematical foundation:
+        coverage_{n+1} = headlines_n + (Δt/6) × (k1 + 2k2 + 2k3 + k4)
+
+        Args:
+            coverage_next: Aggregated coverage at t_{n+1}
+            headlines_current: Headlines at current time t_n
+            delta_t: Time step size
+            k1, k2, k3: Known k values
+
+        Returns:
+            k4: Extracted k4 value
+        """
+        let weighted_sum = 6.0 * (coverage_next - headlines_current) / delta_t
+        let k4 = weighted_sum - k1 - 2.0*k2 - 2.0*k3
+
+        return k4
+
+    fn validate_aggregation(
+        self,
+        coverage_next: Float64,
+        headlines_current: Float64,
+        delta_t: Float64,
+        k1: Float64,
+        k2: Float64,
+        k3: Float64,
+        k4: Float64
+    ) -> Bool:
+        """
+        Validate that aggregation formula holds within tolerance.
+
+        Args:
+            coverage_next: Expected aggregated coverage
+            headlines_current: Current headlines value
+            delta_t: Time step size
+            k1, k2, k3, k4: All k values for validation
+
+        Returns:
+            True if validation passes within tolerance
+        """
+        let expected = headlines_current + (delta_t / 6.0) * (k1 + 2.0*k2 + 2.0*k3 + k4)
+        let tolerance = 1e-10
+
+        return abs(expected - coverage_next) < tolerance
+```
+
+### Best Practices
+- **Type Safety**: Explicit type annotations for all parameters and returns
+- **Memory Management**: Efficient use of `owned`, `borrowed`, and `inout`
+- **Performance**: Vectorization opportunities and SIMD optimization
+- **Documentation**: Comprehensive docstrings with mathematical context
+- **Error Handling**: Use `raises` for functions that can throw errors
+
+## Python Development Standards
+
+### Naming Conventions
+- **Classes**: PascalCase (e.g., `NewsAggregationInverse`)
+- **Functions**: snake_case with clear verbs (e.g., `extract_k4_from_coverage()`)
+- **Variables**: snake_case with descriptive names (e.g., `weighted_sum`, `error_bound`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `DEFAULT_TOLERANCE`)
+
+### Code Structure
+```python
+"""
+Comprehensive module documentation with purpose, usage, and examples.
+"""
+
+class NewsAggregationInverse:
+    """
+    Python implementation of inverse news aggregation operations.
+
+    This class provides methods to extract individual components from
+    aggregated news coverage data using mathematical inverse operations.
+
+    Attributes:
+        time_step (float): Time step for koopman operator Δt
+        max_modes (int): Maximum number of spectral modes
+        polynomial_degree (int): Degree for polynomial observables
+    """
+
+    def __init__(self, time_step: float = 0.1, max_modes: int = 20, polynomial_degree: int = 3):
+        """
+        Initialize the inverse news aggregation system.
+
+        Args:
+            time_step: Time step for koopman operator Δt
+            max_modes: Maximum number of spectral modes
+            polynomial_degree: Degree for polynomial observables
+
+        Raises:
+            ValueError: If parameters are outside valid ranges
+        """
+        self._validate_parameters(time_step, max_modes, polynomial_degree)
+
+        self.time_step = time_step
+        self.max_modes = max_modes
+        self.polynomial_degree = polynomial_degree
+
+    def inverse_news_aggregation(
+        self,
+        coverage_next: float,
+        headlines_current: float,
+        delta_t: float,
+        k1: float,
+        k2: float,
+        k3: float
+    ) -> float:
+        """
+        Extract k4 from aggregated coverage data.
+
+        Mathematical foundation:
+        coverage_{n+1} = headlines_n + (Δt/6) × (k1 + 2k2 + 2k3 + k4)
+
+        Args:
+            coverage_next: Aggregated coverage at t_{n+1}
+            headlines_current: Headlines at current time t_n
+            delta_t: Time step size
+            k1, k2, k3: Known k values
+
+        Returns:
+            float: Extracted k4 value
+
+        Raises:
+            ValueError: If delta_t is zero or negative
+        """
+        if delta_t <= 0:
+            raise ValueError("delta_t must be positive")
+
+        weighted_sum = 6.0 * (coverage_next - headlines_current) / delta_t
+        k4 = weighted_sum - k1 - 2.0*k2 - 2.0*k3
+
+        return k4
+
+    def _validate_parameters(self, time_step: float, max_modes: int, polynomial_degree: int) -> None:
+        """Validate initialization parameters."""
+        if time_step <= 0:
+            raise ValueError("time_step must be positive")
+        if max_modes <= 0:
+            raise ValueError("max_modes must be positive")
+        if polynomial_degree < 0:
+            raise ValueError("polynomial_degree must be non-negative")
+```
+
+### Best Practices
+- **Type Hints**: Use typing module for all function signatures
+- **Documentation**: NumPy-style docstrings with sections for Args, Returns, Raises
+- **Error Handling**: Specific exception types with descriptive messages
+- **Input Validation**: Early validation with clear error messages
+- **Testing**: Comprehensive unit tests with edge case coverage
+
+## Cross-Language Integration Standards
+
+### API Consistency
+- **Function Names**: Use consistent naming across languages where possible
+- **Parameter Order**: Maintain logical parameter ordering
+- **Return Types**: Use equivalent types across languages
+- **Error Handling**: Consistent error types and messages
+
+### Documentation Standards
+- **Purpose**: Clear description of function/class purpose
+- **Parameters**: Detailed description of all inputs
+- **Returns**: Description of return values and their meaning
+- **Raises/Throws**: All possible exceptions or error conditions
+- **Examples**: Usage examples where helpful
+- **Mathematical Context**: Include mathematical background for research code
+
+### Testing Standards
+- **Unit Tests**: Test individual functions with edge cases
+- **Integration Tests**: Test cross-language integration points
+- **Performance Tests**: Benchmark critical algorithms
+- **Validation Tests**: Test against known mathematical results
+
+## Code Quality Tools
+
+### Swift
+- Use SwiftLint for style consistency
+- SwiftFormat for automatic formatting
+- Xcode's built-in testing framework
+
+### Java
+- Use Checkstyle for style consistency
+- SpotBugs for static analysis
+- JUnit for comprehensive testing
+
+### Mojo
+- Use built-in type checking and compilation
+- Custom linting rules for research code patterns
+- Integration with Python testing frameworks
+
+### Python
+- Use flake8 and black for style consistency
+- mypy for type checking
+- pytest for comprehensive testing
+
+This multi-language approach ensures consistent, maintainable code across the entire research and development stack while respecting each language's strengths and conventions.

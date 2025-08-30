@@ -1,0 +1,600 @@
+---
+alwaysApply: false
+globs: *demo*.py,*analysis*.py,*framework*.py,scientific-computing-tools/**
+description: Scientific computing patterns, numerical methods, and research methodologies
+---
+
+# 🔬 Scientific Computing & Research Methods Guide
+
+## Core Computational Frameworks
+
+### Advanced Analysis Tools
+**Files**: [advanced_rheology_demo.py](mdc:advanced_rheology_demo.py), [inverse_precision_framework.py](mdc:inverse_precision_framework.py), [prime_interaction_space.py](mdc:prime_interaction_space.py)
+
+#### Key Research Patterns:
+```python
+# Research methodology framework
+class ResearchFramework:
+    """Structure for systematic scientific investigation."""
+
+    def hypothesis_formulation(self, research_question):
+        """Formulate testable hypothesis."""
+        return hypothesis, variables, expected_outcomes
+
+    def experimental_design(self, variables, constraints):
+        """Design systematic experiments."""
+        return experimental_plan, controls, measurements
+
+    def data_collection(self, experimental_plan):
+        """Execute experiments and collect data."""
+        return raw_data, metadata, quality_metrics
+
+    def analysis_and_modeling(self, data, techniques):
+        """Apply analytical and modeling techniques."""
+        return models, parameters, validation_metrics
+
+    def validation_and_verification(self, models, validation_data):
+        """Validate models against independent data."""
+        return validation_results, uncertainty_analysis, confidence_intervals
+
+    def documentation_and_reporting(self, results):
+        """Document findings and prepare reports."""
+        return technical_report, visualizations, recommendations
+```
+
+### Precision Analysis Framework
+**File**: [inverse_precision_framework.py](mdc:inverse_precision_framework.py)
+
+```python
+# 0.9987 Precision convergence framework
+class InversePrecisionFramework:
+    """High-precision inverse analysis with guaranteed convergence."""
+
+    def __init__(self, precision_threshold=0.9987):
+        self.precision_threshold = precision_threshold
+        self.convergence_history = []
+
+    def solve_inverse_problem(self, forward_model, observed_data):
+        """Solve inverse problem with precision guarantee."""
+        iteration = 0
+        current_params = self.initialize_parameters()
+
+        while not self.convergence_criterion_met(current_params):
+            # Forward simulation
+            simulated_data = forward_model(current_params)
+
+            # Parameter adjustment
+            sensitivity_matrix = self.compute_sensitivity(current_params)
+            residual = observed_data - simulated_data
+
+            # Levenberg-Marquardt update
+            delta_params = self.solve_normal_equations(
+                sensitivity_matrix, residual, damping_factor=0.1
+            )
+
+            current_params += delta_params
+            iteration += 1
+
+            # Convergence monitoring
+            convergence_metric = self.calculate_convergence_metric(current_params)
+            self.convergence_history.append(convergence_metric)
+
+            if convergence_metric >= self.precision_threshold:
+                break
+
+        return current_params, self.convergence_history
+```
+
+### Prime Interaction Analysis
+**File**: [prime_interaction_space.py](mdc:prime_interaction_space.py)
+
+```python
+# Prime number interaction analysis
+class PrimeInteractionSpace:
+    """Analyze interactions between prime and non-prime numbers."""
+
+    def __init__(self, max_range=10000):
+        self.max_range = max_range
+        self.primes = self.generate_primes(max_range)
+        self.interaction_matrix = self.compute_interaction_matrix()
+
+    def analyze_interaction_patterns(self):
+        """Analyze patterns in prime-nonprime interactions."""
+        patterns = {}
+
+        # Distance analysis
+        patterns['distance_distribution'] = self.analyze_distances()
+
+        # Potential field analysis
+        patterns['potential_fields'] = self.compute_potential_fields()
+
+        # Clustering analysis
+        patterns['clusters'] = self.find_interaction_clusters()
+
+        # Network analysis
+        patterns['network_properties'] = self.analyze_interaction_network()
+
+        return patterns
+
+    def visualize_interaction_space(self):
+        """Create comprehensive visualization of interaction space."""
+        fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+
+        # Plot 1: Prime-nonprime distance field
+        self.plot_distance_field(axes[0, 0])
+
+        # Plot 2: Interaction potential
+        self.plot_potential_field(axes[0, 1])
+
+        # Plot 3: Clustering analysis
+        self.plot_clusters(axes[1, 0])
+
+        # Plot 4: Network connectivity
+        self.plot_network(axes[1, 1])
+
+        plt.tight_layout()
+        return fig
+```
+
+## Numerical Methods and Algorithms
+
+### Advanced Solution Techniques:
+
+#### 1. Non-Linear Equation Solving:
+```python
+def solve_nonlinear_system(residual_function, jacobian_function,
+                          initial_guess, tolerance=1e-8):
+    """Solve non-linear system using advanced methods."""
+
+    # Newton-Raphson with line search
+    x = initial_guess
+    iteration = 0
+    max_iterations = 100
+
+    while iteration < max_iterations:
+        # Compute residual and Jacobian
+        residual = residual_function(x)
+        jacobian = jacobian_function(x)
+
+        # Solve linear system
+        delta_x = np.linalg.solve(jacobian, -residual)
+
+        # Line search for globalization
+        alpha = 1.0
+        while np.linalg.norm(residual_function(x + alpha * delta_x)) > \
+              np.linalg.norm(residual) * (1 - 0.5 * alpha):
+            alpha *= 0.5
+
+        x += alpha * delta_x
+
+        if np.linalg.norm(residual) < tolerance:
+            break
+
+        iteration += 1
+
+    return x, iteration
+```
+
+#### 2. Parameter Estimation with Uncertainty:
+```python
+def fit_model_with_uncertainty(model_function, x_data, y_data,
+                              parameter_bounds=None):
+    """Fit model parameters with comprehensive uncertainty analysis."""
+
+    # Non-linear least squares
+    def residual_function(params):
+        return model_function(x_data, params) - y_data
+
+    def jacobian_function(params):
+        return compute_numerical_jacobian(model_function, x_data, params)
+
+    # Solve optimization problem
+    result = optimize.least_squares(
+        residual_function,
+        initial_guess,
+        bounds=parameter_bounds,
+        jac=jacobian_function,
+        method='trf'
+    )
+
+    fitted_params = result.x
+
+    # Uncertainty analysis
+    residual = residual_function(fitted_params)
+    jacobian = jacobian_function(fitted_params)
+
+    # Covariance matrix
+    cov_matrix = np.linalg.inv(jacobian.T @ jacobian) * np.var(residual)
+
+    # Parameter uncertainties
+    parameter_uncertainties = np.sqrt(np.diag(cov_matrix))
+
+    # Confidence intervals
+    confidence_intervals = {}
+    for i, param in enumerate(fitted_params):
+        confidence_intervals[f'param_{i}'] = {
+            'value': param,
+            'uncertainty': parameter_uncertainties[i],
+            '95ci_lower': param - 1.96 * parameter_uncertainties[i],
+            '95ci_upper': param + 1.96 * parameter_uncertainties[i]
+        }
+
+    return fitted_params, confidence_intervals, result
+```
+
+#### 3. Optimization with Constraints:
+```python
+def constrained_optimization(objective_function, constraints,
+                           initial_guess, bounds=None):
+    """Perform constrained optimization with multiple methods."""
+
+    # Sequential Quadratic Programming (SQP)
+    result_sqp = optimize.minimize(
+        objective_function,
+        initial_guess,
+        method='SLSQP',
+        bounds=bounds,
+        constraints=constraints
+    )
+
+    # Interior Point method
+    result_ip = optimize.minimize(
+        objective_function,
+        initial_guess,
+        method='trust-constr',
+        bounds=bounds,
+        constraints=constraints
+    )
+
+    # Genetic Algorithm for global optimization
+    from scipy.optimize import differential_evolution
+
+    result_ga = differential_evolution(
+        objective_function,
+        bounds=bounds,
+        constraints=constraints
+    )
+
+    # Compare results and select best
+    results = [result_sqp, result_ip, result_ga]
+    best_result = min(results, key=lambda r: r.fun)
+
+    return best_result
+```
+
+### Mesh Generation and Discretization:
+
+#### Structured Mesh Generation:
+```python
+def generate_structured_mesh(dimensions, n_points):
+    """Generate structured mesh for computational domains."""
+
+    # 1D mesh
+    if len(dimensions) == 1:
+        return np.linspace(0, dimensions[0], n_points)
+
+    # 2D rectangular mesh
+    elif len(dimensions) == 2:
+        x = np.linspace(0, dimensions[0], n_points[0])
+        y = np.linspace(0, dimensions[1], n_points[1])
+        X, Y = np.meshgrid(x, y)
+        return X, Y
+
+    # 3D rectangular mesh
+    elif len(dimensions) == 3:
+        x = np.linspace(0, dimensions[0], n_points[0])
+        y = np.linspace(0, dimensions[1], n_points[1])
+        z = np.linspace(0, dimensions[2], n_points[2])
+        X, Y, Z = np.meshgrid(x, y, z)
+        return X, Y, Z
+```
+
+#### Unstructured Mesh Generation:
+```python
+def generate_unstructured_mesh(domain_geometry, resolution):
+    """Generate unstructured mesh for complex geometries."""
+
+    # Define domain boundary
+    boundary_points = define_domain_boundary(domain_geometry)
+
+    # Generate initial point distribution
+    points = generate_initial_points(boundary_points, resolution)
+
+    # Delaunay triangulation
+    tri = Delaunay(points)
+
+    # Mesh quality improvement
+    points, triangles = improve_mesh_quality(points, tri.simplices)
+
+    # Boundary refinement
+    points, triangles = refine_boundary_mesh(points, triangles, boundary_points)
+
+    return points, triangles
+```
+
+## Research Methodologies
+
+### Systematic Investigation Framework:
+
+#### 1. Problem Definition:
+```python
+def define_research_problem():
+    """Systematically define research problem."""
+
+    problem_statement = {
+        'research_question': 'Clearly stated question',
+        'hypothesis': 'Testable hypothesis',
+        'objectives': [
+            'Specific objectives',
+            'Measurable outcomes',
+            'Time-bound goals'
+        ],
+        'scope': {
+            'included': 'What is in scope',
+            'excluded': 'What is out of scope',
+            'assumptions': 'Key assumptions'
+        }
+    }
+
+    return problem_statement
+```
+
+#### 2. Methodology Development:
+```python
+def develop_methodology(problem_statement):
+    """Develop comprehensive research methodology."""
+
+    methodology = {
+        'approach': 'Theoretical, experimental, computational, or hybrid',
+        'methods': [
+            'Specific methods to be used',
+            'Justification for each method',
+            'Expected outcomes'
+        ],
+        'validation': {
+            'techniques': 'Validation approaches',
+            'metrics': 'Success criteria',
+            'benchmarks': 'Comparison standards'
+        },
+        'uncertainty_analysis': {
+            'sources': 'Potential uncertainty sources',
+            'quantification': 'Uncertainty quantification methods',
+            'sensitivity': 'Sensitivity analysis plan'
+        }
+    }
+
+    return methodology
+```
+
+#### 3. Data Management:
+```python
+def design_data_management_system():
+    """Design comprehensive data management system."""
+
+    data_system = {
+        'collection': {
+            'methods': 'Data collection methods',
+            'frequency': 'Collection frequency',
+            'validation': 'Data validation procedures'
+        },
+        'storage': {
+            'format': 'Data storage formats',
+            'organization': 'File organization structure',
+            'backup': 'Backup and recovery procedures'
+        },
+        'analysis': {
+            'tools': 'Analysis software and tools',
+            'procedures': 'Analysis procedures',
+            'validation': 'Analysis validation methods'
+        },
+        'documentation': {
+            'metadata': 'Metadata standards',
+            'versioning': 'Version control procedures',
+            'archival': 'Long-term archival plans'
+        }
+    }
+
+    return data_system
+```
+
+## Validation and Verification
+
+### Analytical Validation:
+```python
+def validate_against_analytical_solution(numerical_solution, analytical_function,
+                                       domain, tolerance=1e-6):
+    """Validate numerical solution against analytical solution."""
+
+    # Generate validation points
+    validation_points = generate_validation_points(domain)
+
+    # Compute analytical solution
+    analytical_values = analytical_function(validation_points)
+
+    # Compute numerical solution at validation points
+    numerical_values = interpolate_solution(numerical_solution, validation_points)
+
+    # Compute error metrics
+    absolute_error = np.abs(numerical_values - analytical_values)
+    relative_error = absolute_error / (np.abs(analytical_values) + tolerance)
+
+    validation_metrics = {
+        'max_absolute_error': np.max(absolute_error),
+        'max_relative_error': np.max(relative_error),
+        'rms_error': np.sqrt(np.mean(absolute_error**2)),
+        'mean_error': np.mean(absolute_error),
+        'error_distribution': {
+            'percentiles': np.percentile(absolute_error, [25, 50, 75, 90, 95, 99])
+        }
+    }
+
+    # Convergence analysis
+    if hasattr(numerical_solution, 'mesh_sizes'):
+        validation_metrics['convergence'] = analyze_convergence(
+            numerical_solution, analytical_values
+        )
+
+    return validation_metrics, validation_points
+```
+
+### Experimental Validation:
+```python
+def validate_against_experimental_data(numerical_solution, experimental_data,
+                                     uncertainty_analysis=True):
+    """Validate numerical solution against experimental data."""
+
+    validation_results = {}
+
+    # Compare key metrics
+    for metric in ['flow_rate', 'pressure_drop', 'velocity_profile']:
+        if metric in experimental_data:
+            sim_value = extract_metric(numerical_solution, metric)
+            exp_value = experimental_data[metric]
+
+            if uncertainty_analysis and f'{metric}_uncertainty' in experimental_data:
+                exp_uncertainty = experimental_data[f'{metric}_uncertainty']
+                is_within_uncertainty = abs(sim_value - exp_value) <= 2 * exp_uncertainty
+                validation_results[f'{metric}_validation'] = is_within_uncertainty
+
+            # Error analysis
+            error = abs(sim_value - exp_value) / exp_value
+            validation_results[f'{metric}_error'] = error
+
+    # Statistical analysis
+    if len(experimental_data.get('samples', [])) > 1:
+        validation_results['statistical_analysis'] = perform_statistical_validation(
+            numerical_solution, experimental_data
+        )
+
+    return validation_results
+```
+
+### Uncertainty Quantification:
+```python
+def quantify_uncertainty(model_function, parameters, parameter_uncertainties,
+                        n_samples=10000):
+    """Perform comprehensive uncertainty quantification."""
+
+    # Monte Carlo sampling
+    parameter_samples = generate_parameter_samples(
+        parameters, parameter_uncertainties, n_samples
+    )
+
+    # Model evaluations
+    model_outputs = np.array([
+        model_function(sample) for sample in parameter_samples
+    ])
+
+    # Statistical analysis
+    uncertainty_analysis = {
+        'output_mean': np.mean(model_outputs),
+        'output_std': np.std(model_outputs),
+        'output_variance': np.var(model_outputs),
+        'confidence_intervals': {
+            '95%': np.percentile(model_outputs, [2.5, 97.5]),
+            '99%': np.percentile(model_outputs, [0.5, 99.5])
+        },
+        'sensitivity_indices': compute_sensitivity_indices(
+            parameter_samples, model_outputs
+        ),
+        'distribution_analysis': analyze_output_distribution(model_outputs)
+    }
+
+    return uncertainty_analysis
+```
+
+## Performance Optimization
+
+### Computational Efficiency:
+```python
+def optimize_computational_performance(model_function, data, target_accuracy=1e-6):
+    """Optimize computational performance for given accuracy."""
+
+    optimization_results = {}
+
+    # Algorithm selection
+    algorithms = ['Newton-Raphson', 'Broyden', 'Levenberg-Marquardt']
+    for algorithm in algorithms:
+        time_taken, iterations, final_error = benchmark_algorithm(
+            model_function, data, algorithm
+        )
+
+        optimization_results[algorithm] = {
+            'time': time_taken,
+            'iterations': iterations,
+            'error': final_error,
+            'efficiency': time_taken / (1 + final_error)  # Time per accuracy unit
+        }
+
+    # Mesh optimization
+    mesh_sizes = [10, 50, 100, 200, 500, 1000]
+    for mesh_size in mesh_sizes:
+        time_taken, accuracy = benchmark_mesh_resolution(
+            model_function, data, mesh_size
+        )
+
+        optimization_results[f'mesh_{mesh_size}'] = {
+            'time': time_taken,
+            'accuracy': accuracy,
+            'efficiency': accuracy / time_taken
+        }
+
+    # Parallel processing
+    if has_multiple_cores():
+        optimization_results['parallel'] = benchmark_parallel_performance(
+            model_function, data
+        )
+
+    return optimization_results
+```
+
+### Memory Optimization:
+```python
+def optimize_memory_usage(model_function, data, memory_limit=None):
+    """Optimize memory usage for large-scale problems."""
+
+    memory_analysis = {}
+
+    # Baseline memory usage
+    baseline_memory = measure_memory_usage(model_function, data)
+
+    # Sparse matrix optimization
+    if is_sparse_feasible(data):
+        sparse_memory = measure_memory_usage(
+            lambda x: solve_sparse_system(model_function, x, data)
+        )
+
+        memory_analysis['sparse_optimization'] = {
+            'baseline': baseline_memory,
+            'sparse': sparse_memory,
+            'savings': (baseline_memory - sparse_memory) / baseline_memory
+        }
+
+    # Chunked processing for large datasets
+    if has_large_dataset(data):
+        chunked_memory = measure_memory_usage(
+            lambda x: process_in_chunks(model_function, x, data)
+        )
+
+        memory_analysis['chunked_processing'] = {
+            'baseline': baseline_memory,
+            'chunked': chunked_memory,
+            'feasibility': chunked_memory < (memory_limit or np.inf)
+        }
+
+    # Out-of-core computation
+    if data_size_exceeds_memory(data):
+        ooc_memory = measure_memory_usage(
+            lambda x: out_of_core_computation(model_function, x, data)
+        )
+
+        memory_analysis['out_of_core'] = {
+            'baseline': baseline_memory,
+            'ooc': ooc_memory,
+            'scalability': assess_ooc_scalability(data)
+        }
+
+    return memory_analysis
+```
+
+This comprehensive guide provides the foundation for implementing rigorous scientific computing practices in research and industrial applications.

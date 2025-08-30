@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-08-26T07:00:19.352855",
+  "convergence_threshold": 1e-06,
+  "pairs_analyzed": [
+    [
+      179,
+      181
+    ],
+    [
+      29,
+      31
+    ],
+    [
+      107,
+      109
+    ],
+    [
+      149,
+      151
+    ]
+  ],
+  "framework_version": "1.0",
+  "results": {
+    

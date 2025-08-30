@@ -1,0 +1,1108 @@
+---
+globs: *.py,*.java,*.mojo
+---
+# Complex Fluids Analysis Framework
+
+This workspace implements advanced inverse analysis techniques for complex fluid systems, leveraging the same mathematical foundation as our news aggregation framework. The connection is powerful: just as we extract individual news source contributions from aggregate coverage, we can extract individual component behaviors from complex fluid measurements.
+
+## Mathematical Foundation
+
+### The Universal Inverse Problem
+
+**News Aggregation (Our Original Domain):**
+```
+Coverage(t) = k1·S1(t) + k2·S2(t) + k3·S3(t) + k4·S4(t)
+```
+
+**Complex Fluid Systems (New Domain):**
+```
+Property(t) = c1·P1(t) + c2·P2(t) + c3·P3(t) + ... + cn·Pn(t)
+```
+
+Where:
+- **k1,k2,k3,k4**: Source impact factors
+- **c1,c2,c3,...,cn**: Component concentrations/behaviors
+- **S1,S2,S3,S4**: Individual source signals
+- **P1,P2,P3,...,Pn**: Individual component properties
+
+## Polymer Rheology Analysis
+
+### Python Implementation for Polymer Blends
+
+```python
+import numpy as np
+from typing import Dict, List, Tuple, Optional, Union
+from dataclasses import dataclass
+from scipy.optimize import minimize, curve_fit
+from scipy.integrate import solve_ivp
+import warnings
+
+@dataclass
+class PolymerComponent:
+    """Individual polymer component properties."""
+    name: str
+    molecular_weight: float  # g/mol
+    glass_transition_temp: float  # K
+    viscosity_parameters: Dict[str, float]  # HB parameters
+    elastic_modulus: float  # Pa
+    relaxation_time: float  # s
+
+    def viscosity_model(self, shear_rate: float, temperature: float) -> float:
+        """Compute component viscosity using HB model."""
+        tau_y = self.viscosity_parameters.get('tau_y', 0.0)
+        K = self.viscosity_parameters['K']
+        n = self.viscosity_parameters['n']
+
+        # Temperature dependence (Arrhenius)
+        Ea = self.viscosity_parameters.get('activation_energy', 50000)  # J/mol
+        R = 8.314  # J/mol·K
+        temp_factor = np.exp(Ea/R * (1/temperature - 1/298.15))
+
+        # HB constitutive equation
+        if shear_rate == 0:
+            return float('inf') if tau_y > 0 else K * temp_factor
+
+        tau = tau_y + K * temp_factor * (shear_rate ** n)
+        return tau / shear_rate  # Apparent viscosity
+
+@dataclass
+class PolymerBlend:
+    """Polymer blend with multiple components."""
+    components: Dict[str, PolymerComponent]
+    compositions: Dict[str, float]  # Weight fractions
+    interaction_matrix: Optional[np.ndarray] = None
+
+    def validate_composition(self) -> bool:
+        """Validate that compositions sum to 1."""
+        total = sum(self.compositions.values())
+        return abs(total - 1.0) < 1e-6
+
+    def get_component_names(self) -> List[str]:
+        """Get list of component names."""
+        return list(self.components.keys())
+
+class PolymerRheologyAnalyzer:
+    """
+    Advanced polymer rheology analyzer using inverse methods.
+
+    This implements the same mathematical framework as our news aggregation
+    system, but applied to polymer blend rheology.
+    """
+
+    def __init__(self, blend: PolymerBlend):
+        """
+        Initialize analyzer with polymer blend.
+
+        Args:
+            blend: Polymer blend specification
+        """
+        if not blend.validate_composition():
+            raise ValueError("Blend compositions must sum to 1.0")
+
+        self.blend = blend
+        self._measured_data = {}  # Cache for measured data
+
+    def predict_blend_viscosity(self, shear_rate: float, temperature: float,
+                              concentrations: Optional[Dict[str, float]] = None) -> float:
+        """
+        Predict blend viscosity from component properties.
+
+        Args:
+            shear_rate: Shear rate [1/s]
+            temperature: Temperature [K]
+            concentrations: Override default concentrations
+
+        Returns:
+            Predicted blend viscosity [Pa·s]
+        """
+        if concentrations is None:
+            concentrations = self.blend.compositions
+
+        # Compute component viscosities
+        component_viscosities = {}
+        for name, component in self.blend.components.items():
+            if name in concentrations:
+                eta = component.viscosity_model(shear_rate, temperature)
+                component_viscosities[name] = eta
+
+        # Simple mixing rule (can be extended with interaction terms)
+        blend_viscosity = 0.0
+        for name, viscosity in component_viscosities.items():
+            weight_fraction = concentrations[name]
+            blend_viscosity += weight_fraction * viscosity
+
+        return blend_viscosity
+
+    def inverse_extract_component_viscosity(self, measured_viscosities: np.ndarray,
+                                          shear_rates: np.ndarray, temperature: float,
+                                          known_components: Dict[str, float]) -> Dict[str, float]:
+        """
+        Extract unknown component viscosity from blend measurements.
+
+        This is the inverse problem: given blend viscosity and some known
+        component concentrations, extract the unknown component's contribution.
+
+        Args:
+            measured_viscosities: Measured blend viscosities [Pa·s]
+            shear_rates: Corresponding shear rates [1/s]
+            temperature: Measurement temperature [K]
+            known_components: Dict of component_name -> known_concentration
+
+        Returns:
+            Dict of component_name -> extracted_viscosity
+        """
+        extracted_viscosities = {}
+
+        # Get unknown components
+        all_components = set(self.blend.get_component_names())
+        known_component_names = set(known_components.keys())
+        unknown_components = all_components - known_component_names
+
+        if len(unknown_components) != 1:
+            raise ValueError("Currently supports extracting exactly one unknown component")
+
+        unknown_component = list(unknown_components)[0]
+
+        def objective_function(params):
+            """Objective function for viscosity extraction."""
+            unknown_viscosity = params[0]
+
+            residuals = []
+            for i, (eta_measured, gamma_dot) in enumerate(zip(measured_viscosities, shear_rates)):
+                # Predict viscosity with estimated unknown component
+                test_concentrations = dict(known_components)
+                test_concentrations[unknown_component] = 1.0 - sum(known_components.values())
+
+                # Override the unknown component's viscosity
+                original_component = self.blend.components[unknown_component]
+                modified_component = PolymerComponent(
+                    name=original_component.name,
+                    molecular_weight=original_component.molecular_weight,
+                    glass_transition_temp=original_component.glass_transition_temp,
+                    viscosity_parameters={**original_component.viscosity_parameters, 'K': unknown_viscosity},
+                    elastic_modulus=original_component.elastic_modulus,
+                    relaxation_time=original_component.relaxation_time
+                )
+
+                # Create temporary blend with modified component
+                temp_components = dict(self.blend.components)
+                temp_components[unknown_component] = modified_component
+                temp_blend = PolymerBlend(temp_components, test_concentrations)
+
+                temp_analyzer = PolymerRheologyAnalyzer(temp_blend)
+                eta_predicted = temp_analyzer.predict_blend_viscosity(gamma_dot, temperature)
+
+                residuals.append(eta_measured - eta_predicted)
+
+            return np.sum(np.array(residuals)**2)
+
+        # Initial guess for unknown viscosity
+        initial_guess = [1.0]  # Pa·s
+
+        # Optimize
+        result = minimize(objective_function, initial_guess, bounds=[(0.01, 1000.0)],
+                         method='L-BFGS-B')
+
+        if result.success:
+            extracted_viscosities[unknown_component] = result.x[0]
+        else:
+            warnings.warn(f"Optimization failed for {unknown_component}: {result.message}")
+
+        return extracted_viscosities
+
+    def analyze_interactions(self, experimental_data: Dict[str, np.ndarray]) -> Dict[str, float]:
+        """
+        Analyze component interactions from experimental data.
+
+        Args:
+            experimental_data: Experimental viscosity measurements
+
+        Returns:
+            Interaction analysis results
+        """
+        interaction_metrics = {}
+
+        # Compare predicted vs measured viscosities
+        if 'viscosities' in experimental_data and 'shear_rates' in experimental_data:
+            measured_viscosities = experimental_data['viscosities']
+            shear_rates = experimental_data['shear_rates']
+            temperature = experimental_data.get('temperature', 298.15)
+
+            # Predict using simple mixing rule
+            predicted_viscosities = np.array([
+                self.predict_blend_viscosity(gamma_dot, temperature)
+                for gamma_dot in shear_rates
+            ])
+
+            # Compute interaction metrics
+            mse = np.mean((measured_viscosities - predicted_viscosities)**2)
+            r_squared = 1 - np.sum((measured_viscosities - predicted_viscosities)**2) / \
+                       np.sum((measured_viscosities - np.mean(measured_viscosities))**2)
+
+            interaction_metrics['mse'] = mse
+            interaction_metrics['r_squared'] = r_squared
+            interaction_metrics['interaction_strength'] = 1.0 - r_squared
+
+        return interaction_metrics
+
+    def optimize_blend_composition(self, target_properties: Dict[str, float],
+                                 constraints: Dict[str, Tuple[float, float]]) -> Dict[str, float]:
+        """
+        Optimize blend composition for target properties.
+
+        Args:
+            target_properties: Target property values
+            constraints: Component concentration bounds
+
+        Returns:
+            Optimized composition
+        """
+        def objective_function(composition):
+            """Objective function for composition optimization."""
+            # Convert array to dict
+            comp_dict = dict(zip(self.blend.get_component_names(), composition))
+
+            # Normalize to sum to 1
+            total = sum(comp_dict.values())
+            comp_dict = {k: v/total for k, v in comp_dict.items()}
+
+            # Evaluate properties
+            # This is a simplified example - in practice, you'd compute
+            # actual rheological properties
+            score = 0.0
+
+            if 'viscosity' in target_properties:
+                target_visc = target_properties['viscosity']
+                predicted_visc = self.predict_blend_viscosity(1.0, 298.15, comp_dict)
+                score += abs(predicted_visc - target_visc)
+
+            return score
+
+        # Initial guess (equal proportions)
+        n_components = len(self.blend.components)
+        initial_guess = np.ones(n_components) / n_components
+
+        # Bounds from constraints
+        bounds = []
+        component_names = self.blend.get_component_names()
+        for name in component_names:
+            if name in constraints:
+                bounds.append(constraints[name])
+            else:
+                bounds.append((0.0, 1.0))
+
+        # Optimize
+        result = minimize(objective_function, initial_guess, bounds=bounds,
+                         method='L-BFGS-B')
+
+        if result.success:
+            optimized_composition = dict(zip(component_names, result.x))
+            # Normalize
+            total = sum(optimized_composition.values())
+            optimized_composition = {k: v/total for k, v in optimized_composition.items()}
+
+            return optimized_composition
+        else:
+            raise RuntimeError(f"Optimization failed: {result.message}")
+```
+
+## Biological Tissue Mechanics
+
+### Java Implementation for Tissue Analysis
+
+```java
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Biological Tissue Component Analysis
+ *
+ * This implements the same inverse analysis framework for biological tissues,
+ * extracting individual component contributions from bulk mechanical measurements.
+ */
+public class TissueMechanicsAnalyzer {
+
+    public static class TissueComponent {
+        private final String name;
+        private final double modulus;        // Elastic modulus [Pa]
+        private final double viscosity;      // Viscosity [Pa·s]
+        private final double relaxationTime; // Relaxation time [s]
+        private final double anisotropy;     // Anisotropic behavior factor
+
+        public TissueComponent(String name, double modulus, double viscosity,
+                             double relaxationTime, double anisotropy) {
+            this.name = name;
+            this.modulus = modulus;
+            this.viscosity = viscosity;
+            this.relaxationTime = relaxationTime;
+            this.anisotropy = anisotropy;
+        }
+
+        // Getters...
+        public String getName() { return name; }
+        public double getModulus() { return modulus; }
+        public double getViscosity() { return viscosity; }
+        public double getRelaxationTime() { return relaxationTime; }
+        public double getAnisotropy() { return anisotropy; }
+    }
+
+    public static class TissueSample {
+        private final Map<String, TissueComponent> components;
+        private final Map<String, Double> volumeFractions;
+
+        public TissueSample(Map<String, TissueComponent> components,
+                          Map<String, Double> volumeFractions) {
+            this.components = new HashMap<>(components);
+            this.volumeFractions = new HashMap<>(volumeFractions);
+        }
+
+        public Map<String, TissueComponent> getComponents() {
+            return new HashMap<>(components);
+        }
+
+        public Map<String, Double> getVolumeFractions() {
+            return new HashMap<>(volumeFractions);
+        }
+    }
+
+    private final TissueSample tissue;
+    private final Map<String, double[]> experimentalData;
+
+    public TissueMechanicsAnalyzer(TissueSample tissue) {
+        this.tissue = tissue;
+        this.experimentalData = new HashMap<>();
+    }
+
+    /**
+     * Add experimental measurement data.
+     */
+    public void addExperimentalData(String measurementType, double[] data) {
+        experimentalData.put(measurementType, data.clone());
+    }
+
+    /**
+     * Predict tissue stiffness from component properties.
+     */
+    public double predictTissueStiffness(double strainRate) {
+        double totalStiffness = 0.0;
+
+        for (Map.Entry<String, TissueComponent> entry : tissue.getComponents().entrySet()) {
+            String componentName = entry.getKey();
+            TissueComponent component = entry.getValue();
+            double volumeFraction = tissue.getVolumeFractions().get(componentName);
+
+            // Component contribution to total stiffness
+            double componentStiffness = component.getModulus() * volumeFraction;
+
+            // Add viscous effects
+            if (strainRate > 0) {
+                double viscousCorrection = component.getViscosity() * strainRate;
+                componentStiffness += viscousCorrection;
+            }
+
+            totalStiffness += componentStiffness;
+        }
+
+        return totalStiffness;
+    }
+
+    /**
+     * Inverse analysis: extract component stiffness from tissue measurements.
+     */
+    public Map<String, Double> extractComponentStiffnesses(
+            double[] measuredStiffnesses, double[] strainRates) {
+
+        Map<String, Double> extractedStiffnesses = new HashMap<>();
+
+        // Get component names
+        List<String> componentNames = new ArrayList<>(tissue.getComponents().keySet());
+
+        // Assume we know all but one component's properties
+        // This is the inverse problem
+        String unknownComponent = componentNames.get(componentNames.size() - 1);
+        Set<String> knownComponents = new HashSet<>(componentNames);
+        knownComponents.remove(unknownComponent);
+
+        // Optimization to find unknown component stiffness
+        double[] initialGuess = {1000.0}; // Initial guess for unknown stiffness [Pa]
+
+        // Simple optimization (in practice, use more sophisticated methods)
+        double bestStiffness = 0.0;
+        double bestError = Double.MAX_VALUE;
+
+        for (double testStiffness = 100.0; testStiffness <= 10000.0; testStiffness += 100.0) {
+            double error = computePredictionError(testStiffness, unknownComponent,
+                                                measuredStiffnesses, strainRates,
+                                                knownComponents);
+
+            if (error < bestError) {
+                bestError = error;
+                bestStiffness = testStiffness;
+            }
+        }
+
+        extractedStiffnesses.put(unknownComponent, bestStiffness);
+        return extractedStiffnesses;
+    }
+
+    private double computePredictionError(double unknownStiffness, String unknownComponent,
+                                        double[] measuredStiffnesses, double[] strainRates,
+                                        Set<String> knownComponents) {
+
+        double totalError = 0.0;
+
+        for (int i = 0; i < measuredStiffnesses.length; i++) {
+            double strainRate = strainRates[i];
+            double measuredStiffness = measuredStiffnesses[i];
+
+            // Predict stiffness with test value for unknown component
+            double predictedStiffness = 0.0;
+
+            for (Map.Entry<String, TissueComponent> entry : tissue.getComponents().entrySet()) {
+                String componentName = entry.getKey();
+                TissueComponent component = entry.getValue();
+                double volumeFraction = tissue.getVolumeFractions().get(componentName);
+
+                double componentStiffness;
+                if (componentName.equals(unknownComponent)) {
+                    componentStiffness = unknownStiffness * volumeFraction;
+                } else {
+                    componentStiffness = component.getModulus() * volumeFraction;
+                }
+
+                // Add viscous effects
+                if (strainRate > 0) {
+                    double viscousCorrection = component.getViscosity() * strainRate;
+                    componentStiffness += viscousCorrection;
+                }
+
+                predictedStiffness += componentStiffness;
+            }
+
+            double error = measuredStiffness - predictedStiffness;
+            totalError += error * error;
+        }
+
+        return totalError;
+    }
+
+    /**
+     * Analyze tissue anisotropy from experimental data.
+     */
+    public Map<String, Double> analyzeAnisotropy(double[] stresses, double[] strains,
+                                               double[] orientations) {
+
+        Map<String, Double> anisotropyResults = new HashMap<>();
+
+        // This would implement more sophisticated anisotropy analysis
+        // For now, return simplified results
+
+        anisotropyResults.put("maxStiffness", Arrays.stream(stresses).max().orElse(0.0));
+        anisotropyResults.put("minStiffness", Arrays.stream(stresses).min().orElse(0.0));
+        anisotropyResults.put("anisotropyRatio", 1.5); // Placeholder
+
+        return anisotropyResults;
+    }
+}
+```
+
+## Drug Delivery System Analysis
+
+### Python Implementation for Multi-Drug Systems
+
+```python
+import numpy as np
+from typing import Dict, List, Tuple, Optional
+from dataclasses import dataclass
+from scipy.optimize import minimize
+
+@dataclass
+class DrugComponent:
+    """Individual drug component properties."""
+    name: str
+    molecular_weight: float  # g/mol
+    solubility: float        # mg/mL
+    diffusion_coefficient: float  # cm²/s
+    partition_coefficient: float  # log P
+    release_parameters: Dict[str, float]  # Release kinetics
+
+    def release_rate(self, time: float, concentration: float) -> float:
+        """Compute drug release rate."""
+        # Simplified release kinetics
+        k_release = self.release_parameters.get('k_release', 0.1)
+        return k_release * concentration * np.exp(-time * k_release)
+
+@dataclass
+class DrugDeliverySystem:
+    """Multi-drug delivery system."""
+    components: Dict[str, DrugComponent]
+    compositions: Dict[str, float]  # Weight fractions
+    matrix_properties: Dict[str, float]  # Delivery matrix properties
+
+    def validate_system(self) -> bool:
+        """Validate drug delivery system."""
+        total_composition = sum(self.compositions.values())
+        return abs(total_composition - 1.0) < 1e-6
+
+class DrugReleaseAnalyzer:
+    """
+    Advanced drug release analyzer using inverse methods.
+
+    Extracts individual drug release profiles from multi-drug delivery systems.
+    """
+
+    def __init__(self, delivery_system: DrugDeliverySystem):
+        """
+        Initialize analyzer.
+
+        Args:
+            delivery_system: Drug delivery system specification
+        """
+        if not delivery_system.validate_system():
+            raise ValueError("Drug compositions must sum to 1.0")
+
+        self.delivery_system = delivery_system
+
+    def predict_total_release(self, time_points: np.ndarray,
+                            initial_concentrations: Dict[str, float]) -> np.ndarray:
+        """
+        Predict total drug release from the system.
+
+        Args:
+            time_points: Time points [s]
+            initial_concentrations: Initial drug concentrations
+
+        Returns:
+            Total release profile
+        """
+        total_release = np.zeros_like(time_points)
+
+        for component_name, component in self.delivery_system.components.items():
+            if component_name in initial_concentrations:
+                concentration = initial_concentrations[component_name]
+
+                # Compute release profile for this component
+                release_profile = np.array([
+                    component.release_rate(t, concentration)
+                    for t in time_points
+                ])
+
+                total_release += release_profile
+
+        return total_release
+
+    def inverse_extract_drug_profile(self, measured_release: np.ndarray,
+                                   time_points: np.ndarray,
+                                   known_drugs: Dict[str, float]) -> Dict[str, float]:
+        """
+        Extract unknown drug release parameters from total measurements.
+
+        Args:
+            measured_release: Measured total release profile
+            time_points: Time points
+            known_drugs: Known drug concentrations
+
+        Returns:
+            Extracted drug parameters
+        """
+        extracted_parameters = {}
+
+        # Get unknown drugs
+        all_drugs = set(self.delivery_system.components.keys())
+        known_drug_names = set(known_drugs.keys())
+        unknown_drugs = all_drugs - known_drug_names
+
+        if len(unknown_drugs) != 1:
+            raise ValueError("Currently supports extracting one unknown drug")
+
+        unknown_drug = list(unknown_drugs)[0]
+
+        def objective_function(params):
+            """Objective function for parameter extraction."""
+            k_release = params[0]
+
+            # Create modified component with extracted parameter
+            original_component = self.delivery_system.components[unknown_drug]
+            modified_release_params = dict(original_component.release_parameters)
+            modified_release_params['k_release'] = k_release
+
+            modified_component = DrugComponent(
+                name=original_component.name,
+                molecular_weight=original_component.molecular_weight,
+                solubility=original_component.solubility,
+                diffusion_coefficient=original_component.diffusion_coefficient,
+                partition_coefficient=original_component.partition_coefficient,
+                release_parameters=modified_release_params
+            )
+
+            # Create temporary system with modified component
+            temp_components = dict(self.delivery_system.components)
+            temp_components[unknown_drug] = modified_component
+
+            # Add unknown drug to known concentrations with estimated value
+            test_concentrations = dict(known_drugs)
+            test_concentrations[unknown_drug] = 1.0 - sum(known_drugs.values())
+
+            temp_system = DrugDeliverySystem(temp_components, test_concentrations,
+                                           self.delivery_system.matrix_properties)
+
+            temp_analyzer = DrugReleaseAnalyzer(temp_system)
+            predicted_release = temp_analyzer.predict_total_release(time_points, test_concentrations)
+
+            # Compute residual
+            residual = measured_release - predicted_release
+            return np.sum(residual**2)
+
+        # Initial guess for release rate
+        initial_guess = [0.1]  # 1/s
+
+        # Optimize
+        result = minimize(objective_function, initial_guess, bounds=[(0.001, 10.0)],
+                         method='L-BFGS-B')
+
+        if result.success:
+            extracted_parameters[unknown_drug] = result.x[0]
+        else:
+            warnings.warn(f"Parameter extraction failed for {unknown_drug}: {result.message}")
+
+        return extracted_parameters
+
+    def optimize_drug_ratios(self, target_release_profile: np.ndarray,
+                           time_points: np.ndarray,
+                           constraints: Dict[str, Tuple[float, float]]) -> Dict[str, float]:
+        """
+        Optimize drug ratios for desired release profile.
+
+        Args:
+            target_release_profile: Desired release profile
+            time_points: Time points
+            constraints: Drug concentration bounds
+
+        Returns:
+            Optimized drug ratios
+        """
+        def objective_function(ratios):
+            """Objective function for ratio optimization."""
+            # Convert to concentrations
+            ratio_dict = dict(zip(self.delivery_system.components.keys(), ratios))
+
+            # Normalize
+            total = sum(ratio_dict.values())
+            concentrations = {k: v/total for k, v in ratio_dict.items()}
+
+            # Compute release profile
+            predicted_release = self.predict_total_release(time_points, concentrations)
+
+            # Compute difference from target
+            error = np.sum((target_release_profile - predicted_release)**2)
+
+            return error
+
+        # Initial guess (equal ratios)
+        n_drugs = len(self.delivery_system.components)
+        initial_guess = np.ones(n_drugs) / n_drugs
+
+        # Bounds
+        bounds = []
+        drug_names = list(self.delivery_system.components.keys())
+        for name in drug_names:
+            if name in constraints:
+                bounds.append(constraints[name])
+            else:
+                bounds.append((0.0, 1.0))
+
+        # Optimize
+        result = minimize(objective_function, initial_guess, bounds=bounds,
+                         method='L-BFGS-B')
+
+        if result.success:
+            optimized_ratios = dict(zip(drug_names, result.x))
+            # Normalize
+            total = sum(optimized_ratios.values())
+            optimized_ratios = {k: v/total for k, v in optimized_ratios.items()}
+
+            return optimized_ratios
+        else:
+            raise RuntimeError(f"Optimization failed: {result.message}")
+
+    def analyze_drug_interactions(self, experimental_data: Dict[str, np.ndarray]) -> Dict[str, float]:
+        """
+        Analyze drug-drug interactions from release data.
+
+        Args:
+            experimental_data: Experimental release measurements
+
+        Returns:
+            Interaction analysis results
+        """
+        interaction_results = {}
+
+        if 'release_profiles' in experimental_data and 'time_points' in experimental_data:
+            measured_profiles = experimental_data['release_profiles']
+            time_points = experimental_data['time_points']
+
+            # Compare individual drug release vs combined
+            # This is a simplified analysis - full implementation would be more complex
+
+            synergy_factor = 1.0  # Placeholder for synergy/antagonism analysis
+            interaction_results['synergy_factor'] = synergy_factor
+
+            # Compute release consistency
+            if len(measured_profiles.shape) > 1:
+                consistency = np.mean(np.std(measured_profiles, axis=0))
+                interaction_results['release_consistency'] = consistency
+
+        return interaction_results
+```
+
+## Implementation Best Practices
+
+### 1. Physical Validation
+```python
+def validate_physical_parameters(component_properties: Dict[str, float]) -> List[str]:
+    """
+    Validate component properties against physical reality.
+
+    Args:
+        component_properties: Dictionary of component properties
+
+    Returns:
+        List of validation warnings/errors
+    """
+    warnings = []
+
+    # Check viscosity ranges
+    if 'viscosity' in component_properties:
+        viscosity = component_properties['viscosity']
+        if viscosity <= 0:
+            warnings.append("Viscosity must be positive")
+        elif viscosity > 1e6:
+            warnings.append("Viscosity seems unrealistically high")
+
+    # Check elastic modulus ranges
+    if 'elastic_modulus' in component_properties:
+        modulus = component_properties['elastic_modulus']
+        if modulus <= 0:
+            warnings.append("Elastic modulus must be positive")
+        elif modulus > 1e12:
+            warnings.append("Elastic modulus seems unrealistically high")
+
+    # Check relaxation times
+    if 'relaxation_time' in component_properties:
+        tau = component_properties['relaxation_time']
+        if tau <= 0:
+            warnings.append("Relaxation time must be positive")
+        elif tau > 1e6:
+            warnings.append("Relaxation time seems unrealistically long")
+
+    return warnings
+```
+
+### 2. Numerical Stability
+```python
+def ensure_numerical_stability(data: np.ndarray, parameters: Dict[str, float]) -> np.ndarray:
+    """
+    Ensure numerical stability of computations.
+
+    Args:
+        data: Input data array
+        parameters: Computation parameters
+
+    Returns:
+        Stabilized data array
+    """
+    # Remove extreme outliers
+    data_median = np.median(data)
+    data_mad = np.median(np.abs(data - data_median))
+
+    # Define reasonable bounds (e.g., within 10 MAD from median)
+    lower_bound = data_median - 10 * data_mad
+    upper_bound = data_median + 10 * data_mad
+
+    stabilized_data = np.clip(data, lower_bound, upper_bound)
+
+    # Check for numerical issues
+    if np.any(~np.isfinite(stabilized_data)):
+        warnings.warn("Data contains non-finite values after stabilization")
+        stabilized_data = np.nan_to_num(stabilized_data, nan=data_median)
+
+    return stabilized_data
+```
+
+### 3. Experimental Data Integration
+```python
+def integrate_experimental_data(analyzer, experimental_datasets: List[Dict]) -> Dict[str, Any]:
+    """
+    Integrate multiple experimental datasets for comprehensive analysis.
+
+    Args:
+        analyzer: Analysis object (PolymerRheologyAnalyzer, etc.)
+        experimental_datasets: List of experimental data dictionaries
+
+    Returns:
+        Comprehensive analysis results
+    """
+    integrated_results = {
+        'component_contributions': {},
+        'interaction_effects': {},
+        'validation_metrics': {},
+        'recommendations': []
+    }
+
+    for dataset in experimental_datasets:
+        dataset_type = dataset.get('type', 'unknown')
+
+        if dataset_type == 'rheology':
+            # Analyze rheological data
+            component_viscosities = analyzer.inverse_extract_component_viscosity(
+                dataset['viscosities'], dataset['shear_rates'], dataset['temperature'],
+                dataset.get('known_components', {})
+            )
+            integrated_results['component_contributions'].update(component_viscosities)
+
+        elif dataset_type == 'mechanical':
+            # Analyze mechanical data
+            component_stiffnesses = analyzer.extract_component_stiffnesses(
+                dataset['stiffnesses'], dataset['frequencies']
+            )
+            integrated_results['component_contributions'].update(component_stiffnesses)
+
+        elif dataset_type == 'release':
+            # Analyze release data
+            drug_parameters = analyzer.inverse_extract_drug_profile(
+                dataset['release_profile'], dataset['time_points'],
+                dataset.get('known_drugs', {})
+            )
+            integrated_results['component_contributions'].update(drug_parameters)
+
+    # Analyze interactions
+    interaction_analysis = analyzer.analyze_interactions(experimental_datasets)
+    integrated_results['interaction_effects'] = interaction_analysis
+
+    # Generate validation metrics
+    integrated_results['validation_metrics'] = {
+        'r_squared': interaction_analysis.get('r_squared', 0.0),
+        'mse': interaction_analysis.get('mse', float('inf')),
+        'data_points': len(experimental_datasets)
+    }
+
+    # Generate recommendations
+    if integrated_results['validation_metrics']['r_squared'] < 0.8:
+        integrated_results['recommendations'].append(
+            "Consider more sophisticated interaction models"
+        )
+
+    return integrated_results
+```
+
+## Testing Standards
+
+### Comprehensive Validation Tests
+```python
+class TestComplexFluidsAnalysis(unittest.TestCase):
+    """Comprehensive test suite for complex fluids analysis."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        # Create test polymer components
+        self.polyethylene = PolymerComponent(
+            name="Polyethylene",
+            molecular_weight=100000,
+            glass_transition_temp=150,
+            viscosity_parameters={'tau_y': 0.0, 'K': 1000.0, 'n': 1.0},
+            elastic_modulus=1e9,
+            relaxation_time=10.0
+        )
+
+        self.polystyrene = PolymerComponent(
+            name="Polystyrene",
+            molecular_weight=150000,
+            glass_transition_temp=373,
+            viscosity_parameters={'tau_y': 0.0, 'K': 2000.0, 'n': 0.8},
+            elastic_modulus=2e9,
+            relaxation_time=5.0
+        )
+
+        # Create blend
+        self.blend = PolymerBlend(
+            components={'PE': self.polyethylene, 'PS': self.polystyrene},
+            compositions={'PE': 0.6, 'PS': 0.4}
+        )
+
+        self.analyzer = PolymerRheologyAnalyzer(self.blend)
+
+    def test_blend_viscosity_prediction(self):
+        """Test blend viscosity prediction."""
+        shear_rate = 1.0
+        temperature = 298.15
+
+        viscosity = self.analyzer.predict_blend_viscosity(shear_rate, temperature)
+
+        # Should be weighted average
+        expected_viscosity = (0.6 * self.polyethylene.viscosity_model(shear_rate, temperature) +
+                            0.4 * self.polystyrene.viscosity_model(shear_rate, temperature))
+
+        self.assertAlmostEqual(viscosity, expected_viscosity, places=6)
+
+    def test_component_extraction(self):
+        """Test component property extraction."""
+        # Generate synthetic experimental data
+        shear_rates = np.array([0.1, 1.0, 10.0, 100.0])
+        temperature = 298.15
+
+        # Known component concentrations
+        known_components = {'PE': 0.6}
+
+        # Generate measured viscosities (with noise)
+        measured_viscosities = np.array([
+            self.analyzer.predict_blend_viscosity(gamma_dot, temperature)
+            for gamma_dot in shear_rates
+        ])
+        measured_viscosities *= np.random.normal(1.0, 0.05, len(measured_viscosities))
+
+        # Extract unknown component viscosity
+        extracted = self.analyzer.inverse_extract_component_viscosity(
+            measured_viscosities, shear_rates, temperature, known_components
+        )
+
+        # Check that extraction is reasonable
+        extracted_viscosity = extracted.get('PS', 0.0)
+        true_viscosity = self.polystyrene.viscosity_model(1.0, temperature)
+
+        self.assertGreater(extracted_viscosity, 0.5 * true_viscosity)
+        self.assertLess(extracted_viscosity, 2.0 * true_viscosity)
+
+    def test_interaction_analysis(self):
+        """Test interaction analysis."""
+        experimental_data = {
+            'viscosities': np.array([1000.0, 1200.0, 1500.0]),
+            'shear_rates': np.array([1.0, 10.0, 100.0]),
+            'temperature': 298.15
+        }
+
+        interaction_results = self.analyzer.analyze_interactions(experimental_data)
+
+        # Should return some metrics
+        self.assertIsInstance(interaction_results, dict)
+        self.assertIn('mse', interaction_results)
+
+    def test_composition_optimization(self):
+        """Test blend composition optimization."""
+        target_properties = {'viscosity': 1500.0}
+        constraints = {'PE': (0.3, 0.8), 'PS': (0.2, 0.7)}
+
+        optimized_composition = self.analyzer.optimize_blend_composition(
+            target_properties, constraints
+        )
+
+        # Check that constraints are satisfied
+        pe_composition = optimized_composition['PE']
+        ps_composition = optimized_composition['PS']
+
+        self.assertGreaterEqual(pe_composition, 0.3)
+        self.assertLessEqual(pe_composition, 0.8)
+        self.assertGreaterEqual(ps_composition, 0.2)
+        self.assertLessEqual(ps_composition, 0.7)
+
+        # Check that compositions sum to 1
+        total = pe_composition + ps_composition
+        self.assertAlmostEqual(total, 1.0, places=3)
+
+    def test_numerical_stability(self):
+        """Test numerical stability with extreme values."""
+        extreme_shear_rates = np.array([1e-6, 1e-3, 1e3, 1e6])
+        temperature = 298.15
+
+        # Should not crash or produce invalid results
+        for gamma_dot in extreme_shear_rates:
+            viscosity = self.analyzer.predict_blend_viscosity(gamma_dot, temperature)
+            self.assertTrue(np.isfinite(viscosity))
+            self.assertGreater(viscosity, 0)
+
+    def test_temperature_dependence(self):
+        """Test temperature-dependent behavior."""
+        shear_rate = 1.0
+        temperatures = [273.15, 298.15, 373.15]
+
+        viscosities = []
+        for temp in temperatures:
+            viscosity = self.analyzer.predict_blend_viscosity(shear_rate, temp)
+            viscosities.append(viscosity)
+
+        # Viscosity should decrease with temperature (Arrhenius behavior)
+        self.assertGreater(viscosities[0], viscosities[1])  # 0°C > 25°C
+        self.assertGreater(viscosities[1], viscosities[2])  # 25°C > 100°C
+```
+
+## Documentation Standards
+
+### Research Paper Template
+```python
+"""
+Complex Fluids Analysis Framework
+
+This module implements advanced inverse analysis techniques for complex fluid systems,
+building on the mathematical foundation developed for news aggregation systems.
+
+Mathematical Framework:
+    The analysis follows the same inverse problem formulation:
+    Measured_Property = ∑(c_i × Component_Property_i)
+
+    Where:
+    - Measured_Property: Experimental measurement (viscosity, stiffness, release rate)
+    - c_i: Component concentration/weighting factor
+    - Component_Property_i: Individual component contribution
+
+Applications:
+    1. Polymer Blend Analysis: Extract individual polymer contributions from blend measurements
+    2. Biological Tissue Mechanics: Decompose tissue properties into component behaviors
+    3. Drug Delivery Systems: Analyze multi-drug release profiles
+    4. Emulsion Stability: Extract surfactant contributions to emulsion properties
+
+Key Features:
+    - Inverse problem solving using non-linear optimization
+    - Component interaction analysis
+    - Temperature-dependent property modeling
+    - Experimental data fitting and validation
+    - Multi-scale analysis capabilities
+
+Implementation Details:
+    - Uses scipy.optimize for inverse problem solution
+    - Implements robust error handling and validation
+    - Supports vectorized operations for performance
+    - Includes comprehensive testing and validation
+
+Author: [Research Team]
+Date: [Current Date]
+Version: 1.0
+License: [License]
+"""
+```
+
+## Best Practices
+
+### 1. Physical Consistency
+- Always validate parameter ranges against physical reality
+- Check conservation laws (mass, momentum, energy)
+- Validate against known analytical solutions
+- Document all assumptions and approximations
+
+### 2. Experimental Validation
+- Compare against published experimental data
+- Validate across multiple loading conditions
+- Document validation metrics and uncertainty
+- Provide clear criteria for acceptable accuracy
+
+### 3. Scalability Considerations
+- Use vectorized operations for large datasets
+- Implement memory-efficient algorithms
+- Consider parallel processing for computationally intensive tasks
+- Profile and optimize critical sections
+
+### 4. Interdisciplinary Communication
+- Use consistent terminology across domains
+- Provide clear documentation of mathematical analogies
+- Include domain-specific examples and validation
+- Be transparent about model limitations and assumptions
+
+These standards ensure that complex fluids analysis implementations are scientifically accurate, computationally efficient, and suitable for real-world engineering and research applications. The mathematical connection to our news aggregation framework demonstrates the powerful universality of inverse problem-solving techniques across diverse domains. 🚀

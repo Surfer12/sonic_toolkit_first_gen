@@ -1,0 +1,19 @@
+=== K-S Validation Summary ===
+
+Total Validations: 3
+Valid Results: 1 (33.3%)
+Average Confidence: 50.0%
+Average Similarity: 47.4%
+
+=== Detailed Results ===
+Run 1: KS Validation: D=0.3298, p=0.0373, Valid=false, Confidence=50.00%, Similarity=45.67%
+Run 2: KS Validation: D=0.2928, p=0.0890, Valid=true, Confidence=50.00%, Similarity=50.79%
+Run 3: KS Validation: D=0.3298, p=0.0373, Valid=false, Confidence=50.00%, Similarity=45.67%
+
+=== Recommendations ===
+- Low validation rate: Review testing methodology
+- Consider using different testing parameters
+- Low confidence: Increase sample sizes
+- Consider more comprehensive test coverage
+- Low similarity: Results may be inconsistent
+- Standardize testing procedures

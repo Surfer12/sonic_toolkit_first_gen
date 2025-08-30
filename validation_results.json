@@ -1,0 +1,36 @@
+{
+  "suite_info": {
+    "name": "Scientific Computing Toolkit Validation",
+    "timestamp": "2025-08-26T13:53:53",
+    "overall_score": 100.0
+  },
+  "results": [
+    {
+      "model_name": "Herschel-Bulkley",
+      "metric_name": "Viscosity Curve Fit",
+      "r_squared": 0.9999569297583817,
+      "rmse": 0.25509532806648627,
+      "mae": 0.2006381880628573,
+      "validation_status": "PASS"
+    },
+    {
+      "model_name": "Inverse Precision Framework",
+      "metric_name": "Parameter Recovery Accuracy",
+      "r_squared": 0.994314938805337,
+      "rmse": 0.04789605180385439,
+      "mae": 0.031446220584613105,
+      "validation_status": "PASS"
+    },
+    {
+      "model_name": "Thixotropic Evolution",
+      "metric_name": "Structure Parameter Evolution",
+      "r_squared": 1.0,
+      "rmse": 0.0,
+      "mae": 0.0,
+      "validation_status": "PASS"
+    }
+  ],
+  "recommendations": [
+    "Excellent validation performance - toolkit ready for research use"
+  ]
+}

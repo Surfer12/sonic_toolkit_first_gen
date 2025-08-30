@@ -1,0 +1,152 @@
+version: '3.8'
+
+services:
+  # Main Java application with reverse koopman penetration testing
+  reverse-koopman-pentest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reverse-koopman-pentest
+    volumes:
+      - .:/app
+      - ./reports:/app/reports
+      - ./logs:/app/logs
+      - ./data:/app/data
+    working_dir: /app
+    environment:
+      - JAVA_HOME=/usr/local/openjdk-21
+      - PATH=/usr/local/openjdk-21/bin:$PATH
+      - CONTAINER_WORKSPACE=/app
+    command: tail -f /dev/null  # Keep container running
+    networks:
+      - pentest-network
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "java", "-version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL database for testing SQL injection scenarios
+  postgres:
+    image: postgres:15-alpine
+    container_name: pentest-postgres
+    environment:
+      POSTGRES_DB: pentest_db
+      POSTGRES_USER: pentest_user
+      POSTGRES_PASSWORD: pentest_password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - pentest-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pentest_user -d pentest_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for testing caching and session management
+  redis:
+    image: redis:7-alpine
+    container_name: pentest-redis
+    command: redis-server --requirepass pentest_redis_password --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - pentest-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Mock GPTOSS API server for testing AI model security
+  mock-gptoss:
+    build:
+      context: ./mock-gptoss
+      dockerfile: Dockerfile
+    container_name: mock-gptoss-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MOCK_MODE=realistic
+      - VULNERABILITY_LEVEL=medium
+    networks:
+      - pentest-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ELK Stack for logging and monitoring (optional)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: pentest-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - pentest-network
+    profiles:
+      - monitoring
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: pentest-logstash
+    volumes:
+      - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - "5044:5044"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - pentest-network
+    profiles:
+      - monitoring
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: pentest-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - pentest-network
+    profiles:
+      - monitoring
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+networks:
+  pentest-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1

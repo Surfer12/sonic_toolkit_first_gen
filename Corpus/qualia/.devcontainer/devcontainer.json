@@ -1,0 +1,146 @@
+{
+  "name": "Reverse Koopman Penetration Testing - Java",
+  "dockerFile": "../Dockerfile",
+  "context": "..",
+
+  // Configure tool-specific properties
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Java development
+        "redhat.java",
+        "vscjava.vscode-java-debug",
+        "vscjava.vscode-java-test",
+        "vscjava.vscode-maven",
+        "vscjava.vscode-gradle",
+
+        // Security and penetration testing
+        "ms-vscode.vscode-json",
+        "ms-vscode-remote.remote-containers",
+
+        // Code quality and analysis
+        "ms-vscode.vscode-lsp",
+        "ms-python.python",
+        "ms-python.black-formatter",
+
+        // Docker and container tools
+        "ms-azuretools.vscode-docker",
+        "ms-vscode-remote.remote-containers",
+
+        // Documentation and markdown
+        "ms-vscode.vscode-markdown",
+        "ms-vscode.vscode-latex",
+
+        // Git and version control
+        "ms-vscode.vscode-git-graph",
+        "ms-vscode.vscode-pull-request-github",
+
+        // Terminal and development tools
+        "ms-vscode.vscode-terminal-here",
+        "ms-vscode.vscode-remote-explorer"
+      ],
+
+      "settings": {
+        // Java settings
+        "java.home": "/usr/local/openjdk-21",
+        "java.configuration.updateBuildConfiguration": "automatic",
+        "java.format.enabled": true,
+        "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
+        "java.format.settings.profile": "GoogleStyle",
+
+        // Editor settings
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": true,
+          "source.fixAll": true
+        },
+
+        // Terminal settings
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "terminal.integrated.defaultProfile.linux": "bash",
+
+        // File associations
+        "files.associations": {
+          "*.java": "java",
+          "*.md": "markdown",
+          "*.txt": "plaintext",
+          "*.json": "json",
+          "Dockerfile*": "dockerfile"
+        },
+
+        // Security and analysis settings
+        "security.workspace.trust.enabled": false,
+        "git.enableSmartCommit": true,
+        "git.autofetch": true,
+
+        // Python settings for any Python components
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        "python.formatting.provider": "black",
+        "python.linting.enabled": true,
+
+        // Exclude common directories from search
+        "search.exclude": {
+          "**/node_modules": true,
+          "**/.git": true,
+          "**/out": true,
+          "**/reports": true,
+          "**/logs": true,
+          "**/data": true,
+          "**/.DS_Store": true
+        }
+      }
+    }
+  },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [8080, 8443, 5432, 6379],
+
+  // Configure tool-specific properties for different tools
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installMaven": true,
+      "installGradle": true
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11",
+      "installTools": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:1": {
+      "version": "latest"
+    }
+  },
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": [
+    "echo 'Setting up Reverse Koopman Penetration Testing Framework...'",
+    "mkdir -p /app/out /app/reports /app/logs /app/data",
+    "echo 'Compiling Java framework...'",
+    "cd /app && javac -d out *.java 2>/dev/null || echo 'Compilation will be done manually'",
+    "echo 'Framework ready! Use the following commands:'",
+    "echo '  • Compile: javac -d out *.java'",
+    "echo '  • Run Demo: java -cp out qualia.JavaPenetrationTestingDemo'",
+    "echo '  • Build: ./build.sh (if available)'",
+    "echo '  • Test: ./test.sh (if available)'"
+  ],
+
+  // Configure tool-specific properties.
+  "remoteUser": "appuser",
+
+  // Mount the workspace
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached"
+  ],
+
+  // Environment variables
+  "containerEnv": {
+    "JAVA_HOME": "/usr/local/openjdk-21",
+    "PATH": "/usr/local/openjdk-21/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "MAVEN_HOME": "/usr/share/maven",
+    "GRADLE_HOME": "/usr/share/gradle",
+    "CONTAINER_WORKSPACE": "/app"
+  }
+}

@@ -1,0 +1,142 @@
+[workspace]
+authors = ["Ryan Oates <ryanoatsie@outlook.com>"]
+channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
+name = "archive08262025202ampstRDOHomeMax"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+# Scientific Computing Toolkit Tasks
+
+# Environment Setup
+setup = "pip install -r scientific-computing-tools/requirements.txt"
+install-deps = "pip install numpy scipy matplotlib pytest"
+
+# Rheological Framework Demonstrations
+hb-demo = "cd scientific-computing-tools && python3 hb_demo.py"
+viscoelastic-demo = "cd scientific-computing-tools && python3 advanced_rheology_demo.py"
+complex-fluids-demo = "cd scientific-computing-tools && python3 complex_fluids_demo.py"
+thixotropic-demo = "cd scientific-computing-tools && python3 thixotropic_integration_demo.py"
+
+# Precision Framework
+precision-demo = "cd scientific-computing-tools && python3 inverse_precision_framework.py"
+
+# Prime Interaction Space
+prime-demo = "cd scientific-computing-tools && python3 prime_interaction_space.py"
+
+# Complete Analysis Suite
+full-analysis = """
+cd scientific-computing-tools && \
+python3 hb_demo.py && \
+python3 advanced_rheology_demo.py && \
+python3 complex_fluids_demo.py && \
+python3 thixotropic_integration_demo.py && \
+python3 inverse_precision_framework.py && \
+python3 prime_interaction_space.py
+"""
+
+# Testing and Validation
+test-hb = "cd scientific-computing-tools && python3 -m pytest test_herschel_bulkley.py -v"
+run-tests = "cd scientific-computing-tools && python3 -m pytest tests/ -v"
+
+# Visualization Gallery
+gallery = "cd scientific-computing-tools && python3 image_gallery.py"
+visualize = "cd scientific-computing-tools && python3 advanced_rheology_demo.py && python3 complex_fluids_demo.py"
+
+# Cloud Infrastructure
+cloudfront-demo = "cd scientific-computing-tools && python3 demo_cloudfront_proxy.py"
+
+# News Analysis
+news-demo = "cd scientific-computing-tools && python3 latest_news_theory_and_proof_copy_implementation.py"
+
+# Complete Workflow
+complete-workflow = """
+cd scientific-computing-tools && \
+pip install -r requirements.txt && \
+python3 hb_demo.py && \
+python3 advanced_rheology_demo.py && \
+python3 complex_fluids_demo.py && \
+python3 thixotropic_integration_demo.py && \
+python3 inverse_precision_framework.py && \
+python3 prime_interaction_space.py && \
+python3 image_gallery.py
+"""
+
+# Java & Gradle Development Tasks
+
+# Gradle Build System
+gradle-build = "gradle build"
+gradle-test = "gradle test"
+gradle-run = "gradle run"
+gradle-clean = "gradle clean"
+gradle-build-test = "gradle clean build test"
+
+# Java Development (Amazon Corretto 24)
+java-version = "java -version && javac -version"
+java-compile = "find . -name '*.java' -exec javac {} +"
+java-run = "java -cp ."
+
+# Scientific Computing Java Integration
+java-qualia-build = "cd Corpus/qualia && gradle build"
+java-qualia-test = "cd Corpus/qualia && gradle test"
+java-qualia-run = "cd Corpus/qualia && gradle run"
+java-qualia-demo = "cd Corpus/qualia && java -cp out-qualia:src Corpus/qualia/JavaPenetrationTestingDemo"
+
+# Corretto 24 Specific Tasks
+corretto-info = "java -version && echo 'Using Amazon Corretto 24'"
+corretto-compiler = "javac -version && echo 'Corretto 24 Compiler Ready'"
+
+# Complete Java Workflow
+java-workflow = """
+cd Corpus/qualia && \
+gradle clean build test && \
+java -cp out-qualia:src Corpus/qualia/JavaPenetrationTestingDemo
+"""
+
+# Multi-Language Integration
+full-stack-demo = """
+cd scientific-computing-tools && \
+echo "🔬 Python HB Demo:" && python3 hb_demo.py && \
+echo "🧬 Java Qualia Integration:" && cd ../Corpus/qualia && gradle build && java -cp out-qualia:src Corpus/qualia/JavaPenetrationTestingDemo && \
+echo "🌐 CloudFront Demo:" && cd ../scientific-computing-tools && python3 demo_cloudfront_proxy.py
+"""
+
+# Development Environment
+dev-setup = """
+pip install -r scientific-computing-tools/requirements.txt && \
+gradle --version && \
+echo "🔧 Java Environment:" && \
+java -version && \
+echo "📦 Java Compiler:" && \
+javac -version && \
+echo "🐍 Python Version:" && \
+python3 --version && \
+echo "✅ Amazon Corretto 24 Ready for Development!"
+"""
+
+# Code Quality & Testing
+code-quality = """
+cd scientific-computing-tools && \
+python3 -m pytest tests/ -v && \
+cd ../Corpus/qualia && \
+gradle test && \
+cd ../scientific-computing-tools && \
+python3 -m flake8 --version
+"""
+
+[dependencies]
+gradle = ">=9.0.0,<10"
+go = ">=1.24.6,<2"
+modular = ">=25.6.0.dev2025082605,<26"
+anthropic = ">=0.64.0,<0.65"
+openai = ">=1.101.0,<2"
+networkx = ">=3.5,<4"
+numpy = ">=1.24.0,<2"
+scipy = ">=1.11.0,<2"
+matplotlib = ">=3.7.0,<4"
+pytest = ">=7.0.0,<8"
+pandas = ">=2.0.0,<3"
+sympy = ">=1.12.0,<2"
+jupyter = ">=1.0.0,<2"
+# Using system-installed Amazon Corretto 24
+# openjdk = ">=21.0.0,<22"  # Commented out - using system Corretto 24

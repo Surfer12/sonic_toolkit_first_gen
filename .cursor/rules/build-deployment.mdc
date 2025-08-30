@@ -1,0 +1,526 @@
+---
+globs: *.sh,*.yml,*.yaml,Makefile,Dockerfile*
+description: "Build, deployment, and DevOps patterns for multi-language frameworks"
+---
+
+# 🔨 Build & Deployment Patterns
+
+## Multi-Language Build System
+
+### Core Build Script ([Corpus/qualia/build.sh](mdc:Corpus/qualia/build.sh))
+```bash
+#!/bin/bash
+
+# Comprehensive build system for all frameworks
+build_java() {
+    echo "🔨 Building Java Security Framework..."
+    cd Corpus/qualia
+
+    # Compile Java sources
+    javac -cp ".:lib/*" *.java
+
+    # Run tests
+    java -cp ".:lib/*" JavaPenetrationTestingDemo
+
+    # Package
+    jar cf security-framework.jar *.class
+}
+
+build_swift() {
+    echo "🔨 Building Swift Security Framework..."
+    cd "Farmer copy"
+
+    # Build Swift project
+    xcodebuild -project Farmer.xcodeproj -scheme Farmer -configuration Release build
+}
+
+build_visualization() {
+    echo "🔨 Building Visualization Components..."
+    cd Corpus/qualia
+
+    # Python dependencies
+    pip install matplotlib seaborn plotly numpy
+
+    # Test visualizations
+    python demo_visualizations.py
+}
+
+run_tests() {
+    echo "🧪 Running Test Suite..."
+
+    # Java tests
+    build_java
+
+    # Python tests
+    python latest_news_theory_and_proof_copy_implementation.py
+
+    # Swift tests (if available)
+    # xcodebuild test -project Farmer.xcodeproj
+}
+
+clean() {
+    echo "🧹 Cleaning build artifacts..."
+
+    # Java cleanup
+    rm -f Corpus/qualia/*.class
+    rm -f Corpus/qualia/*.jar
+
+    # Python cleanup
+    rm -f *.pyc __pycache__/
+
+    # Swift cleanup
+    rm -rf "Farmer copy/build"
+}
+
+main() {
+    case "$1" in
+        java) build_java ;;
+        swift) build_swift ;;
+        viz) build_visualization ;;
+        test) run_tests ;;
+        clean) clean ;;
+        all) build_java && build_swift && build_visualization ;;
+        *) echo "Usage: $0 {java|swift|viz|test|clean|all}" ;;
+    esac
+}
+```
+
+## Docker Integration
+
+### Development Container ([Corpus/qualia/.devcontainer/](mdc:Corpus/qualia/.devcontainer/))
+```json
+// devcontainer.json
+{
+  "name": "Security Framework Development",
+  "dockerFile": "Dockerfile",
+  "context": "..",
+  "extensions": [
+    "ms-vscode.vscode-java-pack",
+    "ms-vscode.python",
+    "ms-python.black-formatter",
+    "ms-vscode.vscode-docker"
+  ],
+  "settings": {
+    "java.compile.nullAnalysis.mode": "automatic",
+    "python.formatting.provider": "black"
+  },
+  "forwardPorts": [8080, 3000, 5432],
+  "postCreateCommand": "./setup_environment.sh",
+  "remoteUser": "developer"
+}
+```
+
+```dockerfile
+# Dockerfile
+FROM openjdk:21-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl wget git \
+    python3 python3-pip python3-venv \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Copy source code
+COPY . .
+
+# Create non-root user
+RUN useradd -m developer && chown -R developer:developer /app
+USER developer
+
+# Set environment
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ENV PATH="$JAVA_HOME/bin:$PATH"
+
+# Default command
+CMD ["/bin/bash"]
+```
+
+### Docker Compose Multi-Service ([Corpus/qualia/docker-compose.yml](mdc:Corpus/qualia/docker-compose.yml))
+```yaml
+version: '3.8'
+
+services:
+  # Security framework main service
+  security-framework:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    volumes:
+      - ./outputs:/app/outputs
+      - ./reports:/app/reports
+
+  # Mock GPTOSS API for testing
+  mock-gptoss:
+    build: ./mock-gptoss
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=security_db
+      - POSTGRES_USER=security_user
+      - POSTGRES_PASSWORD=secure_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # ELK stack for logging (optional)
+  elasticsearch:
+    image: elasticsearch:8.11
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+
+  logstash:
+    image: logstash:8.11
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5044:5044"
+
+  kibana:
+    image: kibana:8.11
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: security-network
+```
+
+## Dev Container Features
+
+### Java Development Environment
+```json
+// .devcontainer/devcontainer.json
+{
+  "name": "Java Security Framework",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installGradle": true,
+      "installMaven": true
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11",
+      "installTools": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:1": {}
+  }
+}
+```
+
+### Development Workflow
+```bash
+# 1. Start development environment
+cd Corpus/qualia
+docker-compose up -d
+
+# 2. Attach to running container
+docker exec -it security-framework bash
+
+# 3. Run development tasks
+./build.sh java    # Build Java components
+./build.sh test    # Run test suite
+./build.sh viz     # Build visualizations
+
+# 4. Access services
+# - Security API: http://localhost:8080
+# - Mock GPTOSS: http://localhost:3000
+# - PostgreSQL: localhost:5432
+# - Redis: localhost:6379
+# - Kibana: http://localhost:5601
+```
+
+## Build Optimization
+
+### Parallel Building
+```bash
+#!/bin/bash
+
+# Parallel build script
+build_all() {
+    echo "🔨 Starting parallel build..."
+
+    # Build Java components in background
+    build_java &
+    JAVA_PID=$!
+
+    # Build Python components in background
+    build_python &
+    PYTHON_PID=$!
+
+    # Wait for all builds to complete
+    wait $JAVA_PID $PYTHON_PID
+
+    echo "✅ All builds completed!"
+}
+```
+
+### Incremental Builds
+```java
+// Java incremental compilation
+public class IncrementalBuilder {
+    private Set<String> changedFiles = new HashSet<>();
+    private Map<String, Long> fileTimestamps = new HashMap<>();
+
+    public void addChangedFile(String filename) {
+        changedFiles.add(filename);
+    }
+
+    public boolean needsRebuild(String sourceFile, String classFile) {
+        File source = new File(sourceFile);
+        File clazz = new File(classFile);
+
+        if (!clazz.exists()) {
+            return true; // Class file doesn't exist
+        }
+
+        return source.lastModified() > clazz.lastModified();
+    }
+
+    public void rebuildChangedFiles() {
+        for (String file : changedFiles) {
+            if (needsRebuild(file.replace(".java", ".class"))) {
+                compileFile(file);
+            }
+        }
+    }
+}
+```
+
+## Deployment Patterns
+
+### Staging Environment
+```yaml
+# staging-compose.yml
+version: '3.8'
+
+services:
+  security-staging:
+    image: security-framework:latest
+    environment:
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=DEBUG
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+```
+
+### Production Deployment
+```yaml
+# production-compose.yml
+version: '3.8'
+
+services:
+  security-prod:
+    image: security-framework:${TAG}
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+    deploy:
+      replicas: 5
+      update_config:
+        parallelism: 2
+        delay: 30s
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+## CI/CD Pipeline
+
+### GitHub Actions Workflow
+```yaml
+# .github/workflows/ci.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Cache Maven packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Build with Maven
+      run: mvn clean compile
+
+    - name: Run tests
+      run: mvn test
+
+    - name: Build Docker image
+      run: docker build -t security-framework:${{ github.sha }} .
+
+    - name: Run integration tests
+      run: docker-compose -f docker-compose.test.yml up --abort-on-container-exit
+
+  deploy-staging:
+    needs: test
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging..."
+        docker-compose -f docker-compose.staging.yml up -d
+
+  deploy-production:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production..."
+        docker-compose -f docker-compose.production.yml up -d
+```
+
+## Monitoring and Observability
+
+### Health Checks
+```java
+// Health check endpoint
+@RestController
+public class HealthController {
+
+    @GetMapping("/health")
+    public ResponseEntity<HealthStatus> health() {
+        HealthStatus status = new HealthStatus();
+
+        // Check database connectivity
+        status.setDatabase(checkDatabaseHealth());
+
+        // Check external services
+        status.setGptossService(checkGptossHealth());
+
+        // Check system resources
+        status.setResources(checkResourceHealth());
+
+        HttpStatus httpStatus = status.isHealthy() ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE;
+
+        return new ResponseEntity<>(status, httpStatus);
+    }
+}
+```
+
+### Metrics Collection
+```java
+// Metrics collection
+public class SecurityMetricsCollector {
+    private final MeterRegistry registry;
+
+    public SecurityMetricsCollector(MeterRegistry registry) {
+        this.registry = registry;
+    }
+
+    public void recordSecurityScan(String scanType, long duration, int findings) {
+        Timer.Sample sample = Timer.start(registry);
+        // ... scan logic ...
+        sample.stop(Timer.builder("security.scan")
+                .tag("type", scanType)
+                .register(registry));
+
+        Counter.builder("security.findings")
+                .tag("type", scanType)
+                .register(registry)
+                .increment(findings);
+    }
+}
+```
+
+## Troubleshooting
+
+### Common Build Issues
+```bash
+# Fix Java compilation errors
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+
+# Fix Docker permission issues
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Fix Maven dependency issues
+rm -rf ~/.m2/repository
+mvn clean compile
+
+# Fix Python import issues
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### Performance Optimization
+```bash
+# Enable build caching
+export DOCKER_BUILDKIT=1
+docker build --cache-from security-framework:latest .
+
+# Parallel test execution
+mvn test -Dparallel=classes -DthreadCount=4
+
+# Memory optimization for large builds
+export MAVEN_OPTS="-Xmx4096m -XX:MaxPermSize=1024m"
+```

@@ -1,0 +1,437 @@
+---
+globs: *.py
+description: "Python development standards for scientific computing, numerical analysis, and research applications"
+---
+
+# 🐍 Python Development Standards - Scientific Computing
+
+## Core Principles
+
+### 1. Numerical Accuracy First
+```python
+# ✅ GOOD: Explicit precision control
+import numpy as np
+from scipy.optimize import least_squares
+
+def fit_with_precision(x_data, y_data):
+    """Fit with controlled numerical precision."""
+    result = least_squares(
+        residual_function,
+        initial_guess,
+        bounds=bounds,
+        ftol=1e-12,      # Function tolerance
+        xtol=1e-12,      # Variable tolerance
+        gtol=1e-8        # Gradient tolerance
+    )
+    return result
+
+# ❌ AVOID: Default tolerances for research
+result = least_squares(residual_function, initial_guess)
+```
+
+### 2. Scientific Documentation
+```python
+# ✅ GOOD: NumPy-style docstrings with physics
+def herschel_bulkley_stress(gamma_dot, tau_y, K, n):
+    """
+    Calculate Herschel-Bulkley fluid stress.
+
+    The Herschel-Bulkley model describes non-Newtonian fluids with
+    yield stress and power-law behavior above the yield point.
+
+    Parameters
+    ----------
+    gamma_dot : array_like
+        Shear rate [1/s]
+    tau_y : float
+        Yield stress [Pa]
+    K : float
+        Consistency index [Pa·s^n]
+    n : float
+        Flow behavior index [-]
+
+    Returns
+    -------
+    tau : ndarray
+        Shear stress [Pa]
+
+    Notes
+    -----
+    For gamma_dot → 0: tau → tau_y
+    For gamma_dot >> gamma_y: tau ≈ K·gamma_dot^n
+
+    References
+    ----------
+    .. [1] Herschel, W. H., & Bulkley, R. (1926). Measurement of
+           consistency as applied to rubber-benzene solutions.
+           Proceedings of the ASTM, 26, 621-633.
+    """
+    # Implementation with numerical stability
+    return np.where(
+        np.abs(gamma_dot) < 1e-10,
+        tau_y,  # No flow, yield stress only
+        tau_y + K * np.abs(gamma_dot)**n  # Flow contribution
+    )
+```
+
+### 3. Research-Grade Error Handling
+```python
+# ✅ GOOD: Comprehensive error handling for research
+def inverse_herschel_bulkley(tau, tau_y, K, n):
+    """
+    Inverse Herschel-Bulkley model with domain validation.
+
+    Parameters
+    ----------
+    tau : array_like
+        Shear stress [Pa]
+    tau_y : float
+        Yield stress [Pa]
+    K : float
+        Consistency index [Pa·s^n]
+    n : float
+        Flow behavior index [-]
+
+    Returns
+    -------
+    gamma_dot : ndarray
+        Shear rate [1/s]
+
+    Raises
+    ------
+    ValueError
+        If tau < tau_y (below yield stress)
+    """
+    if np.any(tau < tau_y):
+        raise ValueError(f"Stress below yield stress: tau={tau}, tau_y={tau_y}")
+
+    effective_stress = tau - tau_y
+
+    # Handle numerical edge cases
+    if n == 1.0:  # Newtonian limit
+        return effective_stress / K
+    else:
+        return (effective_stress / K)**(1/n)
+```
+
+## Code Organization
+
+### 1. Scientific Package Structure
+```python
+# hbflow/__init__.py
+"""
+Herschel-Bulkley fluid dynamics package.
+
+This package provides comprehensive tools for:
+- Constitutive modeling of non-Newtonian fluids
+- Parameter fitting from experimental data
+- Flow simulation in complex geometries
+- Validation against analytical limits
+"""
+
+__version__ = "1.0.0"
+__author__ = "Scientific Computing Toolkit"
+
+from .models import hb_tau_from_gamma, hb_gamma_from_tau
+from .fit import fit_herschel_bulkley, HBParameterFitter
+from .duct import solve_elliptical_hb
+from .validation import validate_against_newtonian
+
+__all__ = [
+    'hb_tau_from_gamma',
+    'hb_gamma_from_tau',
+    'fit_herschel_bulkley',
+    'HBParameterFitter',
+    'solve_elliptical_hb',
+    'validate_against_newtonian'
+]
+```
+
+### 2. Research Workflow Classes
+```python
+# ✅ GOOD: Research-oriented class design
+class HBParameterFitter:
+    """
+    Advanced parameter fitting for Herschel-Bulkley fluids.
+
+    Features:
+    - Multiple fitting algorithms
+    - Uncertainty quantification
+    - Physical constraint enforcement
+    - Validation metrics
+    """
+
+    def __init__(self, fitting_method='least_squares'):
+        self.method = fitting_method
+        self.fit_history = []
+        self.validation_metrics = {}
+
+    def fit(self, gamma_dot_data, tau_data, **kwargs):
+        """
+        Fit HB parameters with comprehensive validation.
+
+        Parameters
+        ----------
+        gamma_dot_data, tau_data : array_like
+            Experimental shear rate and stress data
+        **kwargs
+            Additional fitting parameters
+
+        Returns
+        -------
+        result : dict
+            Fit results with uncertainties and validation
+        """
+        # Implementation with full research workflow
+        pass
+```
+
+## Testing Standards
+
+### 1. Scientific Test Design
+```python
+# ✅ GOOD: Research-grade testing
+import pytest
+import numpy as np
+from hbflow.models import hb_tau_from_gamma
+
+class TestHerschelBulkleyConstitutiveModel:
+    """Test suite for HB constitutive model."""
+
+    @pytest.fixture
+    def sample_data(self):
+        """Provide consistent test data."""
+        return {
+            'gamma_dot': np.logspace(-2, 2, 50),
+            'tau_y': 5.0,
+            'K': 10.0,
+            'n': 0.8
+        }
+
+    def test_newtonian_limit(self, sample_data):
+        """Test behavior in Newtonian limit (n=1, tau_y=0)."""
+        data = sample_data
+        tau = hb_tau_from_gamma(data['gamma_dot'], 0.0, data['K'], 1.0)
+
+        # Should match Newtonian: tau = K * gamma_dot
+        expected = data['K'] * data['gamma_dot']
+        np.testing.assert_allclose(tau, expected, rtol=1e-10)
+
+    def test_yield_stress_limit(self, sample_data):
+        """Test behavior at very low shear rates."""
+        data = sample_data
+        low_gamma = np.array([1e-10, 1e-8, 1e-6])
+
+        tau = hb_tau_from_gamma(low_gamma, data['tau_y'], data['K'], data['n'])
+
+        # Should approach yield stress
+        np.testing.assert_allclose(tau, data['tau_y'], rtol=1e-6)
+
+    @pytest.mark.parametrize("tau_y,K,n", [
+        (1.0, 5.0, 0.5),   # Shear-thinning
+        (2.0, 8.0, 1.5),   # Shear-thickening
+        (0.0, 3.0, 1.0),   # Newtonian
+    ])
+    def test_parameter_ranges(self, sample_data, tau_y, K, n):
+        """Test with various parameter ranges."""
+        gamma_dot = sample_data['gamma_dot']
+        tau = hb_tau_from_gamma(gamma_dot, tau_y, K, n)
+
+        # Basic validity checks
+        assert np.all(tau >= tau_y), "Stress below yield stress"
+        assert np.all(np.isfinite(tau)), "Non-finite stress values"
+        assert np.all(tau > 0), "Negative stress values"
+```
+
+### 2. Performance Testing
+```python
+# ✅ GOOD: Performance validation for research
+import time
+import pytest
+
+def test_large_dataset_performance():
+    """Test performance with research-scale datasets."""
+    n_points = 100000
+    gamma_dot = np.logspace(-3, 3, n_points)
+
+    start_time = time.perf_counter()
+    tau = hb_tau_from_gamma(gamma_dot, 5.0, 10.0, 0.8)
+    computation_time = time.perf_counter() - start_time
+
+    # Performance requirements for research
+    assert computation_time < 1.0, ".3f"
+    assert len(tau) == n_points, "Output size mismatch"
+```
+
+## Visualization Standards
+
+### 1. Publication-Quality Plots
+```python
+# ✅ GOOD: Research-grade visualization
+import matplotlib.pyplot as plt
+from matplotlib import rcParams
+
+def create_research_plot(gamma_dot, tau, fit_result):
+    """Create publication-quality rheological plot."""
+
+    # Set publication-style parameters
+    rcParams['font.family'] = 'serif'
+    rcParams['font.size'] = 12
+    rcParams['axes.linewidth'] = 1.5
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    # Data points
+    ax.plot(gamma_dot, tau, 'o', markersize=6, color='navy',
+           label='Experimental Data', markeredgecolor='white', markeredgewidth=1)
+
+    # Model fit
+    gamma_fit = np.logspace(np.log10(gamma_dot.min()), np.log10(gamma_dot.max()), 200)
+    tau_fit = hb_tau_from_gamma(gamma_fit, **fit_result.params)
+    ax.plot(gamma_fit, tau_fit, '-', linewidth=2, color='crimson', label='HB Model')
+
+    # Formatting
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlabel('Shear Rate γ̇ (s⁻¹)', fontsize=12, fontweight='bold')
+    ax.set_ylabel('Shear Stress τ (Pa)', fontsize=12, fontweight='bold')
+    ax.set_title('Herschel-Bulkley Fluid: Experimental Data & Model Fit',
+                fontsize=14, fontweight='bold', pad=20)
+
+    # Grid and legend
+    ax.grid(True, alpha=0.3, which='both')
+    ax.legend(frameon=True, fancybox=True, shadow=True, fontsize=10)
+
+    # Parameter annotation
+    param_text = ".2f"".1f"".2f"f"""
+    Fitted Parameters:
+    τ_y = {fit_result.params.tau_y:.1f} Pa
+    K = {fit_result.params.consistency_K:.1f} Pa·s^n
+    n = {fit_result.params.flow_index_n:.2f}
+    R² = {fit_result.r_squared:.3f}
+    """
+    ax.text(0.05, 0.95, param_text, transform=ax.transAxes,
+           verticalalignment='top', fontsize=9,
+           bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
+
+    plt.tight_layout()
+    return fig, ax
+```
+
+### 2. Comparative Analysis
+```python
+# ✅ GOOD: Multi-condition comparison
+def create_comparison_plot(conditions, gamma_dot):
+    """Create comparative analysis plot."""
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+    fig.suptitle('Herschel-Bulkley Fluid: Comparative Analysis',
+                fontsize=16, fontweight='bold')
+
+    colors = ['navy', 'crimson', 'forestgreen', 'orange']
+
+    for i, (label, params) in enumerate(conditions.items()):
+        row, col = i // 2, i % 2
+
+        # Calculate stress
+        tau = hb_tau_from_gamma(gamma_dot, **params)
+
+        # Plot
+        axes[row, col].loglog(gamma_dot, tau, '-', linewidth=2,
+                             color=colors[i], label=label)
+
+        # Formatting
+        axes[row, col].set_xlabel('Shear Rate (1/s)')
+        axes[row, col].set_ylabel('Shear Stress (Pa)')
+        axes[row, col].set_title(f'Condition: {label}')
+        axes[row, col].grid(True, alpha=0.3)
+        axes[row, col].legend()
+
+    plt.tight_layout()
+    return fig, axes
+```
+
+## Performance Optimization
+
+### 1. Vectorization
+```python
+# ✅ GOOD: Vectorized operations for performance
+def batch_hb_calculation(gamma_dot_array, param_matrix):
+    """
+    Calculate HB stress for multiple parameter sets.
+
+    Parameters
+    ----------
+    gamma_dot_array : ndarray, shape (n_gamma,)
+        Shear rates
+    param_matrix : ndarray, shape (n_params, 3)
+        Parameter sets [tau_y, K, n]
+
+    Returns
+    -------
+    stress_matrix : ndarray, shape (n_gamma, n_params)
+        Stress values for each parameter set
+    """
+    gamma_dot = gamma_dot_array[:, np.newaxis]  # Shape: (n_gamma, 1)
+    tau_y = param_matrix[:, 0]                  # Shape: (n_params,)
+    K = param_matrix[:, 1]
+    n = param_matrix[:, 2]
+
+    # Vectorized calculation
+    stress = tau_y + K * gamma_dot**n  # Broadcasting handles dimensions
+
+    return stress
+```
+
+### 2. Memory Efficiency
+```python
+# ✅ GOOD: Memory-efficient processing for large datasets
+def process_large_rheology_dataset(data_file, chunk_size=10000):
+    """Process large rheological datasets efficiently."""
+    results = []
+
+    for chunk in pd.read_csv(data_file, chunksize=chunk_size):
+        # Process chunk
+        gamma_dot = chunk['shear_rate'].values
+        tau = chunk['stress'].values
+
+        # Fit parameters
+        result = fit_herschel_bulkley(gamma_dot, tau)
+
+        # Store summary (not full data)
+        results.append({
+            'chunk_id': len(results),
+            'n_points': len(chunk),
+            'params': result.params,
+            'r_squared': result.r_squared
+        })
+
+    return results
+```
+
+## Best Practices
+
+### 1. Research Reproducibility
+- **Version Control**: Git with research branches
+- **Environment**: `requirements.txt` with pinned versions
+- **Random Seeds**: Set for reproducible Monte Carlo
+- **Documentation**: Complete parameter and method documentation
+
+### 2. Code Quality
+- **Type Hints**: Use for scientific code clarity
+- **Linting**: black, flake8, mypy for consistency
+- **Testing**: pytest with scientific validation
+- **Documentation**: NumPy-style docstrings
+
+### 3. Research Ethics
+- **Data Attribution**: Cite sources and collaborators
+- **Method Validation**: Compare against established methods
+- **Uncertainty Quantification**: Report confidence intervals
+- **Reproducibility**: Share code and data when possible
+
+### 4. Performance Monitoring
+- **Timing**: Profile critical sections
+- **Memory**: Monitor for large datasets
+- **Scalability**: Test with problem size scaling
+- **Optimization**: Vectorization and algorithmic improvements
+
+These standards ensure our Python scientific computing code is **research-grade**, **production-ready**, and **publication-quality**.

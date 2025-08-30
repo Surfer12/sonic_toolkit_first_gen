@@ -1,0 +1,71 @@
+{
+  "title": "Chromostereopsis Research Analysis Report",
+  "timestamp": "2025-08-26T14:40:28",
+  "framework_version": "1.0",
+  "results": {
+    "depth_analysis": {
+      "color_pair": [
+        "red",
+        "blue"
+      ],
+      "wavelengths": [
+        650.0,
+        450.0
+      ],
+      "closer_color": "red",
+      "farther_color": "blue",
+      "depth_difference_diopters": 1.3379999999999999,
+      "perception_type": "positive",
+      "depth_difference": 0.6689999999999999,
+      "depth_in_diopters": 1.3379999999999999,
+      "accommodation_component": 0.2,
+      "disparity_component": 1.7499999999999998,
+      "pupil_factor": 1.2,
+      "myopia_factor": 1.0,
+      "illumination_factor": 1.0,
+      "observer_factor": 1.0
+    },
+    "individual_analysis": {
+      "population_size": 200,
+      "positive_percentage": 84.5,
+      "negative_percentage": 15.5,
+      "mean_depth_perception": 0.8794681646018444,
+      "std_depth_perception": 0.9567456437323435,
+      "depth_perception_range": [
+        -1.6582347468139178,
+        1.862342310967822
+      ],
+      "reversal_rate": 15.5,
+      "depth_distribution": {
+        "positive_mean": 1.274210148136895,
+        "negative_mean": -1.272512326282788
+      }
+    },
+    "optimization_results": {
+      "stimulus_size": 0.6133177555208749,
+      "background_luminance": 50.0,
+      "viewing_distance": 0.4999999999997054,
+      "optimization_success": false,
+      "final_error": 4.154880883788792e-09
+    }
+  },
+  "methodology": {
+    "optical_model": "chromatic aberration + pupil effects",
+    "physiological_model": "Stiles-Crawford + disparity processing",
+    "statistical_model": "individual differences analysis",
+    "validation": "historical experiment simulation"
+  },
+  "key_findings": [
+    "Depth difference typically 2 diopters (red closer, blue farther)",
+    "10-20% of observers experience negative chromostereopsis",
+    "Multiple interacting mechanisms (LCA, TCA, pupil, luminance)",
+    "Effect enhanced by myopic correction, affected by illumination",
+    "Applications in art, design, VR/AR, and medical imaging"
+  ],
+  "recommendations": [
+    "Consider individual differences in design applications",
+    "Avoid red-blue text combinations in UX design",
+    "Leverage for depth effects in art and visualization",
+    "Account for viewing conditions in practical applications"
+  ]
+}

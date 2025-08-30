@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-08-26T08:16:40.973061",
+  "comparison_type": "PQC Algorithms",
+  "algorithms_compared": [
+    "Rainbow",
+    "Kyber",
+    "Dilithium",
+    "SPHINCS+",
+    "McEliece"
+  ],
+  "visualization_file": "rainbow_comparison_analysis.png"
+}

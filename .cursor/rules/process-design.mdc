@@ -1,0 +1,532 @@
+---
+alwaysApply: false
+globs: *process*.py,*design*.py,*scale*.py,*equipment*.py
+description: Process design, scale-up studies, and equipment optimization for industrial applications
+---
+
+# 🏭 Process Design & Industrial Applications Guide
+
+## Core Framework
+
+### Process Design Framework
+**File**: [process_design_framework.py](mdc:process_design_framework.py)
+
+#### Main Classes:
+```python
+class ProcessDesignFramework:
+    """Comprehensive process design framework."""
+
+    def __init__(self):
+        self.geometries = {}
+        self.materials = {}
+        self.simulations = {}
+        self.scale_up_studies = {}
+        self.equipment_designs = {}
+
+    def add_material(self, material: MaterialProperties):
+        """Add material to framework."""
+
+    def create_geometry(self, name: str, geometry: ProcessGeometry):
+        """Create process geometry."""
+
+    def simulate_process(self, name: str, geom_name: str, mat_name: str,
+                        conditions: OperatingConditions) -> Dict:
+        """Simulate complete process."""
+
+    def perform_scale_up_study(self, name: str, scale_params: ScaleUpParameters) -> Dict:
+        """Perform scale-up analysis."""
+
+    def optimize_equipment(self, name: str, geom_name: str, mat_name: str,
+                          conditions: OperatingConditions,
+                          constraints: Dict[str, Tuple[float, float]]) -> ProcessGeometry:
+        """Optimize equipment design."""
+```
+
+#### Key Data Structures:
+```python
+@dataclass
+class ProcessGeometry:
+    """Process geometry definition."""
+    type: GeometryType
+    dimensions: Dict[str, float]
+    complexity: str = "simple"
+    mesh_resolution: int = 100
+
+@dataclass
+class MaterialProperties:
+    """Material properties for process design."""
+    name: str
+    density: float  # kg/m³
+    hb_params: Dict[str, float]  # Herschel-Bulkley parameters
+    viscoelastic_params: Optional[Dict[str, float]] = None
+    thixotropic_params: Optional[Dict[str, float]] = None
+
+@dataclass
+class OperatingConditions:
+    """Process operating conditions."""
+    flow_rate: float  # m³/s
+    pressure_drop: Optional[float] = None  # Pa
+    temperature: float = 298.0  # K
+    ambient_pressure: float = 101325.0  # Pa
+    surface_tension: float = 0.072  # N/m
+
+@dataclass
+class ScaleUpParameters:
+    """Parameters for scale-up studies."""
+    lab_scale: ProcessGeometry
+    production_scale: ProcessGeometry
+    criterion: ScaleUpCriterion
+    material: MaterialProperties
+    lab_conditions: OperatingConditions
+```
+
+## Process Design Workflow
+
+### 1. Material Characterization:
+```python
+# Define material properties
+toothpaste = MaterialProperties(
+    name="Toothpaste (Thixotropic)",
+    density=1300,  # kg/m³
+    hb_params={
+        'tau_y': 150.0,  # Yield stress [Pa]
+        'K': 25.0,       # Consistency index [Pa·s^n]
+        'n': 0.4         # Power-law index
+    },
+    thixotropic_params={
+        'structure_parameter': 0.8,
+        'breakdown_rate': 2.0,
+        'buildup_rate': 0.5
+    }
+)
+
+framework.add_material(toothpaste)
+```
+
+### 2. Geometry Definition:
+```python
+# Laboratory scale geometry
+lab_die = ProcessGeometry(
+    type=GeometryType.SLOT_DIE,
+    dimensions={
+        "length": 0.05,    # 5 cm
+        "width": 0.01,     # 1 cm
+        "gap": 0.001       # 1 mm
+    },
+    complexity="simple"
+)
+
+# Production scale geometry
+prod_coater = ProcessGeometry(
+    type=GeometryType.SLOT_DIE,
+    dimensions={
+        "length": 0.2,     # 20 cm
+        "width": 0.5,      # 50 cm
+        "gap": 0.0005      # 0.5 mm
+    },
+    complexity="moderate"
+)
+
+framework.create_geometry("Lab_Extruder_Die", lab_die)
+framework.create_geometry("Prod_Coating_Head", prod_coater)
+```
+
+### 3. Process Simulation:
+```python
+# Set operating conditions
+conditions = OperatingConditions(
+    flow_rate=5e-6,  # 5 mL/s
+    temperature=298.0,
+    pressure_drop=None
+)
+
+# Run simulation
+results = framework.simulate_process(
+    "Toothpaste_Extrusion",
+    "Lab_Extruder_Die",
+    "Toothpaste (Thixotropic)",
+    conditions
+)
+
+# Generate report
+report = framework.generate_process_report("Toothpaste_Extrusion")
+print(report)
+```
+
+### 4. Scale-up Analysis:
+```python
+# Define scale-up parameters
+scale_params = ScaleUpParameters(
+    lab_scale=framework.geometries["Lab_Extruder_Die"],
+    production_scale=framework.geometries["Prod_Coating_Head"],
+    criterion=ScaleUpCriterion.CONSTANT_SHEAR_RATE,
+    material=framework.materials["Toothpaste (Thixotropic)"],
+    lab_conditions=conditions
+)
+
+# Perform scale-up study
+scale_results = framework.perform_scale_up_study("Toothpaste_Scale_Up", scale_params)
+
+# Analyze results
+lab_solution = scale_results['lab_solution']
+prod_solution = scale_results['prod_solution']
+analysis = scale_results['analysis']
+
+print(f"Velocity Ratio: {analysis['velocity_ratio']:.2f}")
+print(f"Pressure Ratio: {analysis['pressure_ratio']:.2f}")
+print(f"Power Ratio: {analysis['power_ratio']:.2f}")
+```
+
+### 5. Equipment Optimization:
+```python
+# Define design constraints
+constraints = {
+    "width": (0.3, 0.8),      # 30-80 cm width
+    "gap": (0.0003, 0.001),   # 0.3-1.0 mm gap
+    "length": (0.15, 0.3)     # 15-30 cm length
+}
+
+# Set target conditions
+target_conditions = OperatingConditions(
+    flow_rate=1e-4,  # 100 mL/s
+    temperature=298.0
+)
+
+# Optimize equipment
+optimized_geometry = framework.optimize_equipment(
+    "Paint_Coating_Optimization",
+    "Prod_Coating_Head",
+    "Architectural Paint",
+    target_conditions,
+    constraints
+)
+
+print(f"Optimized dimensions: {optimized_geometry.dimensions}")
+```
+
+## Scale-up Methodologies
+
+### Scale-up Criteria:
+
+#### 1. Constant Shear Rate:
+```python
+def scale_constant_shear_rate(lab_flow_rate, lab_dimensions, prod_dimensions):
+    """Scale-up maintaining constant shear rate."""
+    # Shear rate scales with 1/length
+    scale_factor = (prod_dimensions['length'] / lab_dimensions['length'])
+    return lab_flow_rate * scale_factor
+```
+
+#### 2. Constant Residence Time:
+```python
+def scale_constant_residence_time(lab_flow_rate, lab_dimensions, prod_dimensions):
+    """Scale-up maintaining constant residence time."""
+    # Residence time = volume / flow_rate
+    volume_ratio = (prod_dimensions['length'] * prod_dimensions.get('width', 1) *
+                   prod_dimensions.get('height', 1)) / \
+                   (lab_dimensions['length'] * lab_dimensions.get('width', 1) *
+                    lab_dimensions.get('height', 1))
+    return lab_flow_rate * volume_ratio
+```
+
+#### 3. Constant Power per Unit Volume:
+```python
+def scale_constant_power_volume(lab_flow_rate, lab_dimensions, prod_dimensions):
+    """Scale-up maintaining constant power per unit volume."""
+    # For Herschel-Bulkley fluids
+    scale_factor = (prod_dimensions['length'] / lab_dimensions['length'])**(3 + 1/3)
+    return lab_flow_rate * scale_factor
+```
+
+### Dimensionless Analysis:
+```python
+def calculate_dimensionless_numbers(flow_rate, dimensions, material_props):
+    """Calculate key dimensionless numbers for process design."""
+
+    # Reynolds number (inertial vs viscous)
+    D = min(dimensions.values())  # Characteristic length
+    U = flow_rate / (dimensions.get('width', 1) * dimensions.get('height', 1))
+    Re = (material_props.density * U * D) / material_props.hb_params.get('K', 1.0)
+
+    # Deborah number (viscoelastic effects)
+    if material_props.viscoelastic_params:
+        De = material_props.viscoelastic_params['relaxation_time'] * (U / D)
+    else:
+        De = 0.0
+
+    # Bingham number (yield stress effects)
+    tau_y = material_props.hb_params.get('tau_y', 0.0)
+    tau_wall = calculate_wall_shear_stress(flow_rate, dimensions, material_props)
+    Bn = tau_y / tau_wall if tau_wall > 0 else 0.0
+
+    return {'Re': Re, 'De': De, 'Bn': Bn}
+```
+
+## Equipment Design Optimization
+
+### Design Variables:
+```python
+# For slot die coating
+design_variables = {
+    'width': (0.1, 1.0),      # Coating width [m]
+    'gap': (0.0001, 0.005),   # Die gap [m]
+    'length': (0.05, 0.5),    # Land length [m]
+    'angle': (10, 60)         # Attack angle [degrees]
+}
+
+# For extruder die
+design_variables = {
+    'diameter': (0.001, 0.1), # Die diameter [m]
+    'length': (0.01, 0.2),    # Land length [m]
+    'taper_angle': (5, 45)    # Taper angle [degrees]
+}
+```
+
+### Objective Functions:
+```python
+def minimize_pressure_drop(geometry, conditions, material):
+    """Minimize pressure drop for given flow rate."""
+    simulator = FlowSimulator(geometry, material)
+    solution = simulator.simulate_flow(conditions)
+    return np.max(solution['pressure']) - np.min(solution['pressure'])
+
+def maximize_uniformity(geometry, conditions, material):
+    """Maximize coating uniformity."""
+    simulator = FlowSimulator(geometry, material)
+    solution = simulator.simulate_flow(conditions)
+
+    # Calculate uniformity metric
+    velocity_profile = solution['velocity']
+    uniformity = 1.0 - np.std(velocity_profile) / np.mean(velocity_profile)
+    return uniformity
+
+def optimize_efficiency(geometry, conditions, material):
+    """Optimize for energy efficiency."""
+    simulator = FlowSimulator(geometry, material)
+    solution = simulator.simulate_flow(conditions)
+
+    # Calculate efficiency metric
+    power = np.mean(np.sum(solution['stress'] * solution['velocity'], axis=1))
+    flow_rate = conditions.flow_rate
+    efficiency = flow_rate / power  # Flow per unit power
+    return efficiency
+```
+
+### Constraint Handling:
+```python
+def check_constraints(geometry, constraints):
+    """Check if geometry satisfies all constraints."""
+    for param, (min_val, max_val) in constraints.items():
+        if param in geometry.dimensions:
+            value = geometry.dimensions[param]
+            if not (min_val <= value <= max_val):
+                return False
+    return True
+
+def apply_constraints(geometry, constraints):
+    """Apply constraints to geometry parameters."""
+    constrained_geometry = ProcessGeometry(
+        type=geometry.type,
+        dimensions=geometry.dimensions.copy()
+    )
+
+    for param, (min_val, max_val) in constraints.items():
+        if param in constrained_geometry.dimensions:
+            value = constrained_geometry.dimensions[param]
+            constrained_geometry.dimensions[param] = np.clip(value, min_val, max_val)
+
+    return constrained_geometry
+```
+
+## Industrial Applications
+
+### Process Industries:
+
+#### 1. Personal Care Products:
+```python
+# Toothpaste extrusion
+toothpaste = MaterialProperties(
+    name="Toothpaste",
+    density=1300,
+    hb_params={'tau_y': 150, 'K': 25, 'n': 0.4},
+    thixotropic_params={'structure': 0.8, 'breakdown': 2.0}
+)
+
+# Lotion filling
+lotion = MaterialProperties(
+    name="Lotion",
+    density=1000,
+    hb_params={'tau_y': 5, 'K': 2, 'n': 0.8},
+    viscoelastic_params={'relaxation_time': 0.5}
+)
+```
+
+#### 2. Food Processing:
+```python
+# Mayonnaise production
+mayonnaise = MaterialProperties(
+    name="Mayonnaise",
+    density=1200,
+    hb_params={'tau_y': 80, 'K': 15, 'n': 0.5},
+    thixotropic_params={'structure': 0.9, 'breakdown': 1.5}
+)
+
+# Yogurt processing
+yogurt = MaterialProperties(
+    name="Yogurt",
+    density=1050,
+    hb_params={'tau_y': 20, 'K': 5, 'n': 0.7},
+    viscoelastic_params={'relaxation_time': 0.2}
+)
+```
+
+#### 3. Pharmaceutical Manufacturing:
+```python
+# Ointment production
+ointment = MaterialProperties(
+    name="Pharmaceutical Ointment",
+    density=1100,
+    hb_params={'tau_y': 100, 'K': 20, 'n': 0.6},
+    thixotropic_params={'structure': 0.85, 'breakdown': 1.8}
+)
+
+# Suspension formulation
+suspension = MaterialProperties(
+    name="Drug Suspension",
+    density=1150,
+    hb_params={'tau_y': 15, 'K': 8, 'n': 0.75},
+    viscoelastic_params={'relaxation_time': 0.3}
+)
+```
+
+#### 4. Construction Materials:
+```python
+# Architectural paint
+paint = MaterialProperties(
+    name="Architectural Paint",
+    density=1400,
+    hb_params={'tau_y': 50, 'K': 15, 'n': 0.6},
+    thixotropic_params={'structure': 0.9, 'breakdown': 1.5}
+)
+
+# Sealant formulation
+sealant = MaterialProperties(
+    name="Construction Sealant",
+    density=1300,
+    hb_params={'tau_y': 200, 'K': 30, 'n': 0.4},
+    viscoelastic_params={'relaxation_time': 1.0}
+)
+```
+
+### Equipment Types:
+
+#### Coating Systems:
+```python
+def design_slot_die_coater(material, target_conditions, substrate_width):
+    """Design slot die coating system."""
+    # Initial geometry estimate
+    initial_geometry = ProcessGeometry(
+        type=GeometryType.SLOT_DIE,
+        dimensions={
+            'length': 0.1,
+            'width': substrate_width,
+            'gap': 0.0005
+        }
+    )
+
+    # Optimize for uniform coating
+    optimizer = EquipmentOptimizer(initial_geometry, material)
+    constraints = {
+        'gap': (0.0002, 0.002),
+        'length': (0.05, 0.3)
+    }
+
+    optimized = optimizer.optimize_geometry(target_conditions, constraints)
+    return optimized
+```
+
+#### Extrusion Systems:
+```python
+def design_extruder_die(material, target_conditions, product_diameter):
+    """Design extruder die system."""
+    initial_geometry = ProcessGeometry(
+        type=GeometryType.ANNULUS,
+        dimensions={
+            'length': 0.05,
+            'inner_diameter': product_diameter,
+            'outer_diameter': product_diameter + 0.01
+        }
+    )
+
+    optimizer = EquipmentOptimizer(initial_geometry, material)
+    constraints = {
+        'length': (0.02, 0.15),
+        'outer_diameter': (product_diameter + 0.005, product_diameter + 0.05)
+    }
+
+    optimized = optimizer.optimize_geometry(target_conditions, constraints)
+    return optimized
+```
+
+## Validation and Quality Assurance
+
+### Process Validation:
+```python
+def validate_process_design(geometry, material, conditions, experimental_data):
+    """Validate process design against experimental data."""
+
+    # Run simulation
+    simulator = FlowSimulator(geometry, material)
+    solution = simulator.simulate_flow(conditions)
+
+    # Compare with experimental data
+    validation_metrics = {}
+
+    # Flow rate comparison
+    sim_flow = calculate_flow_rate(solution)
+    exp_flow = experimental_data.get('flow_rate', sim_flow)
+    validation_metrics['flow_rate_error'] = abs(sim_flow - exp_flow) / exp_flow
+
+    # Pressure drop comparison
+    sim_dp = calculate_pressure_drop(solution)
+    exp_dp = experimental_data.get('pressure_drop', sim_dp)
+    validation_metrics['pressure_error'] = abs(sim_dp - exp_dp) / exp_dp
+
+    # Velocity profile comparison
+    if 'velocity_profile' in experimental_data:
+        sim_profile = extract_velocity_profile(solution)
+        exp_profile = experimental_data['velocity_profile']
+        validation_metrics['profile_error'] = calculate_profile_error(sim_profile, exp_profile)
+
+    return validation_metrics
+```
+
+### Quality Metrics:
+```python
+def assess_product_quality(geometry, material, conditions):
+    """Assess product quality metrics."""
+
+    simulator = FlowSimulator(geometry, material)
+    solution = simulator.simulate_flow(conditions)
+
+    quality_metrics = {}
+
+    # Uniformity assessment
+    velocity_uniformity = calculate_uniformity(solution['velocity'])
+    quality_metrics['velocity_uniformity'] = velocity_uniformity
+
+    # Stress uniformity
+    stress_uniformity = calculate_uniformity(solution['stress'])
+    quality_metrics['stress_uniformity'] = stress_uniformity
+
+    # Residence time distribution
+    residence_time_dist = calculate_residence_time_distribution(solution)
+    quality_metrics['residence_time_uniformity'] = calculate_uniformity(residence_time_dist)
+
+    # Defect formation potential
+    quality_metrics['defect_risk'] = assess_defect_risk(solution, material)
+
+    return quality_metrics
+```
+
+This comprehensive guide enables systematic process design, scale-up, and equipment optimization for thixotropic materials across diverse industrial applications.

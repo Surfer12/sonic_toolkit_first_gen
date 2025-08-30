@@ -1,0 +1,156 @@
+---
+alwaysApply: true
+description: "Comprehensive guide to the scientific computing toolkit project structure and navigation"
+---
+
+# 🧪 Scientific Computing Toolkit - Project Structure Guide
+
+## Primary Research Frameworks
+
+### 1. Scientific Computing Tools ([scientific-computing-tools/](mdc:scientific-computing-tools/))
+**Core Computational Platform** - Complete toolkit for fluid dynamics and material science research:
+
+#### Core Components
+- **[hbflow/](mdc:scientific-computing-tools/hbflow/)** - Herschel-Bulkley fluid dynamics package
+  - **[models.py](mdc:scientific-computing-tools/hbflow/models.py)** - Constitutive equations and forward/inverse models
+  - **[fit.py](mdc:scientific-computing-tools/hbflow/fit.py)** - Parameter fitting with uncertainty quantification
+  - **[duct.py](mdc:scientific-computing-tools/hbflow/duct.py)** - Flow solver for complex geometries
+  - **[advanced_duct.py](mdc:scientific-computing-tools/hbflow/advanced_duct.py)** - PDE-based advanced solver
+  - **[validation.py](mdc:scientific-computing-tools/hbflow/validation.py)** - Validation against Newtonian/power-law limits
+
+- **Rheological Tools**
+  - **[herschel_bulkley_model.py](mdc:scientific-computing-tools/herschel_bulkley_model.py)** - Alternative HB implementation
+  - **[test_herschel_bulkley.py](mdc:scientific-computing-tools/test_herschel_bulkley.py)** - Comprehensive test suite
+  - **[thixotropic_structure_demo.py](mdc:scientific-computing-tools/thixotropic_structure_demo.py)** - Time-dependent structure evolution
+  - **[thixotropic_flower_visualization.py](mdc:scientific-computing-tools/thixotropic_flower_visualization.py)** - Artistic visualization of thixotropic behavior
+
+#### Cloud Infrastructure
+- **[cloudfront_reverse_proxy.py](mdc:scientific-computing-tools/cloudfront_reverse_proxy.py)** - AWS CloudFront automation
+- **[demo_cloudfront_proxy.py](mdc:scientific-computing-tools/demo_cloudfront_proxy.py)** - Infrastructure demonstrations
+
+#### Advanced Modeling
+- **[inverse_precision_framework.mojo](mdc:scientific-computing-tools/inverse_precision_framework.mojo)** - 0.9987 precision inverse methods
+- **[inverse_precision_framework.py](mdc:scientific-computing-tools/inverse_precision_framework.py)** - Python implementation
+- **[latest_news_theory_and_proof_copy_implementation.py](mdc:scientific-computing-tools/latest_news_theory_and_proof_copy_implementation.py)** - Advanced aggregation theory
+
+### 2. Plant Biology Modeling ([plant_biology_model.py](mdc:plant_biology_model.py))
+**Lorenz-Based Plant Maturation** - Chaotic dynamics modeling of plant development:
+
+#### Key Features
+- **Development Stages**: Bud Break → Flowering → Veraison → Ripening
+- **Biological Interpretation**: Stress, temperature, ATP/maturation tracking
+- **Validation**: MSE comparison with bioimpedance data
+- **Visualization**: 3D maturation cascade with phase transitions
+
+### 3. Thixotropic Materials ([rheology/](mdc:rheology/))
+**Advanced Time-Dependent Rheology**:
+
+#### Go Implementation
+- **[thixotropic_structure.go](mdc:rheology/thixotropic_structure.go)** - Core structure evolution
+- **[thixotropic_structure_test.go](mdc:rheology/thixotropic_structure_test.go)** - Comprehensive testing
+- **[example_usage.go](mdc:rheology/example_usage.go)** - Usage demonstrations
+- **[visualization/](mdc:rheology/visualization/)** - Advanced plotting capabilities
+
+#### Material-Specific Models
+- **Polymer Melts**: Temperature-dependent behavior with molecular weight effects
+- **Biological Tissues**: Physiological models for cartilage, muscle, soft tissues
+- **Generic Framework**: Extensible for custom materials and suspensions
+
+### 4. Research Frameworks ([New Folder With Items copy/01_RESEARCH_FRAMEWORKS/](mdc:New Folder With Items copy/01_RESEARCH_FRAMEWORKS/))
+**Consciousness and Cognitive Modeling**:
+
+#### Core Components
+- **[core/](mdc:New Folder With Items copy/01_RESEARCH_FRAMEWORKS/consciousness_ai/cognitive-design-framework/core/)** - Consciousness quantification frameworks
+- **[mathematical/](mdc:New Folder With Items copy/01_RESEARCH_FRAMEWORKS/consciousness_ai/cognitive-design-framework/core/mathematical/)** - Ψ(x) function and MECN framework
+- **[swarm/](mdc:New Folder With Items copy/01_RESEARCH_FRAMEWORKS/consciousness_ai/cognitive-design-framework/core/swarm/)** - Swarm intelligence with timing-behavioral analysis
+
+## Development Workflow
+
+### Research → Implementation → Validation
+1. **Theoretical Development** → Documentation in research logs
+2. **Algorithm Implementation** → Language-specific directories
+3. **Validation & Testing** → Empirical testing and visualization
+4. **Publication** → Research papers and technical documentation
+
+### Key Integration Points
+- **Scientific Computing** ↔ **Plant Biology**: Fluid dynamics in biological systems
+- **Thixotropic Modeling** ↔ **Material Science**: Time-dependent material behavior
+- **Cloud Infrastructure** ↔ **Research Tools**: Scalable computation and deployment
+- **Consciousness Frameworks** ↔ **Complex Systems**: Emergent behavior analysis
+
+## File Organization Principles
+
+### Research Documentation
+- **Research Logs**: `docs/research_logs/` - Development and theoretical work
+- **Mathematical Proofs**: `.tex` files with complete formal proofs
+- **Validation Data**: `.json` files with experimental comparisons
+- **Visualization Results**: `.png` and `.gif` files with research graphics
+
+### Code Organization
+- **Multi-language Support**: Python, Mojo, Go, Java implementations
+- **Framework Separation**: Clear boundaries between research and production code
+- **Version Control**: Git with research artifact preservation
+- **Testing**: Comprehensive test suites with scientific validation
+
+## Navigation Commands
+
+### Quick Access
+```bash
+# Core scientific computing
+cd scientific-computing-tools && python3 hb_demo.py
+
+# Thixotropic materials
+cd rheology && go run example_usage.go
+
+# Plant biology modeling
+python3 plant_biology_model.py
+
+# Research frameworks
+cd "New Folder With Items copy/01_RESEARCH_FRAMEWORKS"
+```
+
+### Key Demonstrations
+```bash
+# Fluid dynamics
+python3 scientific-computing-tools/complex_fluids_demo.py
+
+# Thixotropic flowers
+python3 scientific-computing-tools/thixotropic_flower_visualization.py
+
+# Plant maturation
+python3 plant_biology_model.py
+
+# Cloud infrastructure
+python3 scientific-computing-tools/demo_cloudfront_proxy.py
+```
+
+## Quality Assurance
+
+### Testing Frameworks
+- **Python**: pytest with scientific validation
+- **Go**: Standard testing with benchmarks
+- **Mojo**: Performance testing with numerical accuracy
+- **Java**: JUnit with mathematical verification
+
+### Performance Validation
+- **Numerical Accuracy**: MSE < 0.01 against analytical solutions
+- **Computational Efficiency**: Optimized for research-scale problems
+- **Memory Management**: Efficient for large datasets
+- **Visualization Quality**: Publication-ready graphics
+
+## Integration Points
+
+### External Tools
+- **MATLAB/Simulink**: For complex PDE solutions
+- **COMSOL Multiphysics**: For advanced material modeling
+- **AWS Cloud**: For scalable computation and deployment
+- **Docker/Kubernetes**: For reproducible research environments
+
+### Research Applications
+- **Polymer Processing**: Injection molding and extrusion optimization
+- **Pharmaceuticals**: Drug delivery system design
+- **Biomedical Engineering**: Tissue mechanics and implant design
+- **Food Science**: Texture analysis and quality control
+- **Environmental Science**: Plant growth modeling and optimization
+
+This structure supports the complex, multi-disciplinary nature of our scientific computing research, enabling effective navigation and collaboration across different domains and technical approaches.

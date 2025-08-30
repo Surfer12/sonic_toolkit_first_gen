@@ -1,0 +1,596 @@
+---
+alwaysApply: true
+description: "File organization, naming conventions, and workspace management patterns"
+---
+
+# 📁 File Organization Standards
+
+## Directory Structure
+
+### Primary Framework Areas
+```
+Corpus/qualia/                    # Java Security Framework
+├── *.java                        # Core implementation
+├── *.jar                         # Compiled artifacts
+├── Dockerfile                    # Container definition
+├── docker-compose.yml           # Multi-service orchestration
+├── .devcontainer/               # Development environment
+└── build.sh                     # Build automation
+
+Farmer copy/                     # Swift iOS Framework
+├── Farmer.xcodeproj/            # Xcode project
+├── Farmer/                      # Swift source code
+├── *.swift                      # Implementation files
+└── FarmerApp.swift              # Application entry point
+
+Research & Documentation
+├── docs/                        # General documentation
+├── research/publications/       # Academic papers
+├── research/analysis/           # Research methodologies
+└── *.md                         # Documentation files
+
+Python Implementations
+├── *_implementation.py          # Core implementations
+├── demo_*.py                    # Demonstration scripts
+├── test_*.py                    # Test files
+└── requirements.txt             # Python dependencies
+
+Configuration Files
+├── docker-compose*.yml          # Service orchestration
+├── Dockerfile*                  # Container definitions
+├── .devcontainer/               # VS Code dev containers
+└── build.sh                     # Build scripts
+```
+
+## File Naming Conventions
+
+### Language-Specific Patterns
+
+#### Java Files
+- **Classes**: `PascalCase.java` (e.g., `ReverseKoopmanOperator.java`)
+- **Interfaces**: `PascalCase.java` (e.g., `SecurityValidator.java`)
+- **Enums**: `PascalCase.java` (e.g., `VulnerabilityType.java`)
+- **Packages**: `lowercase` (e.g., `qualia` package)
+- **Tests**: `*Test.java` (e.g., `JavaPenetrationTestingTest.java`)
+
+#### Swift Files
+- **Classes/Structs**: `PascalCase.swift` (e.g., `SecurityFinding.swift`)
+- **Extensions**: `TypeName+Extension.swift` (e.g., `Array+SecurityFindings.swift`)
+- **Tests**: `*Tests.swift` (e.g., `iOSPenetrationTestingTests.swift`)
+- **View Files**: `*View.swift` (e.g., `DemoPenetrationTestingView.swift`)
+
+#### Python Files
+- **Modules**: `snake_case.py` (e.g., `latest_news_theory_and_proof_copy_implementation.py`)
+- **Classes**: `PascalCase` (e.g., `NewsAggregationInverse`)
+- **Functions**: `snake_case()` (e.g., `inverse_news_aggregation()`)
+- **Constants**: `UPPER_SNAKE_CASE` (e.g., `DEFAULT_TIMEOUT`)
+- **Tests**: `test_*.py` (e.g., `test_news_aggregation.py`)
+
+#### Mojo Files
+- **Modules**: `snake_case.mojo` (e.g., `chat_models.mojo`)
+- **Structs**: `PascalCase` (e.g., `Linear`, `MLP`)
+- **Functions**: `snake_case()` (e.g., `cross_entropy_loss()`)
+- **Variables**: `snake_case` (e.g., `input_size`, `hidden_size`)
+
+### Documentation Files
+- **Research**: `YYYY_topic_brief_description.tex` (e.g., `2025_consciousness_framework.tex`)
+- **Documentation**: `component_name_guide.md` (e.g., `security_framework_guide.md`)
+- **API Reference**: `module_api_reference.md` (e.g., `java_penetration_testing_api.md`)
+- **Implementation Notes**: `feature_analysis_notes.md` (e.g., `koopman_operator_notes.md`)
+
+### Configuration Files
+- **Docker**: `Dockerfile`, `docker-compose.yml`, `docker-compose.override.yml`
+- **Dev Container**: `.devcontainer/devcontainer.json`, `.devcontainer/Dockerfile`
+- **Build Scripts**: `build.sh`, `deploy.sh`, `setup.sh`
+- **Environment**: `.env`, `.env.local`, `.env.production`
+
+## File Organization Principles
+
+### 1. Separation of Concerns
+```
+security_framework/
+├── core/                    # Core business logic
+│   ├── mathematical/       # Mathematical implementations
+│   ├── security/          # Security testing logic
+│   └── validation/        # Statistical validation
+├── ui/                     # User interface components
+│   ├── views/            # View implementations
+│   ├── models/           # Data models
+│   └── controllers/      # Control logic
+├── infrastructure/        # Infrastructure concerns
+│   ├── database/         # Data persistence
+│   ├── api/              # External integrations
+│   └── monitoring/       # Logging and metrics
+└── tests/                # Test implementations
+    ├── unit/            # Unit tests
+    ├── integration/     # Integration tests
+    └── performance/     # Performance tests
+```
+
+### 2. Feature-Based Organization
+```
+features/
+├── reverse_koopman/
+│   ├── java/
+│   │   ├── ReverseKoopmanOperator.java
+│   │   ├── ComplexNumber.java
+│   │   └── test/
+│   ├── swift/
+│   │   ├── ReverseKoopmanOperator.swift
+│   │   └── test/
+│   └── python/
+│       ├── reverse_koopman.py
+│       └── test/
+├── penetration_testing/
+│   ├── java/
+│   │   ├── JavaPenetrationTesting.java
+│   │   └── test/
+│   └── swift/
+│       ├── iOSPenetrationTesting.swift
+│       └── test/
+└── visualization/
+    ├── swing/
+    ├── javafx/
+    └── python/
+```
+
+### 3. Layer-Based Organization
+```
+layers/
+├── presentation/          # UI and API endpoints
+│   ├── controllers/
+│   ├── views/
+│   └── dto/
+├── application/           # Business logic and use cases
+│   ├── services/
+│   ├── commands/
+│   └── queries/
+├── domain/               # Domain models and rules
+│   ├── entities/
+│   ├── value_objects/
+│   └── domain_services/
+└── infrastructure/       # External dependencies
+    ├── repositories/
+    ├── external_apis/
+    └── persistence/
+```
+
+## File Management Best Practices
+
+### Version Control Organization
+
+#### Commit Message Conventions
+```bash
+# Feature implementation
+feat: Add reverse Koopman operator for Java framework
+
+- Implement ReverseKoopmanOperator class with complex number support
+- Add observable function handling and matrix operations
+- Include comprehensive error handling and validation
+
+# Bug fixes
+fix: Resolve IndexOutOfBoundsException in observable matrix construction
+
+- Add bounds checking for state vector access
+- Implement graceful fallback for edge cases
+- Add unit tests for boundary conditions
+
+# Documentation
+docs: Update security framework API documentation
+
+- Add comprehensive JavaDoc for all public methods
+- Include usage examples and parameter descriptions
+- Document exception handling patterns
+
+# Refactoring
+refactor: Extract common functionality into utility classes
+
+- Create ComplexNumber utility class
+- Implement MatrixOperations helper class
+- Reduce code duplication across implementations
+```
+
+#### Branch Naming
+```bash
+# Feature branches
+feature/add-gptoss-integration
+feature/improve-visualization
+feature/enhance-security-validation
+
+# Bug fix branches
+fix/java-compilation-errors
+fix/swift-ui-crash
+fix/python-import-issues
+
+# Release branches
+release/v1.0.0
+release/v1.1.0
+
+# Hotfix branches
+hotfix/security-vulnerability-patch
+hotfix/critical-bug-fix
+```
+
+### File Maintenance
+
+#### Cleanup Patterns
+```bash
+# Remove temporary files
+find . -name "*.tmp" -type f -delete
+find . -name "*.log" -type f -delete
+
+# Remove compiled artifacts (Java)
+find . -name "*.class" -type f -delete
+find . -name "*.jar" -type f -delete
+
+# Remove Python artifacts
+find . -name "__pycache__" -type d -exec rm -rf {} +
+find . -name "*.pyc" -type f -delete
+
+# Remove Swift artifacts
+find . -name "build" -type d -exec rm -rf {} +
+```
+
+#### File Permissions
+```bash
+# Set executable permissions for scripts
+chmod +x build.sh
+chmod +x deploy.sh
+chmod +x setup.sh
+
+# Set read-only for documentation
+chmod 644 *.md
+chmod 644 *.tex
+
+# Set appropriate permissions for source code
+chmod 644 *.java
+chmod 644 *.swift
+chmod 644 *.py
+```
+
+## Cross-Platform Compatibility
+
+### Path Handling
+```python
+# Python - Cross-platform paths
+import os
+from pathlib import Path
+
+# Use pathlib for cross-platform compatibility
+config_dir = Path.home() / ".config" / "security-framework"
+config_dir.mkdir(parents=True, exist_ok=True)
+
+# Avoid hard-coded path separators
+data_file = config_dir / "findings.json"
+
+# Use os.path for backward compatibility where needed
+import os.path
+config_file = os.path.join(config_dir, "config.ini")
+```
+
+```java
+// Java - Cross-platform paths
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+
+public class ConfigurationManager {
+    private static final String CONFIG_DIR = ".config" + File.separator + "security-framework";
+
+    public static Path getConfigDirectory() {
+        Path homeDir = Paths.get(System.getProperty("user.home"));
+        Path configDir = homeDir.resolve(CONFIG_DIR);
+
+        try {
+            Files.createDirectories(configDir);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create config directory", e);
+        }
+
+        return configDir;
+    }
+}
+```
+
+### Environment Variables
+```bash
+# Shell scripts - Cross-platform environment handling
+#!/bin/bash
+
+# Detect operating system
+case "$(uname -s)" in
+    Darwin*)    OS='macOS';;
+    Linux*)     OS='Linux';;
+    CYGWIN*|MINGW*|MSYS*) OS='Windows';;
+    *)          OS='Unknown';;
+esac
+
+# Set platform-specific variables
+if [ "$OS" = "macOS" ]; then
+    export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home"
+elif [ "$OS" = "Linux" ]; then
+    export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+fi
+
+# Use environment variables with defaults
+export LOG_LEVEL="${LOG_LEVEL:-INFO}"
+export MAX_MEMORY="${MAX_MEMORY:-2G}"
+```
+
+## File Content Standards
+
+### Header Comments
+```java
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: 2025 Jumping Quail Solutions
+//
+//  FileName.java
+//  qualia
+//
+//  Created by Ryan David Oates on 8/26/25.
+//  [Brief description of file purpose]
+
+package qualia;
+
+import java.util.*;
+```
+
+```swift
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: 2025 Jumping Quail Solutions
+//
+//  FileName.swift
+//  qualia
+//
+//  Created by Ryan David Oates on 8/26/25.
+//  [Brief description of file purpose]
+
+import Foundation
+```
+
+```python
+"""
+FileName.py
+
+[Brief description of module purpose]
+
+Author: Ryan David Oates
+Date: August 26, 2025
+License: GPL-3.0-only
+"""
+
+import sys
+import os
+```
+
+### Encoding and Line Endings
+- **Use UTF-8 encoding** for all text files
+- **Use Unix line endings (LF)** for cross-platform compatibility
+- **Limit line length** to 120 characters for readability
+- **Use consistent indentation** (4 spaces for Python/Java, 4 spaces for Swift)
+
+### File Templates
+
+#### Java Class Template
+```java
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: 2025 Jumping Quail Solutions
+//
+//  ClassName.java
+//  qualia
+//
+//  Created by Ryan David Oates on 8/26/25.
+//  [Brief description of class purpose]
+
+package qualia;
+
+import java.util.*;
+
+/**
+ * [Comprehensive class documentation]
+ *
+ * @author Ryan David Oates
+ * @version 1.0
+ * @since 2025
+ */
+public class ClassName {
+
+    // Constants
+    private static final String CONSTANT_NAME = "value";
+
+    // Instance variables
+    private String instanceVariable;
+
+    // Constructor
+    public ClassName() {
+        // Implementation
+    }
+
+    // Public methods
+    /**
+     * [Method documentation]
+     *
+     * @param parameter [Parameter description]
+     * @return [Return value description]
+     */
+    public ReturnType methodName(ParameterType parameter) {
+        // Implementation
+        return null;
+    }
+
+    // Private methods
+    private void helperMethod() {
+        // Implementation
+    }
+}
+```
+
+#### Python Module Template
+```python
+"""
+ModuleName.py
+
+[Comprehensive module description]
+
+This module implements [specific functionality] as part of the
+security framework. It provides [key features] and integrates with
+[related components].
+
+Author: Ryan David Oates
+Date: August 26, 2025
+License: GPL-3.0-only
+"""
+
+import sys
+import os
+from typing import List, Dict, Optional, Tuple
+
+
+class ClassName:
+    """
+    [Comprehensive class documentation]
+
+    This class implements [specific functionality] with the following
+    key features:
+    - Feature 1: [Description]
+    - Feature 2: [Description]
+    """
+
+    def __init__(self, parameter: str) -> None:
+        """
+        Initialize the class instance.
+
+        Args:
+            parameter: [Parameter description]
+        """
+        self.parameter = parameter
+
+    def method_name(self, input_data: List[str]) -> Dict[str, int]:
+        """
+        [Method description]
+
+        This method performs [specific operation] on the input data
+        and returns [description of return value].
+
+        Args:
+            input_data: [Input parameter description]
+
+        Returns:
+            [Return value description]
+
+        Raises:
+            ValueError: [When specific error conditions occur]
+        """
+        # Implementation
+        result = {}
+        return result
+
+
+def standalone_function(input_value: str) -> str:
+    """
+    [Function description]
+
+    Args:
+        input_value: [Input description]
+
+    Returns:
+        [Return value description]
+    """
+    # Implementation
+    return input_value.upper()
+
+
+if __name__ == "__main__":
+    # Main execution block for testing
+    print("Testing ModuleName functionality...")
+
+    # Test code
+    instance = ClassName("test")
+    result = standalone_function("hello")
+
+    print(f"Result: {result}")
+```
+
+## Workspace Maintenance
+
+### Regular Cleanup Tasks
+```bash
+# Daily cleanup
+./scripts/maintenance/daily_cleanup.sh
+
+# Weekly maintenance
+./scripts/maintenance/weekly_maintenance.sh
+
+# Monthly archive
+./scripts/maintenance/monthly_archive.sh
+```
+
+### File Organization Scripts
+```bash
+# Organize files by type
+./scripts/maintenance/organize_files.sh
+
+# Find and report large files
+./scripts/maintenance/find_large_files.sh
+
+# Validate file naming conventions
+./scripts/maintenance/validate_naming.sh
+```
+
+### Backup and Recovery
+```bash
+# Create workspace backup
+./scripts/maintenance/create_backup.sh
+
+# Restore from backup
+./scripts/maintenance/restore_backup.sh backup_20250826.tar.gz
+
+# Validate backup integrity
+./scripts/maintenance/validate_backup.sh
+```
+
+## Quality Assurance
+
+### File Quality Checks
+```bash
+# Check for syntax errors
+./scripts/qa/check_syntax.sh
+
+# Validate file encodings
+./scripts/qa/check_encoding.sh
+
+# Check file permissions
+./scripts/qa/check_permissions.sh
+
+# Validate documentation completeness
+./scripts/qa/check_documentation.sh
+```
+
+### Automated Testing
+```bash
+# Run all tests
+./scripts/test/run_all_tests.sh
+
+# Run specific test suites
+./scripts/test/run_java_tests.sh
+./scripts/test/run_swift_tests.sh
+./scripts/test/run_python_tests.sh
+
+# Generate test reports
+./scripts/test/generate_reports.sh
+```
+
+### Code Quality Metrics
+```bash
+# Generate code metrics
+./scripts/metrics/generate_metrics.sh
+
+# Check code complexity
+./scripts/metrics/check_complexity.sh
+
+# Analyze code duplication
+./scripts/metrics/analyze_duplication.sh
+
+# Generate quality reports
+./scripts/metrics/generate_quality_report.sh
+```

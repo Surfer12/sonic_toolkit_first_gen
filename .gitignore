@@ -1,0 +1,86 @@
+# pixi environments
+.pixi
+Pictures copy
+Moveies copy
+Applications copy
+Documents copy
+Downloads copy
+Music copy
+Videos copy
+Repositories copy
+Videos copy
+iCloud_Backup
+Onedrive_Backup
+Videos_copy
+Applications_copy
+Videos copy
+New Folder With Items copy
+New Folder With Items
+
+# Embedded git repositories
+**/.git/
+**/.git
+
+# Xcode workspace files (problematic)
+*.xcworkspace/
+*.xcworkspace
+
+# Copy directories (duplicates)
+* copy/
+* copy
+*copy/
+
+# Specific problematic directories with embedded git repos
+prompt-eng-interactive-tutorial copy 2/
+scientific-computing-tools/
+DesignPatternsDemo copy/
+Farmer copy/
+License_To_Add copy/
+MyLibrary copy/
+NTT_Reclaim copy/
+Vineyard_Graph_Traversal copy/
+automated-auditing copy/
+integrated-case-visualization copy/
+
+# macOS system files
+.DS_Store
+.DS_Store?
+
+# IDE files
+.vscode/settings.json
+.cursor/settings.json
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Log files
+*.log
+
+# Build artifacts
+build/
+dist/
+*.class
+*.jar
+*.pyc
+__pycache__/
+
+# Node modules
+node_modules/
+
+# Python virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Backup files
+*.bak
+*.backup
+
+# Archive files
+*.zip
+*.tar.gz
+*.tar.bz2
+

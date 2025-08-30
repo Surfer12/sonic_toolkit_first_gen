@@ -1,0 +1,11 @@
+{
+  "extracted_k4": 2889.0,
+  "coverage_series": [
+    100.0,
+    150.5,
+    153.38333333333333
+  ],
+  "validation_status": "PASSED",
+  "theory_confirmed": true,
+  "error_bound": "O(\u0394t\u00b2)"
+}

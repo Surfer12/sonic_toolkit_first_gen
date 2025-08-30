@@ -1,0 +1,6 @@
+=== Performance Report ===
+Penetration Testing Time: 0.46 ms
+K-S Validation Time: 0.88 ms
+Total Findings: 23
+Memory Used: 22.79 MB
+Available Processors: 16

@@ -1,0 +1,137 @@
+---
+alwaysApply: true
+description: Comprehensive project structure and navigation guide for the scientific computing toolkit
+---
+
+# 🧠 Scientific Computing Toolkit - Project Structure Guide
+
+## Core Architecture
+
+### Primary Research Frameworks
+- **[process_design_framework.py](mdc:process_design_framework.py)** - Complete process design system for flow simulation, scale-up studies, and equipment optimization
+- **[multi_phase_flow_analysis.py](mdc:multi_phase_flow_analysis.py)** - Advanced multi-phase flow analysis with VOF interface tracking
+- **[flower_biological_flow.py](mdc:flower_biological_flow.py)** - Biological flow systems inspired by plant vascular networks
+- **[hbflow/](mdc:hbflow/)** - Herschel-Bulkley fluid dynamics package
+- **[inverse_precision_framework.py](mdc:inverse_precision_framework.py)** - 0.9987 precision convergence framework
+
+### Research & Analysis
+- **[advanced_rheology_demo.py](mdc:advanced_rheology_demo.py)** - Viscoelastic, thixotropic, and temperature-dependent rheological models
+- **[prime_interaction_space.py](mdc:prime_interaction_space.py)** - Prime and non-prime number interaction analysis
+- **[cloudfront_reverse_proxy.py](mdc:cloudfront_reverse_proxy.py)** - AWS CloudFront infrastructure automation
+
+## File Organization Patterns
+
+### Framework Structure
+```
+scientific-computing-tools/
+├── Core Frameworks/
+│   ├── process_design_framework.py      # Process design & optimization
+│   ├── multi_phase_flow_analysis.py     # Multi-phase flow analysis
+│   └── flower_biological_flow.py       # Biological flow systems
+├── Rheological Models/
+│   ├── hbflow/                         # HB fluid dynamics package
+│   │   ├── models.py                   # Constitutive equations
+│   │   ├── fit.py                      # Parameter fitting
+│   │   ├── duct.py                     # Flow solvers
+│   │   └── viscoelastic.py             # Advanced rheological models
+│   └── advanced_rheology_demo.py      # Comprehensive demos
+├── Analysis Tools/
+│   ├── inverse_precision_framework.py  # Precision convergence
+│   ├── prime_interaction_space.py      # Prime interactions
+│   └── cloudfront_reverse_proxy.py     # Infrastructure
+└── Documentation/
+    ├── images/                         # Visualization outputs
+    └── *.md                            # Documentation files
+```
+
+### Naming Conventions
+- **Core Frameworks**: `*_framework.py` - Complete system implementations
+- **Analysis Tools**: `*_analysis.py` - Specific analysis capabilities
+- **Demo Files**: `*_demo.py` - Demonstration and testing
+- **Packages**: `*/` - Modular packages with `__init__.py`
+- **Images**: `images/` - Generated visualizations and plots
+
+## Navigation Guide
+
+### Entry Points
+1. **Process Design**: Start with [process_design_framework.py](mdc:process_design_framework.py)
+2. **Multi-Phase Flow**: Use [multi_phase_flow_analysis.py](mdc:multi_phase_flow_analysis.py)
+3. **Biological Flows**: Explore [flower_biological_flow.py](mdc:flower_biological_flow.py)
+4. **Rheological Models**: Access via [hbflow/](mdc:hbflow/)
+
+### Key Classes and Functions
+
+#### Process Design Framework
+```python
+# Main framework class
+framework = ProcessDesignFramework()
+
+# Add materials and geometries
+framework.add_material(material_properties)
+framework.create_geometry(name, geometry)
+
+# Simulate processes
+framework.simulate_process(name, geom_name, mat_name, conditions)
+
+# Scale-up studies
+framework.perform_scale_up_study(name, scale_params)
+
+# Equipment optimization
+framework.optimize_equipment(name, geom_name, mat_name, conditions, constraints)
+```
+
+#### Flow Analysis Classes
+```python
+# Multi-phase flow analyzer
+analyzer = MultiPhaseFlowAnalyzer(config)
+analyzer.add_phase(phase_properties)
+analyzer.initialize_droplet(center, radius, cont_phase, drop_phase)
+solution = analyzer.solve_flow(conditions)
+
+# Biological flow systems
+bio_system = BiologicalFlowSystem()
+bio_system.create_plant_stem_model()
+bio_system.simulate_biological_transport(analyzer, system_type, velocity)
+```
+
+### Data Flow Architecture
+
+```
+Input Data → Material Properties → Geometry Definition → Flow Simulation
+    ↓              ↓                    ↓                    ↓
+Process Design → Rheological Models → Scale-up Analysis → Equipment Optimization
+    ↓              ↓                    ↓                    ↓
+Visualization → Performance Metrics → Process Reports → Industrial Implementation
+```
+
+## Development Workflow
+
+### Research to Implementation
+1. **Theoretical Development** → Mathematical formulation
+2. **Algorithm Design** → Numerical methods and solvers
+3. **Implementation** → Python classes and functions
+4. **Validation** → Testing and case studies
+5. **Documentation** → Examples and tutorials
+
+### Code Organization
+- **Imports**: Group by standard library, third-party, local
+- **Classes**: Main functionality with clear interfaces
+- **Functions**: Specific analysis capabilities
+- **Constants**: Physical constants and default parameters
+- **Documentation**: Comprehensive docstrings with examples
+
+## Integration Points
+
+### External Frameworks
+- **HB Flow Package**: [hbflow/](mdc:hbflow/) for rheological modeling
+- **Multi-Phase Analysis**: Interface tracking and complex flows
+- **Biological Systems**: Plant vascular and flower dynamics
+- **AWS Integration**: Cloud infrastructure automation
+
+### Research Methodologies
+- **Scale-up Criteria**: Constant shear rate, residence time, power
+- **Optimization Methods**: Gradient-based, constraint handling
+- **Validation Approaches**: Analytical benchmarks, experimental correlation
+- **Performance Metrics**: Efficiency, power consumption, product quality
+
+This comprehensive toolkit integrates advanced fluid dynamics, process engineering, and scientific computing for industrial applications across multiple domains.

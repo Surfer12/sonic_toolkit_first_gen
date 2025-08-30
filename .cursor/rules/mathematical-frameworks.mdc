@@ -1,0 +1,481 @@
+---
+globs: *Mathematical*,*Proof*,*Theorem*,*Lemma*,*Psi*,*Koopman*,*Hierarchical*,*Bayesian*
+description: "Mathematical frameworks and notation standards for consciousness modeling, Bayesian inference, and dynamical systems"
+---
+
+# Mathematical Frameworks and Notation Standards
+
+This workspace implements advanced mathematical frameworks for consciousness modeling, Bayesian inference, and dynamical systems analysis. Understanding these frameworks is essential for effective research and development.
+
+## Core Mathematical Frameworks
+
+### Ψ(x) Framework - Consciousness Quantification
+
+#### Core Equation
+\[
+\Psi(x) = \min\left\{\beta \cdot O \cdot e^{-(\lambda_1 R_a + \lambda_2 R_v)}, 1\right\}
+\]
+
+where:
+- **O**: Evidence blend, \(O = \alpha S + (1-\alpha) N\)
+- **S**: Source strength (internal evidence)
+- **N**: Non-source strength (external evidence)
+- **α**: Evidence allocation parameter
+- **R_a**: Authority risk
+- **R_v**: Verifiability risk
+- **λ₁, λ₂**: Risk penalty weights
+- **β**: Uplift factor
+
+#### Key Properties
+
+**Gauge Freedom**:
+\[
+\Psi(x) \text{ invariant under } S' = kS, N' = kN, \beta' = \beta/k
+\]
+
+**Threshold Transfer**:
+\[
+\tau' = \tau \cdot (\beta / \beta') \text{ preserves decision boundaries}
+\]
+
+**Sensitivity Invariants**:
+\[
+\frac{\partial \Psi}{\partial S} \text{ and } \frac{\partial \Psi}{\partial N} \text{ maintain consistent signs}
+\]
+
+#### Implementation Pattern
+
+```java
+public class PsiModel {
+    private final double alpha;
+    private final double beta;
+    private final double lambda1;
+    private final double lambda2;
+
+    public double computePsi(double S, double N, double Ra, double Rv) {
+        // Evidence blend
+        double O = alpha * S + (1.0 - alpha) * N;
+
+        // Risk penalty
+        double penalty = Math.exp(-(lambda1 * Ra + lambda2 * Rv));
+
+        // Bounded confidence score
+        double psi = Math.min(beta * O * penalty, 1.0);
+
+        return Math.max(0.0, psi); // Ensure non-negative
+    }
+}
+```
+
+### Inverse Hierarchical Bayesian Framework
+
+#### Parameter Recovery Objective
+
+Given observations \(\mathcal{D} = \{(\mathbf{c}_i, \psi_i, v_i)\}_{i=1}^n\):
+
+\[
+\hat{\theta} = \arg\min_{\theta} \sum_{i=1}^n \left(\psi_i - \Psi(\mathbf{c}_i; \theta)\right)^2 + \mathcal{R}(\theta)
+\]
+
+#### Likelihood-Based Formulation
+
+\[
+\mathcal{L}(\theta | \mathcal{D}) = \prod_{i=1}^n \Psi(\mathbf{c}_i; \theta)^{v_i} \cdot (1 - \Psi(\mathbf{c}_i; \theta))^{1-v_i}
+\]
+
+Negative log-likelihood:
+\[
+-\log \mathcal{L} = -\sum_{i=1}^n \left[ v_i \log \Psi_i + (1-v_i) \log (1 - \Psi_i) \right]
+\]
+
+#### Gradient Computation
+
+Partial derivatives for optimization:
+
+\[
+\frac{\partial \Psi}{\partial S} = \alpha \cdot \beta \cdot e^{-(R_a + R_v)}
+\]
+
+\[
+\frac{\partial \Psi}{\partial N} = (1-\alpha) \cdot \beta \cdot e^{-(R_a + R_v)}
+\]
+
+\[
+\frac{\partial \Psi}{\partial \alpha} = (S - N) \cdot \beta \cdot e^{-(R_a + R_v)}
+\]
+
+\[
+\frac{\partial \Psi}{\partial \beta} = O \cdot e^{-(R_a + R_v)} \cdot \mathbf{1}_{\beta O e^{-(R_a + R_v)} < 1}
+\]
+
+### Koopman Operator Theory
+
+#### Core Definition
+
+For a dynamical system \(x_{k+1} = f(x_k)\), the Koopman operator \(\mathcal{K}\) acts on functions:
+
+\[
+(\mathcal{K} g)(x) = g(f(x))
+\]
+
+#### Spectral Decomposition
+
+The Koopman operator has spectral decomposition:
+\[
+\mathcal{K} = \sum_{k=1}^\infty \lambda_k \phi_k(x) \langle \psi_k, \cdot \rangle
+\]
+
+where:
+- **λ_k**: Eigenvalues (complex numbers)
+- **φ_k(x)**: Eigenfunctions
+- **ψ_k**: Dual modes (left eigenvectors)
+
+#### Finite-Dimensional Approximation
+
+Using polynomial observables of degree d:
+\[
+\mathcal{K} \approx \Psi_{k+1} \Psi_k^\dagger
+\]
+
+where Ψ_k is the matrix of observable evaluations.
+
+#### Implementation Pattern
+
+```swift
+class ReverseKoopmanOperator {
+    func constructKoopmanMatrix(trajectory: [[Double]]) -> [[Double]] {
+        let nObservables = polynomialObservables(state: trajectory[0], degree: polynomialDegree).count
+
+        // Build observable matrices
+        var observablesCurrent: [[Double]] = []
+        var observablesNext: [[Double]] = []
+
+        for i in 0..<trajectory.count-1 {
+            let currentObs = polynomialObservables(state: trajectory[i], degree: polynomialDegree)
+            let nextObs = polynomialObservables(state: trajectory[i+1], degree: polynomialDegree)
+
+            observablesCurrent.append(currentObs)
+            observablesNext.append(nextObs)
+        }
+
+        // Compute Koopman matrix: K = Ψ_{k+1} Ψ_k^†
+        let psiCurrent = matrixTranspose(observablesCurrent)
+        let psiNext = matrixTranspose(observablesNext)
+        let psiCurrentPinv = matrixPseudoinverse(psiCurrent)
+
+        return matrixMultiply(psiNext, psiCurrentPinv)
+    }
+}
+```
+
+### Consciousness Mathematics Framework
+
+#### Cognitive State Space
+
+Consciousness states as points in a multi-dimensional space:
+
+\[
+\mathbf{c}(t) = \begin{pmatrix}
+x(t) & m(t) & s(t)
+\end{pmatrix}^T
+\]
+
+where:
+- **x**: Sense of self (identity dimension)
+- **m**: Memory states (cognitive memory)
+- **s**: Symbolic processing (language/cognition)
+
+#### Consciousness Field Evolution
+
+\[
+\frac{\partial \Psi}{\partial t} = \mathcal{L} \Psi
+\]
+
+where \(\mathcal{L}\) is the consciousness evolution operator.
+
+#### Topological Consciousness Properties
+
+**Homotopy Equivalence** (Identity Preservation):
+\[
+\Psi(x) \simeq \Psi(f(x)) \text{ for consciousness-preserving transformations } f
+\]
+
+**Covering Space Structure**:
+\[
+p: \tilde{C} \to C \text{ where } \tilde{C} \text{ is universal cover of consciousness space}
+\]
+
+## Implementation Patterns
+
+### Parameter Recovery Algorithm
+
+```java
+public class InverseHierarchicalBayesianModel {
+    public InverseResult recoverParameters(List<Observation> observations) {
+        ModelParameters theta = initializeParameters();
+        double learningRate = 0.01;
+        int maxIterations = 1000;
+        double tolerance = 1e-6;
+
+        for (int iter = 0; iter < maxIterations; iter++) {
+            // Compute gradients
+            double[] gradients = computeGradients(theta, observations);
+
+            // Update parameters
+            theta = updateParameters(theta, gradients, learningRate);
+
+            // Check convergence
+            if (vectorNorm(gradients) < tolerance) {
+                break;
+            }
+        }
+
+        // Compute confidence intervals
+        double[][] hessian = computeHessian(theta, observations);
+        double[][] covariance = matrixInverse(hessian);
+        double[] uncertainties = computeUncertainties(covariance);
+
+        return new InverseResult(theta, uncertainties, computeLogEvidence(theta, observations));
+    }
+
+    private double[] computeGradients(ModelParameters theta, List<Observation> observations) {
+        double[] gradients = new double[4]; // S, N, alpha, beta
+
+        for (Observation obs : observations) {
+            double psi = computePsi(obs.claim, theta);
+            double residual = obs.observedPsi - psi;
+
+            // Compute partial derivatives
+            gradients[0] += residual * partialPsi_partialS(obs.claim, theta);  // ∂Ψ/∂S
+            gradients[1] += residual * partialPsi_partialN(obs.claim, theta);  // ∂Ψ/∂N
+            gradients[2] += residual * partialPsi_partialAlpha(obs.claim, theta); // ∂Ψ/∂α
+            gradients[3] += residual * partialPsi_partialBeta(obs.claim, theta);   // ∂Ψ/∂β
+        }
+
+        return gradients;
+    }
+}
+```
+
+### Spectral Analysis Implementation
+
+```mojo
+struct KoopmanSpectralAnalysis {
+    fn compute_spectral_decomposition(koopman_matrix: Tensor[DType.float64]) -> SpectralDecomposition {
+        """
+        Compute eigenvalues and eigenvectors of Koopman matrix.
+
+        Args:
+            koopman_matrix: Square matrix representing finite-dimensional Koopman operator
+
+        Returns:
+            SpectralDecomposition containing eigenvalues, eigenvectors, and dual modes
+        """
+        // Perform eigendecomposition
+        let eigen_result = eig(koopman_matrix)
+
+        // Extract eigenvalues and eigenvectors
+        let eigenvalues = eigen_result.eigenvalues
+        let eigenfunctions = eigen_result.eigenvectors
+
+        // Compute dual modes (left eigenvectors)
+        let koopman_transpose = transpose(koopman_matrix)
+        let dual_result = eig(koopman_transpose)
+        let dual_modes = dual_result.eigenvectors
+
+        // Compute condition numbers for truncation
+        let condition_numbers = compute_condition_numbers(eigenfunctions)
+
+        return SpectralDecomposition(
+            eigenvalues: eigenvalues,
+            eigenfunctions: eigenfunctions,
+            dual_modes: dual_modes,
+            condition_numbers: condition_numbers
+        )
+    }
+
+    fn compute_condition_numbers(phi: Tensor[DType.float64]) -> List[Float64] {
+        """
+        Compute condition numbers for spectral truncation.
+        """
+        var condition_numbers = List[Float64]()
+
+        for r in range(1, len(phi[0]) + 1):
+            let phi_r = phi[:, :r]
+            let kappa_r = condition_number(phi_r)
+            condition_numbers.append(kappa_r)
+
+        return condition_numbers
+    }
+}
+```
+
+## Validation and Testing
+
+### Mathematical Correctness Tests
+
+```python
+def test_psi_framework_properties():
+    """Test Ψ(x) framework mathematical properties."""
+
+    # Test gauge freedom
+    psi1 = compute_psi(S=0.8, N=0.6, alpha=0.7, beta=1.5)
+    psi2 = compute_psi(S=1.6, N=1.2, alpha=0.7, beta=0.75)  # Scaled by 2
+
+    assert abs(psi1 - psi2) < 1e-10, "Gauge freedom violation"
+
+    # Test threshold transfer
+    threshold1 = find_threshold(psi_function, beta=1.0, target_psi=0.8)
+    threshold2 = find_threshold(psi_function, beta=2.0, target_psi=0.8)
+
+    expected_threshold2 = threshold1 * (2.0 / 1.0)  # β' / β = 2
+    assert abs(threshold2 - expected_threshold2) < 1e-10, "Threshold transfer violation"
+
+def test_koopman_operator_properties():
+    """Test Koopman operator mathematical properties."""
+
+    # Test linearity
+    f1 = lambda x: 2*x
+    f2 = lambda x: 3*x
+    c = 1.5
+
+    # K(c*f1 + f2) = c*K(f1) + K(f2)
+    result1 = koopman_operator(c * f1 + f2)
+    result2 = c * koopman_operator(f1) + koopman_operator(f2)
+
+    assert functions_equal(result1, result2), "Linearity violation"
+
+    # Test composition
+    # K(f ∘ g) = K(f) ∘ K(g)
+    result1 = koopman_operator(lambda x: f(g(x)))
+    result2 = lambda x: koopman_operator(f)(koopman_operator(g)(x))
+
+    assert functions_equal(result1, result2), "Composition violation"
+```
+
+### Performance Benchmarking
+
+```swift
+class MathematicalPerformanceBenchmark {
+    func benchmarkPsiComputation(iterations: Int = 10000) -> BenchmarkResult {
+        let startTime = Date()
+
+        for _ in 0..<iterations {
+            let _ = psiModel.computePsi(S: 0.8, N: 0.6, Ra: 0.1, Rv: 0.15)
+        }
+
+        let endTime = Date()
+        let duration = endTime.timeIntervalSince(startTime)
+
+        return BenchmarkResult(
+            operation: "Ψ(x) Computation",
+            iterations: iterations,
+            totalTime: duration,
+            averageTime: duration / Double(iterations)
+        )
+    }
+
+    func benchmarkKoopmanAnalysis(trajectoryLength: Int = 1000) -> BenchmarkResult {
+        let trajectory = generateTrajectory(length: trajectoryLength)
+        let startTime = Date()
+
+        let koopmanMatrix = reverseKoopman.constructKoopmanMatrix(trajectory: trajectory)
+        let _ = reverseKoopman.computeSpectralDecomposition()
+
+        let endTime = Date()
+        let duration = endTime.timeIntervalSince(startTime)
+
+        return BenchmarkResult(
+            operation: "Koopman Spectral Analysis",
+            iterations: 1,
+            totalTime: duration,
+            averageTime: duration
+        )
+    }
+}
+```
+
+## Documentation Standards
+
+### Mathematical Documentation
+
+When documenting mathematical implementations:
+
+```latex
+\subsection{Core Algorithm}
+
+The inverse hierarchical Bayesian parameter recovery algorithm minimizes the negative log-likelihood:
+
+\begin{equation}
+\hat{\theta} = \arg\min_{\theta} -\log \mathcal{L}(\theta | \mathcal{D})
+\end{equation}
+
+where the likelihood is given by:
+
+\begin{equation}
+\mathcal{L}(\theta | \mathcal{D}) = \prod_{i=1}^n \Psi(\mathbf{c}_i; \theta)^{v_i} \cdot (1 - \Psi(\mathbf{c}_i; \theta))^{1-v_i}
+\end{equation}
+
+\subsubsection{Gradient Computation}
+
+The partial derivatives are computed as:
+
+\begin{align}
+\frac{\partial \Psi}{\partial S} &= \alpha \cdot \beta \cdot e^{-(R_a + R_v)} \\
+\frac{\partial \Psi}{\partial N} &= (1-\alpha) \cdot \beta \cdot e^{-(R_a + R_v)} \\
+\frac{\partial \Psi}{\partial \alpha} &= (S - N) \cdot \beta \cdot e^{-(R_a + R_v)} \\
+\frac{\partial \Psi}{\partial \beta} &= O \cdot e^{-(R_a + R_v)} \cdot \mathbf{1}_{\beta O e^{-(R_a + R_v)} < 1}
+\end{align}
+```
+
+### Code Documentation
+
+```java
+/**
+ * Computes Ψ(x) using the hierarchical Bayesian framework.
+ *
+ * Mathematical foundation:
+ * Ψ(x) = min{β·O·exp(-[λ₁Rₐ + λ₂Rᵥ]), 1}
+ * where O = αS + (1-α)N
+ *
+ * @param S Source strength (internal evidence)
+ * @param N Non-source strength (external evidence)
+ * @param alpha Evidence allocation parameter ∈ [0,1]
+ * @param beta Uplift factor ≥ 1
+ * @param Ra Authority risk ∈ [0,∞)
+ * @param Rv Verifiability risk ∈ [0,∞)
+ * @param lambda1 Authority risk weight > 0
+ * @param lambda2 Verifiability risk weight > 0
+ * @return Bounded confidence score ∈ [0,1]
+ *
+ * @implNote Uses gauge freedom: S' = kS, N' = kN, β' = β/k preserves Ψ(x)
+ * @implNote Threshold transfer: τ' = τ·(β/β') preserves decisions
+ */
+public static double computePsi(
+        double S, double N, double alpha, double beta,
+        double Ra, double Rv, double lambda1, double lambda2) {
+    // Implementation with mathematical validation
+}
+```
+
+## Best Practices
+
+### Mathematical Rigor
+- **Proof Validation**: All theorems should have formal proofs
+- **Numerical Stability**: Implement proper error bounds and conditioning checks
+- **Convergence Analysis**: Provide convergence guarantees for iterative methods
+- **Sensitivity Analysis**: Analyze parameter sensitivity and stability
+
+### Implementation Quality
+- **Type Safety**: Use strong typing for mathematical objects
+- **Unit Consistency**: Ensure consistent units across calculations
+- **Numerical Precision**: Use appropriate precision for mathematical computations
+- **Performance Optimization**: Optimize for both accuracy and computational efficiency
+
+### Testing and Validation
+- **Mathematical Tests**: Test against known mathematical identities
+- **Edge Cases**: Test boundary conditions and edge cases
+- **Convergence Tests**: Verify convergence properties
+- **Performance Benchmarks**: Benchmark against theoretical complexity bounds
+
+This mathematical framework provides a solid foundation for implementing advanced algorithms in consciousness modeling, Bayesian inference, and dynamical systems analysis.

@@ -1,0 +1,478 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created": "2025-01-27",
+    "last_updated": "2025-01-27",
+    "organization": "Red Team Inverse Program",
+    "scope": "Production and Non-Production Environments"
+  },
+  "tactics": {
+    "reconnaissance": {
+      "description": "The adversary is trying to gather information they can use to plan future operations",
+      "techniques": {
+        "T1595": {
+          "name": "Active Scanning",
+          "subtechniques": {
+            "T1595.001": {
+              "name": "Scanning IP Blocks",
+              "data_sources": ["Network Traffic", "DNS Records"],
+              "detection_rules": [
+                {
+                  "rule_id": "NET-001",
+                  "name": "Unusual Port Scanning Activity",
+                  "status": "implemented",
+                  "priority": "high",
+                  "data_sources": ["Network Traffic", "Firewall Logs"],
+                  "false_positive_rate": "0.05",
+                  "last_tested": "2025-01-25",
+                  "owner": "SOC Team"
+                }
+              ],
+              "coverage_score": 85,
+              "business_impact": "medium",
+              "test_cases": [
+                "Port scan from single source to multiple destinations",
+                "Unusual port combinations",
+                "High-frequency connection attempts"
+              ]
+            },
+            "T1595.002": {
+              "name": "Vulnerability Scanning",
+              "data_sources": ["Network Traffic", "Web Logs"],
+              "detection_rules": [],
+              "coverage_score": 20,
+              "business_impact": "high",
+              "test_cases": [
+                "Automated vulnerability scanning patterns",
+                "Version enumeration attempts",
+                "Service fingerprinting"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "initial_access": {
+      "description": "The adversary is trying to get into your network",
+      "techniques": {
+        "T1566": {
+          "name": "Phishing",
+          "subtechniques": {
+            "T1566.001": {
+              "name": "Spearphishing Attachment",
+              "data_sources": ["Email Gateway", "EDR", "Network Traffic"],
+              "detection_rules": [
+                {
+                  "rule_id": "EMAIL-001",
+                  "name": "Suspicious Email Attachment",
+                  "status": "implemented",
+                  "priority": "high",
+                  "data_sources": ["Email Gateway", "EDR"],
+                  "false_positive_rate": "0.10",
+                  "last_tested": "2025-01-25",
+                  "owner": "Email Security Team"
+                },
+                {
+                  "rule_id": "EMAIL-002",
+                  "name": "Macro-Enabled Office Documents",
+                  "status": "implemented",
+                  "priority": "high",
+                  "data_sources": ["Email Gateway", "Endpoint"],
+                  "false_positive_rate": "0.15",
+                  "last_tested": "2025-01-25",
+                  "owner": "Email Security Team"
+                }
+              ],
+              "coverage_score": 90,
+              "business_impact": "critical",
+              "test_cases": [
+                "Email with executable attachment",
+                "Office document with macros",
+                "Archive files containing executables"
+              ]
+            },
+            "T1566.002": {
+              "name": "Spearphishing Link",
+              "data_sources": ["Email Gateway", "Proxy Logs", "EDR"],
+              "detection_rules": [],
+              "coverage_score": 60,
+              "business_impact": "high",
+              "test_cases": [
+                "Shortened URLs in emails",
+                "Domain impersonation",
+                "Urgent language patterns"
+              ]
+            }
+          }
+        },
+        "T1078": {
+          "name": "Valid Accounts",
+          "subtechniques": {
+            "T1078.002": {
+              "name": "Domain Accounts",
+              "data_sources": ["Active Directory", "Authentication Logs"],
+              "detection_rules": [
+                {
+                  "rule_id": "AUTH-001",
+                  "name": "Atypical Login Patterns",
+                  "status": "implemented",
+                  "priority": "medium",
+                  "data_sources": ["Authentication Logs", "VPN Logs"],
+                  "false_positive_rate": "0.08",
+                  "last_tested": "2025-01-24",
+                  "owner": "Identity Team"
+                }
+              ],
+              "coverage_score": 75,
+              "business_impact": "high",
+              "test_cases": [
+                "Login from unusual geographic location",
+                "Login outside normal business hours",
+                "Multiple failed login attempts"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "execution": {
+      "description": "The adversary is trying to run malicious code",
+      "techniques": {
+        "T1059": {
+          "name": "Command and Scripting Interpreter",
+          "subtechniques": {
+            "T1059.001": {
+              "name": "PowerShell",
+              "data_sources": ["EDR", "Process Creation", "Script Execution"],
+              "detection_rules": [
+                {
+                  "rule_id": "POWERSHELL-001",
+                  "name": "Suspicious PowerShell Execution",
+                  "status": "implemented",
+                  "priority": "high",
+                  "data_sources": ["EDR", "Process Creation"],
+                  "false_positive_rate": "0.12",
+                  "last_tested": "2025-01-26",
+                  "owner": "Endpoint Team"
+                }
+              ],
+              "coverage_score": 80,
+              "business_impact": "high",
+              "test_cases": [
+                "PowerShell with encoded commands",
+                "PowerShell downloading from internet",
+                "PowerShell creating new processes"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "persistence": {
+      "description": "The adversary is trying to maintain their foothold",
+      "techniques": {
+        "T1098": {
+          "name": "Account Manipulation",
+          "subtechniques": {
+            "T1098.001": {
+              "name": "Additional Cloud Credentials",
+              "data_sources": ["Cloud Audit Logs", "Identity Logs"],
+              "detection_rules": [],
+              "coverage_score": 30,
+              "business_impact": "critical",
+              "test_cases": [
+                "New API key creation",
+                "Service account modifications",
+                "Role permission changes"
+              ]
+            }
+          }
+        },
+        "T1053": {
+          "name": "Scheduled Task/Job",
+          "subtechniques": {
+            "T1053.005": {
+              "name": "Scheduled Task",
+              "data_sources": ["Process Creation", "Registry", "Task Scheduler"],
+              "detection_rules": [
+                {
+                  "rule_id": "TASK-001",
+                  "name": "New Scheduled Task Creation",
+                  "status": "implemented",
+                  "priority": "medium",
+                  "data_sources": ["Task Scheduler", "Registry"],
+                  "false_positive_rate": "0.20",
+                  "last_tested": "2025-01-23",
+                  "owner": "Endpoint Team"
+                }
+              ],
+              "coverage_score": 70,
+              "business_impact": "medium",
+              "test_cases": [
+                "Scheduled task with suspicious command",
+                "Task created by unusual user",
+                "Task with hidden properties"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "privilege_escalation": {
+      "description": "The adversary is trying to gain higher-level permissions",
+      "techniques": {
+        "T1068": {
+          "name": "Exploitation for Privilege Escalation",
+          "data_sources": ["EDR", "Process Creation", "Authentication Logs"],
+          "detection_rules": [],
+          "coverage_score": 40,
+          "business_impact": "critical",
+          "test_cases": [
+            "Local privilege escalation attempts",
+            "Kernel exploitation patterns",
+            "Service misconfiguration abuse"
+          ]
+        }
+      }
+    },
+    "defense_evasion": {
+      "description": "The adversary is trying to avoid being detected",
+      "techniques": {
+        "T1070": {
+          "name": "Indicator Removal",
+          "subtechniques": {
+            "T1070.004": {
+              "name": "File Deletion",
+              "data_sources": ["File System", "EDR"],
+              "detection_rules": [
+                {
+                  "rule_id": "FILE-001",
+                  "name": "Suspicious File Deletion Patterns",
+                  "status": "implemented",
+                  "priority": "medium",
+                  "data_sources": ["File System", "EDR"],
+                  "false_positive_rate": "0.25",
+                  "last_tested": "2025-01-22",
+                  "owner": "Endpoint Team"
+                }
+              ],
+              "coverage_score": 65,
+              "business_impact": "medium",
+              "test_cases": [
+                "Mass file deletion",
+                "Log file deletion",
+                "Security tool deletion"
+              ]
+            }
+          }
+        },
+        "T1027": {
+          "name": "Obfuscated Files or Information",
+          "data_sources": ["EDR", "Network Traffic"],
+          "detection_rules": [],
+          "coverage_score": 35,
+          "business_impact": "medium",
+          "test_cases": [
+            "Encoded executables",
+            "Packed malware",
+            "Obfuscated scripts"
+          ]
+        }
+      }
+    },
+    "credential_access": {
+      "description": "The adversary is trying to steal account names and passwords",
+      "techniques": {
+        "T1003": {
+          "name": "OS Credential Dumping",
+          "subtechniques": {
+            "T1003.001": {
+              "name": "LSASS Memory",
+              "data_sources": ["EDR", "Process Creation"],
+              "detection_rules": [],
+              "coverage_score": 50,
+              "business_impact": "critical",
+              "test_cases": [
+                "LSASS access by non-system processes",
+                "Credential dumping tool usage",
+                "Memory dumping patterns"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "lateral_movement": {
+      "description": "The adversary is trying to move through your environment",
+      "techniques": {
+        "T1021": {
+          "name": "Remote Services",
+          "subtechniques": {
+            "T1021.001": {
+              "name": "Remote Desktop Protocol",
+              "data_sources": ["Network Traffic", "Authentication Logs"],
+              "detection_rules": [
+                {
+                  "rule_id": "RDP-001",
+                  "name": "Suspicious RDP Connections",
+                  "status": "implemented",
+                  "priority": "high",
+                  "data_sources": ["Network Traffic", "Authentication Logs"],
+                  "false_positive_rate": "0.15",
+                  "last_tested": "2025-01-25",
+                  "owner": "Network Team"
+                }
+              ],
+              "coverage_score": 75,
+              "business_impact": "high",
+              "test_cases": [
+                "RDP from unusual locations",
+                "Multiple failed RDP attempts",
+                "RDP outside business hours"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "collection": {
+      "description": "The adversary is trying to gather data of interest to their goal",
+      "techniques": {
+        "T1115": {
+          "name": "Clipboard Data",
+          "data_sources": ["EDR", "Process Creation"],
+          "detection_rules": [],
+          "coverage_score": 25,
+          "business_impact": "low",
+          "test_cases": [
+            "Clipboard monitoring by suspicious processes",
+            "Data collection from clipboard"
+          ]
+        }
+      }
+    },
+    "exfiltration": {
+      "description": "The adversary is trying to steal data",
+      "techniques": {
+        "T1041": {
+          "name": "Exfiltration Over C2 Channel",
+          "data_sources": ["Network Traffic", "EDR"],
+          "detection_rules": [
+            {
+              "rule_id": "EXFIL-001",
+              "name": "Large Data Transfer to External",
+              "status": "implemented",
+              "priority": "high",
+              "data_sources": ["Network Traffic", "Proxy Logs"],
+              "false_positive_rate": "0.30",
+              "last_tested": "2025-01-24",
+              "owner": "Network Team"
+            }
+          ],
+          "coverage_score": 70,
+          "business_impact": "high",
+          "test_cases": [
+            "Large outbound data transfers",
+            "Data to unusual destinations",
+            "Archive creation followed by transfer"
+          ]
+        }
+      }
+    },
+    "impact": {
+      "description": "The adversary is trying to manipulate, interrupt, or destroy your systems and data",
+      "techniques": {
+        "T1486": {
+          "name": "Data Encrypted for Impact",
+          "data_sources": ["File System", "EDR", "Process Creation"],
+          "detection_rules": [
+            {
+              "rule_id": "RANSOM-001",
+              "name": "Mass File Encryption",
+              "status": "implemented",
+              "priority": "critical",
+              "data_sources": ["File System", "EDR"],
+              "false_positive_rate": "0.05",
+              "last_tested": "2025-01-26",
+              "owner": "SOC Team"
+            }
+          ],
+          "coverage_score": 85,
+          "business_impact": "critical",
+          "test_cases": [
+            "Mass file encryption patterns",
+            "Ransomware process creation",
+            "File extension changes"
+          ]
+        },
+        "T1490": {
+          "name": "Inhibit System Recovery",
+          "data_sources": ["File System", "Process Creation"],
+          "detection_rules": [],
+          "coverage_score": 40,
+          "business_impact": "high",
+          "test_cases": [
+            "Shadow copy deletion",
+            "Backup process termination",
+            "Recovery tool tampering"
+          ]
+        }
+      }
+    }
+  },
+  "data_sources": {
+    "endpoint_detection": {
+      "name": "Endpoint Detection and Response (EDR)",
+      "coverage": 85,
+      "priority": "high",
+      "status": "active"
+    },
+    "network_traffic": {
+      "name": "Network Traffic Analysis",
+      "coverage": 70,
+      "priority": "high",
+      "status": "active"
+    },
+    "authentication_logs": {
+      "name": "Authentication and Identity Logs",
+      "coverage": 75,
+      "priority": "high",
+      "status": "active"
+    },
+    "email_gateway": {
+      "name": "Email Security Gateway",
+      "coverage": 90,
+      "priority": "high",
+      "status": "active"
+    },
+    "cloud_audit": {
+      "name": "Cloud Platform Audit Logs",
+      "coverage": 60,
+      "priority": "medium",
+      "status": "partial"
+    },
+    "file_system": {
+      "name": "File System Monitoring",
+      "coverage": 65,
+      "priority": "medium",
+      "status": "active"
+    }
+  },
+  "summary": {
+    "total_techniques": 25,
+    "implemented_rules": 12,
+    "average_coverage": 60,
+    "critical_gaps": [
+      "Cloud credential manipulation detection",
+      "Advanced obfuscation techniques",
+      "Memory-based credential access",
+      "System recovery inhibition"
+    ],
+    "next_priorities": [
+      "Implement cloud-specific detections",
+      "Enhance email security rules",
+      "Add behavioral analytics",
+      "Improve data source integration"
+    ]
+  }
+}

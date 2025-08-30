@@ -1,0 +1,861 @@
+---
+globs: *.java,*.swift,*.py,*.mojo
+description: "Language-specific patterns, conventions, and best practices across Java, Swift, Python, and Mojo"
+---
+
+# 💻 Language-Specific Patterns
+
+## Java Development Standards
+
+### Code Structure ([Corpus/qualia/](mdc:Corpus/qualia/))
+```java
+// Package declaration
+package qualia;
+
+// Imports organized by type
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.Function;
+
+// Class documentation
+/**
+ * Core security assessment engine.
+ *
+ * This class implements comprehensive penetration testing
+ * across multiple vulnerability vectors.
+ *
+ * @author Ryan David Oates
+ * @version 1.0
+ * @since 2025
+ */
+public class JavaPenetrationTesting {
+
+    // Constants in UPPER_SNAKE_CASE
+    private static final int DEFAULT_TIMEOUT = 30000;
+    private static final String API_BASE_URL = "https://api.example.com";
+
+    // Instance variables in camelCase
+    private final SecurityManager securityManager;
+    private final List<SecurityFinding> findings;
+
+    // Constructor
+    public JavaPenetrationTesting() {
+        this.securityManager = new SecurityManager();
+        this.findings = new ArrayList<>();
+    }
+
+    // Public methods with documentation
+    /**
+     * Runs comprehensive security assessment.
+     *
+     * @return Array of security findings
+     * @throws SecurityException if assessment fails
+     */
+    public SecurityFinding[] runComprehensiveTesting() throws SecurityException {
+        // Implementation with proper error handling
+        try {
+            return performSecurityAssessment();
+        } catch (Exception e) {
+            throw new SecurityException("Security assessment failed", e);
+        }
+    }
+
+    // Private methods in camelCase
+    private SecurityFinding[] performSecurityAssessment() {
+        // Implementation details
+        return new SecurityFinding[0];
+    }
+
+    // Static utility methods
+    public static boolean isValidFinding(SecurityFinding finding) {
+        return finding != null && finding.getSeverity() != null;
+    }
+
+    // Inner classes for related functionality
+    public static class SecurityFinding {
+        private VulnerabilityType type;
+        private Severity severity;
+
+        // Builder pattern for complex objects
+        public static class Builder {
+            private VulnerabilityType type;
+            private Severity severity;
+
+            public Builder type(VulnerabilityType type) {
+                this.type = type;
+                return this;
+            }
+
+            public Builder severity(Severity severity) {
+                this.severity = severity;
+                return this;
+            }
+
+            public SecurityFinding build() {
+                SecurityFinding finding = new SecurityFinding();
+                finding.type = this.type;
+                finding.severity = this.severity;
+                return finding;
+            }
+        }
+    }
+
+    // Enums for type safety
+    public enum VulnerabilityType {
+        MEMORY_SAFETY("Memory Safety"),
+        SQL_INJECTION("SQL Injection"),
+        AUTHENTICATION("Authentication");
+
+        private final String description;
+
+        VulnerabilityType(String description) {
+            this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+    }
+
+    public enum Severity {
+        CRITICAL(4),
+        HIGH(3),
+        MEDIUM(2),
+        LOW(1),
+        INFO(0);
+
+        private final int level;
+
+        Severity(int level) {
+            this.level = level;
+        }
+
+        public int getLevel() {
+            return level;
+        }
+    }
+}
+```
+
+### Java Best Practices
+1. **Use meaningful class and method names**
+2. **Include comprehensive JavaDoc**
+3. **Handle exceptions appropriately**
+4. **Use enums for type safety**
+5. **Follow naming conventions strictly**
+6. **Implement builder pattern for complex objects**
+7. **Use generics for type safety**
+
+## Swift Development Standards
+
+### Code Structure ([Farmer copy/Farmer/](mdc:Farmer copy/Farmer/))
+```swift
+import Foundation
+import Security
+import CoreML
+
+// MARK: - Core Security Framework
+
+/**
+ Core penetration testing engine for iOS applications.
+
+ This class provides comprehensive security assessment capabilities
+ using reverse Koopman operators and statistical validation.
+ */
+class iOSPenetrationTesting {
+
+    // MARK: - Properties
+
+    private let securityManager: SecurityManager
+    private var findings: [SecurityFinding]
+
+    // MARK: - Initialization
+
+    init() {
+        self.securityManager = SecurityManager()
+        self.findings = []
+    }
+
+    // MARK: - Public Methods
+
+    /**
+     Runs comprehensive security assessment.
+
+     - Returns: Array of security findings with severity ratings
+     - Throws: SecurityError if assessment cannot be completed
+     */
+    func runComprehensiveTesting() throws -> [SecurityFinding] {
+        do {
+            return try performSecurityAssessment()
+        } catch {
+            throw SecurityError.assessmentFailed(error.localizedDescription)
+        }
+    }
+
+    // MARK: - Private Methods
+
+    private func performSecurityAssessment() throws -> [SecurityFinding] {
+        // Implementation with proper error handling
+        var results: [SecurityFinding] = []
+
+        // Memory safety testing
+        results.append(contentsOf: try testBufferOverflows())
+
+        // Injection testing
+        results.append(contentsOf: try testSQLInjection())
+
+        return results
+    }
+
+    private func testBufferOverflows() throws -> [SecurityFinding] {
+        // Implementation
+        return []
+    }
+
+    private func testSQLInjection() throws -> [SecurityFinding] {
+        // Implementation
+        return []
+    }
+
+    // MARK: - Utility Methods
+
+    static func isValidFinding(_ finding: SecurityFinding) -> Bool {
+        return finding.severity != .unknown
+    }
+}
+
+// MARK: - Data Models
+
+struct SecurityFinding {
+    let type: VulnerabilityType
+    let severity: Severity
+    let description: String
+    let location: String
+    let recommendation: String
+    let confidence: Double
+
+    // Memberwise initializer provided by Swift
+    // Custom initializers for complex logic
+    init(type: VulnerabilityType, severity: Severity, description: String,
+         location: String, recommendation: String, confidence: Double) {
+        self.type = type
+        self.severity = severity
+        self.description = description
+        self.location = location
+        self.recommendation = recommendation
+        self.confidence = confidence
+    }
+}
+
+enum VulnerabilityType: String, Codable {
+    case memorySafety = "Memory Safety"
+    case sqlInjection = "SQL Injection"
+    case authentication = "Authentication"
+    case encryption = "Encryption"
+    case networkSecurity = "Network Security"
+    case inputValidation = "Input Validation"
+}
+
+enum Severity: Int, Comparable {
+    case info = 0
+    case low = 1
+    case medium = 2
+    case high = 3
+    case critical = 4
+    case unknown = -1
+
+    // Comparable conformance for severity ordering
+    static func < (lhs: Severity, rhs: Severity) -> Bool {
+        return lhs.rawValue < rhs.rawValue
+    }
+}
+
+// MARK: - Error Handling
+
+enum SecurityError: Error {
+    case assessmentFailed(String)
+    case invalidConfiguration(String)
+    case permissionDenied(String)
+
+    var localizedDescription: String {
+        switch self {
+        case .assessmentFailed(let message):
+            return "Assessment failed: \(message)"
+        case .invalidConfiguration(let message):
+            return "Invalid configuration: \(message)"
+        case .permissionDenied(let message):
+            return "Permission denied: \(message)"
+        }
+    }
+}
+
+// MARK: - Extensions
+
+extension Array where Element == SecurityFinding {
+    func filter(by severity: Severity) -> [SecurityFinding] {
+        return self.filter { $0.severity >= severity }
+    }
+
+    func sortedBySeverity() -> [SecurityFinding] {
+        return self.sorted { $0.severity > $1.severity }
+    }
+}
+```
+
+### Swift Best Practices
+1. **Use descriptive names with type information**
+2. **Include comprehensive documentation**
+3. **Use structs for value types, classes for reference types**
+4. **Implement proper error handling with custom Error types**
+5. **Use extensions for adding functionality**
+6. **Follow Swift API design guidelines**
+7. **Use optionals appropriately**
+
+## Python Development Standards
+
+### Code Structure ([latest_news_theory_and_proof_copy_implementation.py](mdc:latest_news_theory_and_proof_copy_implementation.py))
+```python
+"""
+News Aggregation Theory Implementation.
+
+This module implements the latest news aggregation theory
+with inverse operations and statistical validation.
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+from typing import List, Tuple, Dict, Optional
+from dataclasses import dataclass
+from abc import ABC, abstractmethod
+
+
+@dataclass
+class SecurityFinding:
+    """Represents a security finding with severity and details."""
+    vulnerability_type: str
+    severity: str
+    description: str
+    location: str
+    recommendation: str
+    confidence: float
+
+    def __post_init__(self):
+        """Validate data after initialization."""
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("Confidence must be between 0.0 and 1.0")
+
+
+class NewsAggregationInverse:
+    """
+    Implementation of inverse news aggregation operations.
+
+    This class provides methods for extracting individual components
+    from aggregated coverage data using the mathematical framework
+    described in the theory document.
+    """
+
+    def __init__(self):
+        """Initialize the inverse operator."""
+        pass
+
+    def inverse_news_aggregation(self, coverage_next: float,
+                               headlines_current: float,
+                               delta_t: float, k1: float,
+                               k2: float, k3: float) -> float:
+        """
+        Extract k4 from aggregated coverage.
+
+        Args:
+            coverage_next: The aggregated coverage at t_{n+1}
+            headlines_current: Headlines at current time t_n
+            delta_t: Time step size
+            k1, k2, k3: Known k values
+
+        Returns:
+            The extracted k4 value
+
+        Raises:
+            ValueError: If delta_t is zero or negative
+        """
+        if delta_t <= 0:
+            raise ValueError("delta_t must be positive")
+
+        weighted_sum = 6.0 * (coverage_next - headlines_current) / delta_t
+        k4 = weighted_sum - k1 - 2.0 * k2 - 2.0 * k3
+
+        return k4
+
+    def validate_aggregation(self, coverage_next: float,
+                           headlines_current: float, delta_t: float,
+                           k1: float, k2: float, k3: float, k4: float) -> bool:
+        """
+        Validate that the aggregation formula holds.
+
+        Uses the exact formula from the theory:
+        coverage_{n+1} = headlines_n + (Δt/6) × (k1 + 2k2 + 2k3 + k4)
+        """
+        expected = headlines_current + (delta_t / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
+        tolerance = 1e-10
+
+        return abs(expected - coverage_next) < tolerance
+
+
+def demo_inverse_operations() -> Tuple[List[float], float]:
+    """
+    Demonstration of inverse operations with sample data.
+
+    Returns:
+        Tuple of (coverage_series, extracted_k4)
+    """
+    print("🔄 News Aggregation Inverse Operations Demo")
+    print("=" * 50)
+
+    # Sample data from theory document
+    coverage_next = 150.5
+    headlines_current = 100.0
+    delta_t = 0.1
+    k1, k2, k3 = 25.0, 30.0, 28.0
+
+    inverse_ops = NewsAggregationInverse()
+
+    # Extract k4 using inverse operation
+    k4 = inverse_ops.inverse_news_aggregation(
+        coverage_next, headlines_current, delta_t, k1, k2, k3
+    )
+
+    print(f"k4 = {k4:.6f}")
+
+    # Validate the result
+    is_valid = inverse_ops.validate_aggregation(
+        coverage_next, headlines_current, delta_t, k1, k2, k3, k4
+    )
+    print(f"✅ Aggregation valid: {is_valid}")
+
+    # Reconstruct time series
+    k_values = [k1, k2, k3, k4, 26.0, 31.0, 29.0, 27.0]
+    coverage_series = inverse_ops.reconstruct_time_series(
+        headlines_current, delta_t, k_values
+    )
+
+    print("📈 Reconstructed coverage series:")
+    for i, coverage in enumerate(coverage_series):
+        print(f"  t{i}: {coverage:.2f}")
+
+    print("\n✅ Inverse operations completed successfully!")
+
+    return coverage_series, k4
+
+
+if __name__ == "__main__":
+    # Run the demonstration
+    coverage_series, extracted_k4 = demo_inverse_operations()
+
+    print(f"\n🎯 Summary:")
+    print(f"   - Successfully extracted k4: {extracted_k4:.6f}")
+    print(f"   - Reconstructed {len(coverage_series)} time points")
+    print("   - Theory validation: PASSED")
+```
+
+### Python Best Practices
+1. **Use type hints for better code clarity**
+2. **Include comprehensive docstrings**
+3. **Use dataclasses for simple data structures**
+4. **Follow PEP 8 naming conventions**
+5. **Handle exceptions appropriately**
+6. **Use list/dict comprehensions for clarity**
+7. **Implement proper validation**
+
+## Mojo Development Standards
+
+### Code Structure ([chat_models.mojo](mdc:chat_models.mojo))
+```mojo
+"""
+High-performance AI models using Mojo language.
+
+This module implements various neural network architectures
+optimized for the Mojo platform with SIMD operations.
+"""
+
+import math
+from tensor import Tensor
+from utils import randn, zeros, ones
+
+
+struct Linear:
+    """
+    Linear transformation layer.
+
+    This layer applies a linear transformation: output = input @ weights + bias
+    """
+    var weights: Tensor
+    var bias: Tensor
+
+    fn __init__(inout self, input_size: Int, output_size: Int):
+        """Initialize weights and bias."""
+        self.weights = randn(output_size, input_size) * 0.01
+        self.bias = zeros(output_size)
+
+    fn forward(self, input: Tensor) -> Tensor:
+        """Forward pass through the linear layer."""
+        return input.matmul(self.weights.t()) + self.bias
+
+
+struct MLP:
+    """
+    Multi-layer perceptron.
+
+    A simple feed-forward neural network with one hidden layer.
+    """
+    var fc1: Linear
+    var fc2: Linear
+
+    fn __init__(inout self, input_size: Int, hidden_size: Int, output_size: Int):
+        """Initialize the MLP layers."""
+        self.fc1 = Linear(input_size, hidden_size)
+        self.fc2 = Linear(hidden_size, output_size)
+
+    fn forward(self, input: Tensor) -> Tensor:
+        """Forward pass through the MLP."""
+        var hidden = relu(self.fc1.forward(input))
+        var output = self.fc2.forward(hidden)
+        return output
+
+
+fn relu(x: Tensor) -> Tensor:
+    """
+    Rectified Linear Unit activation function.
+
+    Applies element-wise max(0, x) operation.
+
+    Args:
+        x: Input tensor
+
+    Returns:
+        Tensor with ReLU applied element-wise
+    """
+    return max(x, zeros(x.shape))
+
+
+fn softmax(x: Tensor) -> Tensor:
+    """
+    Softmax activation function.
+
+    Converts logits to probabilities using softmax normalization.
+
+    Args:
+        x: Input tensor (logits)
+
+    Returns:
+        Tensor with softmax probabilities
+    """
+    var exp_x = exp(x)
+    var sum_exp = sum(exp_x, axis=-1, keepdims=True)
+    return exp_x / sum_exp
+
+
+fn cross_entropy_loss(predictions: Tensor, targets: Tensor) -> Float64:
+    """
+    Cross-entropy loss function.
+
+    Computes the cross-entropy loss between predictions and targets.
+
+    Args:
+        predictions: Model predictions (logits)
+        targets: Ground truth labels
+
+    Returns:
+        Cross-entropy loss value
+    """
+    var probs = softmax(predictions)
+    var log_probs = log(probs + 1e-10)  # Add small epsilon for numerical stability
+    var loss = -mean(sum(targets * log_probs, axis=-1))
+    return loss
+
+
+fn main():
+    """Main function demonstrating the neural network."""
+    print("🧠 High-Performance AI Models Demo")
+    print("=" * 40)
+
+    # Create a simple dataset
+    var input_size = 4
+    var hidden_size = 10
+    var output_size = 3
+    var batch_size = 32
+
+    # Initialize model
+    var model = MLP(input_size, hidden_size, output_size)
+
+    # Generate sample data
+    var inputs = randn(batch_size, input_size)
+    var targets = zeros(batch_size, output_size)
+    # Set some targets to 1 for demonstration
+    for i in range(batch_size):
+        var target_idx = i % output_size
+        targets[i, target_idx] = 1.0
+
+    # Forward pass
+    var predictions = model.forward(inputs)
+    var loss = cross_entropy_loss(predictions, targets)
+
+    print(f"Input shape: {inputs.shape}")
+    print(f"Predictions shape: {predictions.shape}")
+    print(f"Cross-entropy loss: {loss:.4f}")
+    print("✅ Neural network computation completed!")
+```
+
+### Mojo Best Practices
+1. **Use structs for performance-critical code**
+2. **Include comprehensive documentation**
+3. **Leverage SIMD operations where possible**
+4. **Use compile-time evaluation for constants**
+5. **Implement proper memory management**
+6. **Use descriptive variable names**
+7. **Handle edge cases in mathematical operations**
+
+## Cross-Language Integration
+
+### Common Data Structures
+```java
+// Java
+public class SecurityFinding {
+    private String type;
+    private String severity;
+    private String description;
+    // ...
+}
+```
+
+```swift
+// Swift
+struct SecurityFinding {
+    let type: String
+    let severity: String
+    let description: String
+    // ...
+}
+```
+
+```python
+# Python
+@dataclass
+class SecurityFinding:
+    vulnerability_type: str
+    severity: str
+    description: str
+    # ...
+```
+
+### Error Handling Patterns
+```java
+// Java - Checked exceptions
+public SecurityFinding[] runAssessment() throws SecurityException {
+    try {
+        return performAssessment();
+    } catch (Exception e) {
+        throw new SecurityException("Assessment failed", e);
+    }
+}
+```
+
+```swift
+// Swift - Error protocol
+func runAssessment() throws -> [SecurityFinding] {
+    do {
+        return try performAssessment()
+    } catch {
+        throw SecurityError.assessmentFailed(error.localizedDescription)
+    }
+}
+```
+
+```python
+# Python - Exception hierarchy
+def run_assessment() -> List[SecurityFinding]:
+    try:
+        return perform_assessment()
+    except Exception as e:
+        raise SecurityException(f"Assessment failed: {e}") from e
+```
+
+## Testing Patterns
+
+### Java Testing
+```java
+// JUnit 5
+@ExtendWith(MockitoExtension.class)
+class JavaPenetrationTestingTest {
+
+    @InjectMocks
+    private JavaPenetrationTesting tester;
+
+    @Test
+    void testComprehensiveTesting() {
+        SecurityFinding[] findings = tester.runComprehensiveTesting();
+
+        assertNotNull(findings);
+        assertTrue(findings.length >= 0);
+    }
+
+    @Test
+    void testMemorySafety() {
+        SecurityFinding[] findings = tester.testMemorySafety();
+
+        assertNotNull(findings);
+        for (SecurityFinding finding : findings) {
+            assertEquals("MEMORY_SAFETY", finding.getType());
+        }
+    }
+}
+```
+
+### Swift Testing
+```swift
+// XCTest
+class iOSPenetrationTestingTests: XCTestCase {
+
+    var tester: iOSPenetrationTesting!
+
+    override func setUp() {
+        super.setUp()
+        tester = iOSPenetrationTesting()
+    }
+
+    func testComprehensiveTesting() throws {
+        let findings = try tester.runComprehensiveTesting()
+
+        XCTAssertNotNil(findings)
+        XCTAssertGreaterThanOrEqual(findings.count, 0)
+    }
+
+    func testMemorySafety() throws {
+        let findings = try tester.testMemorySafety()
+
+        XCTAssertNotNil(findings)
+        for finding in findings {
+            XCTAssertEqual("Memory Safety", finding.type.rawValue)
+        }
+    }
+}
+```
+
+### Python Testing
+```python
+# pytest
+import pytest
+from qualia.security import JavaPenetrationTesting, SecurityFinding
+
+
+class TestJavaPenetrationTesting:
+
+    @pytest.fixture
+    def tester(self):
+        return JavaPenetrationTesting()
+
+    def test_comprehensive_testing(self, tester):
+        findings = tester.run_comprehensive_testing()
+
+        assert findings is not None
+        assert len(findings) >= 0
+
+    def test_memory_safety(self, tester):
+        findings = tester.test_memory_safety()
+
+        assert findings is not None
+        for finding in findings:
+            assert finding.vulnerability_type == "MEMORY_SAFETY"
+
+    def test_invalid_confidence(self):
+        with pytest.raises(ValueError, match="Confidence must be between 0.0 and 1.0"):
+            SecurityFinding(
+                vulnerability_type="TEST",
+                severity="HIGH",
+                description="Test finding",
+                location="test.py",
+                recommendation="Fix it",
+                confidence=1.5  # Invalid confidence
+            )
+```
+
+## Performance Optimization
+
+### Java Performance
+```java
+// Parallel processing
+public SecurityFinding[] runParallelAssessment() {
+    return vulnerabilityTypes.parallelStream()
+            .map(this::testVulnerabilityType)
+            .flatMap(Arrays::stream)
+            .toArray(SecurityFinding[]::new);
+}
+
+// Memory optimization
+public class SecurityFindingPool {
+    private final Queue<SecurityFinding> pool = new ConcurrentLinkedQueue<>();
+
+    public SecurityFinding borrow() {
+        return pool.poll() != null ? pool.poll() : new SecurityFinding();
+    }
+
+    public void release(SecurityFinding finding) {
+        pool.offer(finding);
+    }
+}
+```
+
+### Swift Performance
+```swift
+// Concurrent processing
+func runParallelAssessment() async -> [SecurityFinding] {
+    await withTaskGroup(of: [SecurityFinding].self) { group in
+        for vulnerabilityType in VulnerabilityType.allCases {
+            group.addTask {
+                return await self.testVulnerabilityType(vulnerabilityType)
+            }
+        }
+
+        var allFindings: [SecurityFinding] = []
+        for await findings in group {
+            allFindings.append(contentsOf: findings)
+        }
+        return allFindings
+    }
+}
+```
+
+### Python Performance
+```python
+# Vectorized operations
+import numpy as np
+
+def process_findings_batch(findings: List[SecurityFinding]) -> np.ndarray:
+    """Process multiple findings using vectorized operations."""
+    severities = np.array([f.severity for f in findings])
+    confidences = np.array([f.confidence for f in findings])
+
+    # Vectorized severity scoring
+    severity_scores = np.where(severities == "CRITICAL", 4,
+                              np.where(severities == "HIGH", 3,
+                                      np.where(severities == "MEDIUM", 2, 1)))
+
+    # Calculate risk scores
+    risk_scores = severity_scores * confidences
+
+    return risk_scores
+```
+
+## Documentation Standards
+
+### Code Documentation
+- **Include purpose and overview** in class/module docstrings
+- **Document all parameters and return values**
+- **Explain complex algorithms** with references to theory
+- **Provide usage examples** in docstrings
+- **Document exceptions and error conditions**
+
+### API Documentation
+- **Use consistent formatting** across languages
+- **Include version information** and compatibility notes
+- **Document threading/concurrency behavior**
+- **Specify performance characteristics**
+- **Provide migration guides** for breaking changes

@@ -1,0 +1,534 @@
+---
+alwaysApply: false
+globs: *.py
+description: Python coding patterns, best practices, and conventions for the scientific computing toolkit
+---
+
+# 🐍 Python Code Patterns & Best Practices Guide
+
+## Core Scientific Computing Patterns
+
+### Data Structure Definitions:
+```python
+# Use dataclasses for structured data
+from dataclasses import dataclass, field
+from typing import Dict, List, Tuple, Optional, Union
+import numpy as np
+
+@dataclass
+class MaterialProperties:
+    """Material properties with validation."""
+    name: str
+    density: float  # kg/m³
+    hb_params: Dict[str, float]  # Herschel-Bulkley parameters
+    viscoelastic_params: Optional[Dict[str, float]] = None
+    thixotropic_params: Optional[Dict[str, float]] = None
+
+    def __post_init__(self):
+        """Validate material properties."""
+        if self.density <= 0:
+            raise ValueError("Density must be positive")
+        if 'tau_y' in self.hb_params and self.hb_params['tau_y'] < 0:
+            raise ValueError("Yield stress cannot be negative")
+
+@dataclass
+class SimulationResult:
+    """Container for simulation results."""
+    points: np.ndarray
+    velocity: np.ndarray
+    pressure: np.ndarray
+    stress: np.ndarray
+    convergence_history: List[float] = field(default_factory=list)
+    metadata: Dict[str, Union[str, float]] = field(default_factory=dict)
+```
+
+### Error Handling Patterns:
+```python
+class SimulationError(Exception):
+    """Base class for simulation errors."""
+    pass
+
+class ConvergenceError(SimulationError):
+    """Raised when simulation fails to converge."""
+    pass
+
+class InvalidMaterialError(SimulationError):
+    """Raised for invalid material properties."""
+    pass
+
+def safe_simulation_runner(func):
+    """Decorator for safe simulation execution."""
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ConvergenceError as e:
+            print(f"Convergence failed: {e}")
+            return create_fallback_solution()
+        except InvalidMaterialError as e:
+            print(f"Invalid material: {e}")
+            return None
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            raise
+    return wrapper
+
+@safe_simulation_runner
+def run_complex_simulation(params):
+    """Run simulation with comprehensive error handling."""
+    validate_parameters(params)
+    result = perform_simulation(params)
+    validate_result(result)
+    return result
+```
+
+### Logging and Debugging:
+```python
+import logging
+
+# Configure logging for scientific applications
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('simulation.log'),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
+class SimulationLogger:
+    """Advanced logging for scientific simulations."""
+
+    def __init__(self, name: str):
+        self.logger = logging.getLogger(name)
+        self.metrics = {}
+
+    def log_simulation_start(self, params):
+        """Log simulation initiation."""
+        self.logger.info(f"Starting simulation with parameters: {params}")
+        self.start_time = time.time()
+
+    def log_iteration(self, iteration: int, residual: float, **metrics):
+        """Log iteration progress."""
+        self.logger.debug(f"Iteration {iteration}: residual={residual:.6f}")
+        for name, value in metrics.items():
+            self.metrics[f"{name}_{iteration}"] = value
+
+    def log_simulation_end(self, success: bool, final_residual: float):
+        """Log simulation completion."""
+        duration = time.time() - self.start_time
+        status = "SUCCESS" if success else "FAILED"
+        self.logger.info(f"Simulation {status} in {duration:.2f}s, "
+                        f"final residual: {final_residual:.6f}")
+
+    def log_performance_metrics(self, metrics: Dict[str, float]):
+        """Log performance metrics."""
+        for name, value in metrics.items():
+            self.logger.info(f"Performance - {name}: {value}")
+
+    def save_metrics_to_file(self, filename: str):
+        """Save metrics to file for post-processing."""
+        import json
+        with open(filename, 'w') as f:
+            json.dump(self.metrics, f, indent=2)
+```
+
+## Numerical Methods Patterns
+
+### Array Operations Best Practices:
+```python
+# Efficient NumPy operations
+def compute_velocity_gradient_efficient(velocity_field, grid_spacing):
+    """Compute velocity gradients efficiently."""
+    # Use numpy.gradient for automatic differentiation
+    dv_dx = np.gradient(velocity_field[:, 0], grid_spacing[0], axis=0)
+    dv_dy = np.gradient(velocity_field[:, 0], grid_spacing[1], axis=1)
+    du_dx = np.gradient(velocity_field[:, 1], grid_spacing[0], axis=0)
+    du_dy = np.gradient(velocity_field[:, 1], grid_spacing[1], axis=1)
+
+    # Strain rate tensor (vectorized)
+    strain_rate_xx = dv_dx
+    strain_rate_yy = du_dy
+    strain_rate_xy = 0.5 * (dv_dy + du_dx)
+
+    return np.stack([strain_rate_xx, strain_rate_yy, strain_rate_xy], axis=-1)
+
+def apply_boundary_conditions_vectorized(field, mask, value):
+    """Apply boundary conditions efficiently."""
+    # Vectorized boundary condition application
+    field[mask] = value
+
+    # Handle different boundary types
+    wall_mask = identify_wall_nodes(field.shape)
+    inlet_mask = identify_inlet_nodes(field.shape)
+
+    # Apply no-slip condition
+    field[wall_mask] = 0.0
+
+    # Apply inlet condition
+    field[inlet_mask] = value
+
+    return field
+```
+
+### Memory-Efficient Computing:
+```python
+def process_large_dataset_in_chunks(data, chunk_size=1000, processor=None):
+    """Process large datasets in memory-efficient chunks."""
+    results = []
+
+    for i in range(0, len(data), chunk_size):
+        chunk = data[i:i + chunk_size]
+
+        # Process chunk
+        if processor:
+            chunk_result = processor(chunk)
+        else:
+            chunk_result = default_processing(chunk)
+
+        results.append(chunk_result)
+
+        # Memory management
+        del chunk
+
+    return np.concatenate(results) if results else np.array([])
+
+def create_sparse_matrix_efficient(matrix_shape, nonzero_indices):
+    """Create sparse matrices for memory efficiency."""
+    from scipy import sparse
+
+    # Use appropriate sparse format
+    if matrix_shape[0] == matrix_shape[1]:  # Square matrix
+        # Use CSR format for efficient arithmetic
+        return sparse.csr_matrix((data, indices, indptr), shape=matrix_shape)
+    else:
+        # Use CSC format for rectangular matrices
+        return sparse.csc_matrix((data, indices, indptr), shape=matrix_shape)
+
+def monitor_memory_usage():
+    """Monitor memory usage during computation."""
+    import psutil
+    import os
+
+    process = psutil.Process(os.getpid())
+    memory_info = process.memory_info()
+
+    return {
+        'rss': memory_info.rss / 1024 / 1024,  # MB
+        'vms': memory_info.vms / 1024 / 1024,  # MB
+        'percent': process.memory_percent()
+    }
+```
+
+## Algorithm Implementation Patterns
+
+### Optimization Frameworks:
+```python
+class OptimizationFramework:
+    """Framework for optimization problems."""
+
+    def __init__(self, objective_function, constraints=None, bounds=None):
+        self.objective = objective_function
+        self.constraints = constraints or []
+        self.bounds = bounds
+
+    def optimize_scipy(self, initial_guess, method='SLSQP'):
+        """Optimize using SciPy."""
+        result = optimize.minimize(
+            self.objective,
+            initial_guess,
+            method=method,
+            bounds=self.bounds,
+            constraints=self.constraints
+        )
+        return self._format_result(result)
+
+    def optimize_gradient_descent(self, initial_guess, learning_rate=0.01):
+        """Custom gradient descent implementation."""
+        x = np.array(initial_guess)
+        history = [x.copy()]
+
+        for iteration in range(self.max_iterations):
+            gradient = self.compute_gradient(x)
+            x -= learning_rate * gradient
+            history.append(x.copy())
+
+            if np.linalg.norm(gradient) < self.tolerance:
+                break
+
+        return {'x': x, 'history': history, 'success': True}
+
+    def optimize_genetic_algorithm(self, population_size=50):
+        """Genetic algorithm optimization."""
+        from scipy.optimize import differential_evolution
+
+        result = differential_evolution(
+            self.objective,
+            self.bounds,
+            popsize=population_size
+        )
+        return self._format_result(result)
+
+    def _format_result(self, result):
+        """Format optimization result consistently."""
+        return {
+            'success': result.success,
+            'x': result.x,
+            'fun': result.fun,
+            'nfev': getattr(result, 'nfev', None),
+            'nit': getattr(result, 'nit', None),
+            'message': getattr(result, 'message', '')
+        }
+```
+
+### Parameter Fitting Patterns:
+```python
+def fit_model_comprehensive(model_function, x_data, y_data,
+                           parameter_names=None, bounds=None):
+    """Comprehensive parameter fitting with uncertainty."""
+
+    # Define residual function
+    def residuals(params):
+        return model_function(x_data, params) - y_data
+
+    # Perform fit
+    result = optimize.least_squares(
+        residuals,
+        initial_guess,
+        bounds=bounds,
+        method='trf'
+    )
+
+    fitted_params = result.x
+
+    # Compute uncertainties
+    jacobian = result.jac
+    residual = result.fun
+    cov_matrix = np.linalg.inv(jacobian.T @ jacobian) * np.var(residual)
+    uncertainties = np.sqrt(np.diag(cov_matrix))
+
+    # Goodness of fit metrics
+    ss_res = np.sum(residual**2)
+    ss_tot = np.sum((y_data - np.mean(y_data))**2)
+    r_squared = 1 - (ss_res / ss_tot)
+
+    # Confidence intervals
+    confidence_intervals = {}
+    for i, (param, uncertainty) in enumerate(zip(fitted_params, uncertainties)):
+        name = parameter_names[i] if parameter_names else f'param_{i}'
+        confidence_intervals[name] = {
+            'value': param,
+            'uncertainty': uncertainty,
+            '95ci': (param - 1.96 * uncertainty, param + 1.96 * uncertainty)
+        }
+
+    return {
+        'parameters': fitted_params,
+        'uncertainties': uncertainties,
+        'confidence_intervals': confidence_intervals,
+        'r_squared': r_squared,
+        'residuals': residual,
+        'success': result.success
+    }
+```
+
+## Code Organization and Documentation
+
+### Module Structure:
+```python
+# __init__.py for package initialization
+"""
+Scientific Computing Toolkit
+===========================
+
+Core modules for scientific computing and engineering analysis.
+
+Modules:
+    - models: Constitutive equations and material models
+    - solvers: Numerical solvers and algorithms
+    - analysis: Analysis and post-processing tools
+    - visualization: Plotting and visualization utilities
+    - utils: Utility functions and helpers
+"""
+
+from .models import *
+from .solvers import *
+from .analysis import *
+
+__version__ = "1.0.0"
+__author__ = "Scientific Computing Team"
+```
+
+### Documentation Standards:
+```python
+def well_documented_function(
+    parameter1: float,
+    parameter2: np.ndarray,
+    optional_param: Optional[str] = None
+) -> Tuple[np.ndarray, Dict[str, float]]:
+    """
+    Comprehensive function documentation.
+
+    This function performs [brief description of what it does],
+    including [key features or capabilities].
+
+    Parameters
+    ----------
+    parameter1 : float
+        Description of parameter1, including valid ranges,
+        units, and special considerations.
+    parameter2 : np.ndarray
+        Description of parameter2 array, including expected
+        shape, data type, and coordinate system.
+    optional_param : str, optional
+        Description of optional parameter. Default is None,
+        which [describes default behavior].
+
+    Returns
+    -------
+    result_array : np.ndarray
+        Description of first return value, including shape
+        and coordinate system.
+    metrics : dict
+        Dictionary containing computed metrics with keys:
+        - 'metric1': description of metric1
+        - 'metric2': description of metric2
+
+    Raises
+    ------
+    ValueError
+        Raised when [specific error conditions].
+    RuntimeError
+        Raised when [numerical issues occur].
+
+    Notes
+    -----
+    Additional implementation notes, mathematical background,
+    or usage considerations.
+
+    Examples
+    --------
+    Basic usage example:
+
+    >>> x = np.linspace(0, 1, 100)
+    >>> result, metrics = well_documented_function(1.0, x)
+    >>> print(f"Result shape: {result.shape}")
+
+    Advanced usage with optional parameters:
+
+    >>> result, metrics = well_documented_function(
+    ...     2.5, x, optional_param='advanced'
+    ... )
+
+    References
+    ----------
+    .. [1] Author Name. "Paper Title." Journal Name, Year.
+    """
+
+    # Implementation with comprehensive error checking
+    if parameter1 <= 0:
+        raise ValueError("parameter1 must be positive")
+
+    if not isinstance(parameter2, np.ndarray):
+        raise TypeError("parameter2 must be numpy array")
+
+    # Main computation
+    result_array = perform_computation(parameter1, parameter2)
+
+    # Compute metrics
+    metrics = compute_metrics(result_array, parameter2)
+
+    return result_array, metrics
+```
+
+### Testing Patterns:
+```python
+import pytest
+import numpy as np
+from numpy.testing import assert_allclose
+
+class TestMaterialModels:
+    """Comprehensive test suite for material models."""
+
+    @pytest.fixture
+    def sample_material(self):
+        """Fixture for test material."""
+        return MaterialProperties(
+            name="Test Material",
+            density=1000.0,
+            hb_params={'tau_y': 10.0, 'K': 5.0, 'n': 0.5}
+        )
+
+    def test_hb_constitutive_equation(self, sample_material):
+        """Test Herschel-Bulkley constitutive equation."""
+        gamma_dot = np.logspace(-3, 3, 100)
+        tau = hb_tau_from_gamma(
+            sample_material.hb_params['tau_y'],
+            sample_material.hb_params['K'],
+            sample_material.hb_params['n'],
+            gamma_dot
+        )
+
+        # Check yield stress
+        assert tau[0] == pytest.approx(sample_material.hb_params['tau_y'], rel=1e-3)
+
+        # Check power-law behavior at high shear rates
+        high_shear_mask = gamma_dot > 1.0
+        n_measured = np.polyfit(
+            np.log(gamma_dot[high_shear_mask]),
+            np.log(tau[high_shear_mask] - sample_material.hb_params['tau_y']),
+            1
+        )[0]
+        assert n_measured == pytest.approx(sample_material.hb_params['n'], rel=0.1)
+
+    def test_parameter_validation(self):
+        """Test parameter validation."""
+        with pytest.raises(ValueError, match="Density must be positive"):
+            MaterialProperties(name="Invalid", density=-1.0, hb_params={})
+
+        with pytest.raises(ValueError, match="Yield stress cannot be negative"):
+            MaterialProperties(
+                name="Invalid",
+                density=1000.0,
+                hb_params={'tau_y': -10.0, 'K': 1.0, 'n': 0.5}
+            )
+
+    @pytest.mark.parametrize("shear_rate,expected_range", [
+        (0.001, (9.5, 10.5)),  # Near yield stress
+        (1.0, (10.0, 20.0)),   # Intermediate shear rate
+        (100.0, (50.0, 200.0)) # High shear rate
+    ])
+    def test_stress_range(self, sample_material, shear_rate, expected_range):
+        """Test stress computation across shear rate range."""
+        tau = hb_tau_from_gamma(
+            sample_material.hb_params['tau_y'],
+            sample_material.hb_params['K'],
+            sample_material.hb_params['n'],
+            shear_rate
+        )
+
+        assert expected_range[0] <= tau <= expected_range[1]
+
+    def test_inverse_constitutive_equation(self, sample_material):
+        """Test inverse constitutive equation."""
+        tau_test = np.linspace(15, 50, 10)  # Above yield stress
+        gamma_from_tau = hb_gamma_from_tau(
+            sample_material.hb_params['tau_y'],
+            sample_material.hb_params['K'],
+            sample_material.hb_params['n'],
+            tau_test
+        )
+
+        # Verify inverse relationship
+        tau_from_gamma = hb_tau_from_gamma(
+            sample_material.hb_params['tau_y'],
+            sample_material.hb_params['K'],
+            sample_material.hb_params['n'],
+            gamma_from_tau
+        )
+
+        assert_allclose(tau_from_gamma, tau_test, rtol=1e-10)
+```
+
+This comprehensive guide establishes the coding patterns and best practices for the scientific computing toolkit, ensuring consistency, reliability, and maintainability across all modules.

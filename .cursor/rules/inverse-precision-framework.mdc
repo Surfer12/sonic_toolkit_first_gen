@@ -1,0 +1,881 @@
+---
+globs: *.py,*.java,*.mojo
+---
+# Inverse Precision Framework with 0.9987 Convergence Criterion
+
+This framework implements high-precision inverse analysis for complex multi-component systems using the 0.9987 convergence criterion. The precision threshold ensures mathematical stability in the prime/non-prime interaction space and provides robust convergence for parameter extraction.
+
+## Mathematical Foundation
+
+### 0.9987 Precision Convergence Criterion
+
+**Relative Convergence Criterion:**
+```
+Convergence_Criterion = ||k'ₙ₊₁ - k'ₙ|| / ||k'ₙ|| ≤ 0.0013
+
+Where: 0.9987 = 1 - 0.0013 (relative precision)
+```
+
+**Absolute Convergence Criterion:**
+```
+||k'ₙ₊₁ - k'ₙ|| ≤ ε_absolute
+```
+
+**Combined Convergence:**
+```
+Converged = (||k'ₙ₊₁ - k'ₙ|| ≤ ε_absolute) AND (||k'ₙ₊₁ - k'ₙ|| / ||k'ₙ|| ≤ 0.0013)
+```
+
+### Prime/Non-Prime Interaction Space
+
+The 0.9987 criterion ensures stability in the mathematical space where:
+- **Prime components**: Well-conditioned, stable contributions
+- **Non-prime components**: Potentially ill-conditioned, requiring higher precision
+- **Interaction terms**: Cross-coupling between components
+
+## Python Implementation
+
+```python
+import numpy as np
+from typing import Dict, List, Tuple, Optional, Union, Callable
+from dataclasses import dataclass
+from scipy.optimize import minimize, least_squares
+from scipy.linalg import svd, pinv
+from scipy.stats import chi2
+import warnings
+import logging
+
+# Set up logging for precision tracking
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@dataclass
+class PrecisionCriteria:
+    """Precision convergence criteria for inverse analysis."""
+    relative_tolerance: float = 0.0013  # 0.9987 convergence criterion
+    absolute_tolerance: float = 1e-8    # Absolute convergence threshold
+    max_iterations: int = 100           # Maximum iteration limit
+    min_step_size: float = 1e-12        # Minimum step size for convergence
+    condition_number_threshold: float = 1e12  # Matrix conditioning threshold
+    confidence_level: float = 0.95      # Statistical confidence for parameter bounds
+
+@dataclass
+class ConvergenceMetrics:
+    """Detailed convergence tracking metrics."""
+    iteration_count: int = 0
+    relative_errors: List[float] = None
+    absolute_errors: List[float] = None
+    condition_numbers: List[float] = None
+    parameter_histories: Dict[str, List[float]] = None
+    convergence_reason: str = ""
+    final_precision: float = 0.0
+
+    def __post_init__(self):
+        if self.relative_errors is None:
+            self.relative_errors = []
+        if self.absolute_errors is None:
+            self.absolute_errors = []
+        if self.condition_numbers is None:
+            self.condition_numbers = []
+        if self.parameter_histories is None:
+            self.parameter_histories = {}
+
+class InversePrecisionFramework:
+    """
+    High-precision inverse analysis framework with 0.9987 convergence criterion.
+
+    Implements advanced numerical methods for extracting individual component
+    contributions from multi-component system measurements.
+    """
+
+    def __init__(self, precision_criteria: Optional[PrecisionCriteria] = None):
+        """
+        Initialize the inverse precision framework.
+
+        Args:
+            precision_criteria: Precision convergence criteria
+        """
+        self.criteria = precision_criteria or PrecisionCriteria()
+        self._convergence_history: List[ConvergenceMetrics] = []
+
+    def check_convergence(self, k_current: np.ndarray, k_previous: np.ndarray) -> Tuple[bool, Dict[str, float]]:
+        """
+        Check convergence using 0.9987 precision criterion.
+
+        Args:
+            k_current: Current parameter estimates
+            k_previous: Previous parameter estimates
+
+        Returns:
+            Tuple of (converged: bool, metrics: dict)
+        """
+        # Compute absolute difference
+        absolute_diff = np.linalg.norm(k_current - k_previous)
+
+        # Compute relative difference (0.9987 criterion)
+        norm_current = np.linalg.norm(k_current)
+        if norm_current > 0:
+            relative_diff = absolute_diff / norm_current
+        else:
+            relative_diff = absolute_diff
+
+        # Check convergence criteria
+        absolute_converged = absolute_diff <= self.criteria.absolute_tolerance
+        relative_converged = relative_diff <= self.criteria.relative_tolerance
+
+        converged = absolute_converged and relative_converged
+
+        metrics = {
+            'absolute_error': absolute_diff,
+            'relative_error': relative_diff,
+            'absolute_converged': absolute_converged,
+            'relative_converged': relative_converged,
+            'precision_achieved': 1.0 - relative_diff
+        }
+
+        return converged, metrics
+
+    def inverse_extract_precise(self, measured_data: np.ndarray,
+                              component_matrix: np.ndarray,
+                              initial_guess: np.ndarray,
+                              bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None) -> Dict[str, any]:
+        """
+        Perform high-precision inverse extraction with 0.9987 convergence.
+
+        Args:
+            measured_data: Measured system response [n_measurements]
+            component_matrix: Component contribution matrix [n_measurements, n_components]
+            initial_guess: Initial parameter estimates [n_components]
+            bounds: Parameter bounds (lower, upper)
+
+        Returns:
+            Comprehensive extraction results with precision metrics
+        """
+        logger.info(f"Starting inverse extraction with 0.9987 precision criterion")
+        logger.info(f"Problem size: {component_matrix.shape[0]} measurements, {component_matrix.shape[1]} components")
+
+        # Initialize convergence tracking
+        convergence_metrics = ConvergenceMetrics()
+        k_current = initial_guess.copy()
+        k_previous = np.full_like(k_current, np.inf)
+
+        # Main optimization loop with precision control
+        for iteration in range(self.criteria.max_iterations):
+
+            # Check matrix conditioning
+            try:
+                U, s, Vt = svd(component_matrix)
+                condition_number = s[0] / s[-1] if s[-1] > 0 else np.inf
+                convergence_metrics.condition_numbers.append(condition_number)
+
+                if condition_number > self.criteria.condition_number_threshold:
+                    logger.warning(f"Ill-conditioned matrix at iteration {iteration}: κ = {condition_number}")
+                    # Use pseudo-inverse for stability
+                    component_inv = pinv(component_matrix, rcond=1e-15)
+                else:
+                    component_inv = np.linalg.inv(component_matrix.T @ component_matrix) @ component_matrix.T
+
+            except np.linalg.LinAlgError as e:
+                logger.error(f"Matrix inversion failed at iteration {iteration}: {e}")
+                break
+
+            # Update parameter estimates
+            k_previous = k_current.copy()
+            k_current = component_inv @ measured_data
+
+            # Apply bounds if specified
+            if bounds is not None:
+                lower_bounds, upper_bounds = bounds
+                k_current = np.clip(k_current, lower_bounds, upper_bounds)
+
+            # Check convergence
+            converged, metrics = self.check_convergence(k_current, k_previous)
+
+            # Store convergence history
+            convergence_metrics.iteration_count = iteration + 1
+            convergence_metrics.relative_errors.append(metrics['relative_error'])
+            convergence_metrics.absolute_errors.append(metrics['absolute_error'])
+
+            # Store parameter history for each component
+            for i, param_value in enumerate(k_current):
+                param_name = f"param_{i}"
+                if param_name not in convergence_metrics.parameter_histories:
+                    convergence_metrics.parameter_histories[param_name] = []
+                convergence_metrics.parameter_histories[param_name].append(param_value)
+
+            # Check for minimum step size
+            if np.linalg.norm(k_current - k_previous) < self.criteria.min_step_size:
+                convergence_metrics.convergence_reason = "Minimum step size reached"
+                logger.info(f"Converged at iteration {iteration + 1}: minimum step size")
+                break
+
+            if converged:
+                convergence_metrics.convergence_reason = "0.9987 precision criterion met"
+                convergence_metrics.final_precision = metrics['precision_achieved']
+                logger.info(f"Converged at iteration {iteration + 1}: precision = {metrics['precision_achieved']:.6f}")
+                break
+
+        else:
+            convergence_metrics.convergence_reason = "Maximum iterations reached"
+            logger.warning(f"Maximum iterations reached without convergence")
+
+        # Compute final statistics
+        extraction_results = {
+            'extracted_parameters': k_current,
+            'convergence_metrics': convergence_metrics,
+            'predicted_data': component_matrix @ k_current,
+            'residuals': measured_data - component_matrix @ k_current,
+            'success': converged
+        }
+
+        # Compute statistical metrics
+        extraction_results.update(self._compute_statistical_metrics(
+            measured_data, component_matrix @ k_current, component_matrix.shape[1]
+        ))
+
+        # Store convergence history
+        self._convergence_history.append(convergence_metrics)
+
+        return extraction_results
+
+    def _compute_statistical_metrics(self, measured: np.ndarray, predicted: np.ndarray,
+                                   n_parameters: int) -> Dict[str, float]:
+        """
+        Compute statistical metrics for parameter estimation quality.
+
+        Args:
+            measured: Measured data
+            predicted: Predicted data
+            n_parameters: Number of fitted parameters
+
+        Returns:
+            Statistical metrics dictionary
+        """
+        residuals = measured - predicted
+        n_data = len(measured)
+        n_dof = n_data - n_parameters
+
+        if n_dof <= 0:
+            return {'warning': 'Insufficient degrees of freedom'}
+
+        # Basic statistics
+        mse = np.mean(residuals**2)
+        rmse = np.sqrt(mse)
+        mae = np.mean(np.abs(residuals))
+
+        # R-squared
+        ss_res = np.sum(residuals**2)
+        ss_tot = np.sum((measured - np.mean(measured))**2)
+        r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+
+        # Chi-squared test
+        chi_squared = np.sum(residuals**2)
+        chi_squared_reduced = chi_squared / n_dof
+
+        # Confidence intervals (simplified)
+        confidence_interval = np.sqrt(chi2.ppf(self.criteria.confidence_level, n_dof)) * rmse
+
+        return {
+            'mse': mse,
+            'rmse': rmse,
+            'mae': mae,
+            'r_squared': r_squared,
+            'chi_squared': chi_squared,
+            'chi_squared_reduced': chi_squared_reduced,
+            'confidence_interval': confidence_interval,
+            'degrees_of_freedom': n_dof
+        }
+
+    def adaptive_precision_extraction(self, measured_data: np.ndarray,
+                                    component_matrix: np.ndarray,
+                                    initial_guess: np.ndarray,
+                                    precision_levels: List[float]) -> Dict[str, any]:
+        """
+        Perform multi-precision extraction with adaptive convergence criteria.
+
+        Args:
+            measured_data: Measured system response
+            component_matrix: Component contribution matrix
+            initial_guess: Initial parameter estimates
+            precision_levels: List of precision levels to test (e.g., [0.99, 0.9987, 0.9999])
+
+        Returns:
+            Results for each precision level
+        """
+        results = {}
+
+        for precision in precision_levels:
+            logger.info(f"Testing precision level: {precision}")
+
+            # Create precision criteria for this level
+            precision_criteria = PrecisionCriteria(
+                relative_tolerance=1.0 - precision,
+                absolute_tolerance=self.criteria.absolute_tolerance,
+                max_iterations=self.criteria.max_iterations,
+                condition_number_threshold=self.criteria.condition_number_threshold
+            )
+
+            # Create temporary framework with this precision
+            temp_framework = InversePrecisionFramework(precision_criteria)
+
+            # Perform extraction
+            result = temp_framework.inverse_extract_precise(
+                measured_data, component_matrix, initial_guess
+            )
+
+            results[f"precision_{precision:.6f}"] = result
+
+            # Log results
+            if result['success']:
+                logger.info(f"Precision {precision:.6f}: converged in {result['convergence_metrics'].iteration_count} iterations")
+                logger.info(f"Final precision: {result['convergence_metrics'].final_precision:.6f}")
+            else:
+                logger.warning(f"Precision {precision:.6f}: failed to converge")
+
+        return results
+
+    def validate_extraction_stability(self, measured_data: np.ndarray,
+                                    component_matrix: np.ndarray,
+                                    initial_guess: np.ndarray,
+                                    n_perturbations: int = 10,
+                                    perturbation_scale: float = 0.01) -> Dict[str, any]:
+        """
+        Validate extraction stability through perturbation analysis.
+
+        Args:
+            measured_data: Measured system response
+            component_matrix: Component contribution matrix
+            initial_guess: Initial parameter estimates
+            n_perturbations: Number of perturbation tests
+            perturbation_scale: Scale of perturbations
+
+        Returns:
+            Stability analysis results
+        """
+        logger.info(f"Performing stability analysis with {n_perturbations} perturbations")
+
+        base_result = self.inverse_extract_precise(measured_data, component_matrix, initial_guess)
+        base_parameters = base_result['extracted_parameters']
+
+        stability_results = {
+            'base_parameters': base_parameters,
+            'perturbation_results': [],
+            'parameter_variability': {},
+            'stability_metrics': {}
+        }
+
+        for i in range(n_perturbations):
+            # Perturb measured data
+            perturbation = np.random.normal(0, perturbation_scale, len(measured_data))
+            perturbed_data = measured_data + perturbation
+
+            # Extract parameters from perturbed data
+            perturbed_result = self.inverse_extract_precise(
+                perturbed_data, component_matrix, initial_guess
+            )
+
+            if perturbed_result['success']:
+                perturbed_params = perturbed_result['extracted_parameters']
+                stability_results['perturbation_results'].append({
+                    'perturbation_id': i,
+                    'parameters': perturbed_params,
+                    'convergence_metrics': perturbed_result['convergence_metrics']
+                })
+            else:
+                logger.warning(f"Perturbation {i}: extraction failed")
+
+        # Analyze parameter variability
+        if stability_results['perturbation_results']:
+            parameter_arrays = np.array([r['parameters'] for r in stability_results['perturbation_results']])
+
+            for i in range(len(base_parameters)):
+                param_variations = parameter_arrays[:, i]
+                stability_results['parameter_variability'][f'param_{i}'] = {
+                    'mean': np.mean(param_variations),
+                    'std': np.std(param_variations),
+                    'coefficient_of_variation': np.std(param_variations) / abs(np.mean(param_variations)),
+                    'range': np.max(param_variations) - np.min(param_variations)
+                }
+
+            # Overall stability metrics
+            stability_results['stability_metrics'] = {
+                'mean_coefficient_of_variation': np.mean([
+                    v['coefficient_of_variation'] for v in stability_results['parameter_variability'].values()
+                ]),
+                'max_coefficient_of_variation': np.max([
+                    v['coefficient_of_variation'] for v in stability_results['parameter_variability'].values()
+                ]),
+                'successful_perturbations': len(stability_results['perturbation_results']),
+                'total_perturbations': n_perturbations
+            }
+
+        return stability_results
+```
+
+## Integration with Viscoelastic Rheology
+
+### Enhanced VEHB Parameter Extraction
+
+```python
+class EnhancedViscoelasticAnalyzer:
+    """
+    Enhanced viscoelastic analyzer with 0.9987 precision inverse extraction.
+    """
+
+    def __init__(self, base_params: ViscoelasticHBParameters):
+        self.base_params = base_params
+        self.precision_framework = InversePrecisionFramework()
+
+    def extract_ve_parameters_precise(self, experimental_stress: np.ndarray,
+                                    shear_rates: np.ndarray, times: np.ndarray,
+                                    known_params: Dict[str, float]) -> Dict[str, any]:
+        """
+        Extract VEHB parameters using 0.9987 precision criterion.
+
+        Args:
+            experimental_stress: Measured stress data [Pa]
+            shear_rates: Applied shear rates [1/s]
+            times: Time points [s]
+            known_params: Known parameters
+
+        Returns:
+            Comprehensive extraction results
+        """
+        # Create component matrix for VEHB model
+        n_measurements = len(experimental_stress)
+        component_matrix = self._build_vehb_component_matrix(shear_rates, times, known_params)
+
+        # Set up initial guess for unknown parameters
+        initial_guess = self._create_initial_guess(known_params)
+
+        # Perform high-precision extraction
+        extraction_results = self.precision_framework.inverse_extract_precise(
+            experimental_stress, component_matrix, initial_guess,
+            bounds=self._get_parameter_bounds(known_params)
+        )
+
+        # Map results back to parameter names
+        if extraction_results['success']:
+            extracted_params = self._map_results_to_parameters(
+                extraction_results['extracted_parameters'], known_params
+            )
+            extraction_results['extracted_parameters_named'] = extracted_params
+
+        return extraction_results
+
+    def _build_vehb_component_matrix(self, shear_rates: np.ndarray, times: np.ndarray,
+                                   known_params: Dict[str, float]) -> np.ndarray:
+        """
+        Build component matrix for VEHB model inverse analysis.
+
+        Each column represents the contribution of one unknown parameter
+        to the total stress prediction.
+        """
+        n_measurements = len(shear_rates)
+        unknown_params = ['tau_y', 'K', 'n', 'G0', 'Ge', 'tau_relax', 'eta_inf']
+        unknown_params = [p for p in unknown_params if p not in known_params]
+
+        n_unknown = len(unknown_params)
+        component_matrix = np.zeros((n_measurements, n_unknown))
+
+        # Create base parameter set
+        base_params = ViscoelasticHBParameters(
+            tau_y=known_params.get('tau_y', self.base_params.tau_y),
+            K=known_params.get('K', self.base_params.K),
+            n=known_params.get('n', self.base_params.n),
+            G0=known_params.get('G0', self.base_params.G0),
+            Ge=known_params.get('Ge', self.base_params.Ge),
+            tau_relax=known_params.get('tau_relax', self.base_params.tau_relax),
+            eta_inf=known_params.get('eta_inf', self.base_params.eta_inf),
+            activation_energy=known_params.get('activation_energy', self.base_params.activation_energy)
+        )
+
+        for i, unknown_param in enumerate(unknown_params):
+            for j in range(n_measurements):
+                # Compute sensitivity of stress to this parameter
+                component_matrix[j, i] = self._compute_parameter_sensitivity(
+                    base_params, unknown_param, shear_rates[j], times[j]
+                )
+
+        return component_matrix
+
+    def _compute_parameter_sensitivity(self, params: ViscoelasticHBParameters,
+                                     parameter_name: str, shear_rate: float, time: float) -> float:
+        """
+        Compute sensitivity of stress to a parameter change.
+
+        This implements finite difference sensitivity analysis for the inverse problem.
+        """
+        epsilon = 1e-8  # Small perturbation
+
+        # Create perturbed parameter set
+        perturbed_params = ViscoelasticHBParameters(
+            tau_y=params.tau_y,
+            K=params.K,
+            n=params.n,
+            G0=params.G0,
+            Ge=params.Ge,
+            tau_relax=params.tau_relax,
+            eta_inf=params.eta_inf,
+            activation_energy=params.activation_energy
+        )
+
+        # Apply perturbation
+        if parameter_name == 'tau_y':
+            perturbed_params.tau_y += epsilon
+        elif parameter_name == 'K':
+            perturbed_params.K += epsilon
+        elif parameter_name == 'n':
+            perturbed_params.n += epsilon
+        elif parameter_name == 'G0':
+            perturbed_params.G0 += epsilon
+        elif parameter_name == 'Ge':
+            perturbed_params.Ge += epsilon
+        elif parameter_name == 'tau_relax':
+            perturbed_params.tau_relax += epsilon
+        elif parameter_name == 'eta_inf':
+            perturbed_params.eta_inf += epsilon
+
+        # Compute stresses with original and perturbed parameters
+        analyzer_original = AdvancedViscoelasticAnalyzer(params)
+        analyzer_perturbed = AdvancedViscoelasticAnalyzer(perturbed_params)
+
+        stress_original = analyzer_original.viscoelastic_hb_stress(shear_rate)
+        stress_perturbed = analyzer_perturbed.viscoelastic_hb_stress(shear_rate)
+
+        # Return sensitivity (finite difference)
+        return (stress_perturbed - stress_original) / epsilon
+
+    def _create_initial_guess(self, known_params: Dict[str, float]) -> np.ndarray:
+        """Create initial guess for unknown parameters."""
+        unknown_params = ['tau_y', 'K', 'n', 'G0', 'Ge', 'tau_relax', 'eta_inf']
+        unknown_params = [p for p in unknown_params if p not in known_params]
+
+        initial_guess = []
+        for param in unknown_params:
+            if param == 'tau_y':
+                initial_guess.append(10.0)  # Pa
+            elif param == 'K':
+                initial_guess.append(1000.0)  # Pa·s^n
+            elif param == 'n':
+                initial_guess.append(0.8)  # Dimensionless
+            elif param == 'G0':
+                initial_guess.append(1e6)  # Pa
+            elif param == 'Ge':
+                initial_guess.append(1e5)  # Pa
+            elif param == 'tau_relax':
+                initial_guess.append(1.0)  # s
+            elif param == 'eta_inf':
+                initial_guess.append(100.0)  # Pa·s
+
+        return np.array(initial_guess)
+
+    def _get_parameter_bounds(self, known_params: Dict[str, float]) -> Tuple[np.ndarray, np.ndarray]:
+        """Get parameter bounds for optimization."""
+        unknown_params = ['tau_y', 'K', 'n', 'G0', 'Ge', 'tau_relax', 'eta_inf']
+        unknown_params = [p for p in unknown_params if p not in known_params]
+
+        lower_bounds = []
+        upper_bounds = []
+
+        for param in unknown_params:
+            if param == 'tau_y':
+                lower_bounds.append(0.0)
+                upper_bounds.append(1000.0)
+            elif param == 'K':
+                lower_bounds.append(1.0)
+                upper_bounds.append(1e6)
+            elif param == 'n':
+                lower_bounds.append(0.1)
+                upper_bounds.append(1.5)
+            elif param in ['G0', 'Ge']:
+                lower_bounds.append(1e3)
+                upper_bounds.append(1e9)
+            elif param == 'tau_relax':
+                lower_bounds.append(0.001)
+                upper_bounds.append(100.0)
+            elif param == 'eta_inf':
+                lower_bounds.append(1.0)
+                upper_bounds.append(1e6)
+
+        return np.array(lower_bounds), np.array(upper_bounds)
+
+    def _map_results_to_parameters(self, extracted_values: np.ndarray,
+                                 known_params: Dict[str, float]) -> Dict[str, float]:
+        """Map extracted values back to parameter names."""
+        unknown_params = ['tau_y', 'K', 'n', 'G0', 'Ge', 'tau_relax', 'eta_inf']
+        unknown_params = [p for p in unknown_params if p not in known_params]
+
+        extracted_params = known_params.copy()
+
+        for i, param_name in enumerate(unknown_params):
+            extracted_params[param_name] = extracted_values[i]
+
+        return extracted_params
+```
+
+## Comprehensive Testing Framework
+
+```python
+class TestInversePrecisionFramework(unittest.TestCase):
+    """Comprehensive test suite for inverse precision framework."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.precision_framework = InversePrecisionFramework()
+
+        # Create synthetic test data
+        np.random.seed(42)
+        self.n_measurements = 50
+        self.n_components = 5
+
+        # Generate component matrix
+        self.component_matrix = np.random.randn(self.n_measurements, self.n_components)
+        self.component_matrix = self.component_matrix / np.linalg.norm(self.component_matrix, axis=0)
+
+        # Generate true parameters
+        self.true_parameters = np.array([1.0, 2.0, -1.5, 3.0, 0.5])
+
+        # Generate measured data with noise
+        self.noise_level = 0.01
+        self.measured_data = self.component_matrix @ self.true_parameters
+        self.measured_data += np.random.normal(0, self.noise_level, self.n_measurements)
+
+        # Initial guess
+        self.initial_guess = np.ones(self.n_components)
+
+    def test_0987_precision_criterion(self):
+        """Test the 0.9987 precision convergence criterion."""
+        # Test convergence checking
+        k_current = np.array([1.0, 2.0, 1.5])
+        k_previous = np.array([1.001, 2.002, 1.501])  # Relative difference ~0.001
+
+        converged, metrics = self.precision_framework.check_convergence(k_current, k_previous)
+
+        # Should converge with 0.9987 precision
+        self.assertTrue(converged)
+        self.assertAlmostEqual(metrics['relative_error'], 0.001, delta=1e-4)
+        self.assertAlmostEqual(metrics['precision_achieved'], 0.999, delta=1e-4)
+
+    def test_inverse_extraction_precision(self):
+        """Test high-precision inverse extraction."""
+        extraction_results = self.precision_framework.inverse_extract_precise(
+            self.measured_data, self.component_matrix, self.initial_guess
+        )
+
+        # Check that extraction succeeded
+        self.assertTrue(extraction_results['success'])
+
+        # Check parameter accuracy
+        extracted_params = extraction_results['extracted_parameters']
+        parameter_errors = np.abs(extracted_params - self.true_parameters)
+
+        # Should achieve good accuracy with 0.9987 precision
+        max_error = np.max(parameter_errors)
+        self.assertLess(max_error, 0.1)  # Reasonable accuracy
+
+        # Check convergence metrics
+        metrics = extraction_results['convergence_metrics']
+        self.assertGreater(metrics.final_precision, 0.99)
+        self.assertLess(metrics.iteration_count, 50)  # Should converge quickly
+
+    def test_adaptive_precision_levels(self):
+        """Test adaptive precision extraction at different levels."""
+        precision_levels = [0.99, 0.9987, 0.9999]
+
+        results = self.precision_framework.adaptive_precision_extraction(
+            self.measured_data, self.component_matrix, self.initial_guess, precision_levels
+        )
+
+        # Check that all precision levels produced results
+        for precision in precision_levels:
+            precision_key = f"precision_{precision:.6f}"
+            self.assertIn(precision_key, results)
+
+            result = results[precision_key]
+            self.assertTrue(result['success'])
+
+            # Higher precision should generally require more iterations
+            metrics = result['convergence_metrics']
+            if precision > 0.99:
+                self.assertGreater(metrics.final_precision, 0.99)
+
+    def test_stability_analysis(self):
+        """Test extraction stability through perturbation analysis."""
+        stability_results = self.precision_framework.validate_extraction_stability(
+            self.measured_data, self.component_matrix, self.initial_guess,
+            n_perturbations=5, perturbation_scale=0.01
+        )
+
+        # Check that stability analysis completed
+        self.assertIn('stability_metrics', stability_results)
+        self.assertIn('parameter_variability', stability_results)
+
+        # Check stability metrics
+        metrics = stability_results['stability_metrics']
+        self.assertGreater(metrics['successful_perturbations'], 0)
+
+        # Coefficient of variation should be reasonable
+        self.assertLess(metrics['mean_coefficient_of_variation'], 0.1)
+
+    def test_ill_conditioned_matrix_handling(self):
+        """Test handling of ill-conditioned matrices."""
+        # Create ill-conditioned matrix
+        ill_conditioned_matrix = np.random.randn(self.n_measurements, self.n_components)
+        # Make it ill-conditioned by scaling columns differently
+        scales = np.logspace(-6, 0, self.n_components)
+        ill_conditioned_matrix = ill_conditioned_matrix * scales
+
+        # Should still work with pseudo-inverse fallback
+        extraction_results = self.precision_framework.inverse_extract_precise(
+            self.measured_data, ill_conditioned_matrix, self.initial_guess
+        )
+
+        # Should complete without crashing
+        self.assertIsNotNone(extraction_results['extracted_parameters'])
+
+        # Check condition number tracking
+        metrics = extraction_results['convergence_metrics']
+        self.assertGreater(len(metrics.condition_numbers), 0)
+
+    def test_enhanced_vehb_extraction(self):
+        """Test enhanced VEHB parameter extraction with precision control."""
+        # Create test VEHB parameters
+        vehb_params = ViscoelasticHBParameters(
+            tau_y=100.0, K=1000.0, n=0.8, G0=1e6, Ge=1e5,
+            tau_relax=1.0, eta_inf=100.0, activation_energy=50000.0
+        )
+
+        enhanced_analyzer = EnhancedViscoelasticAnalyzer(vehb_params)
+
+        # Generate synthetic experimental data
+        shear_rates = np.logspace(-2, 2, 20)
+        times = np.linspace(0, 10, 20)
+        experimental_stress = np.zeros(len(shear_rates))
+
+        # Generate synthetic data
+        for i in range(len(shear_rates)):
+            experimental_stress[i] = enhanced_analyzer.viscoelastic_hb_stress(shear_rates[i])
+
+        # Add noise
+        experimental_stress *= np.random.normal(1.0, 0.05, len(experimental_stress))
+
+        # Test parameter extraction (assume we know some parameters)
+        known_params = {
+            'n': 0.8,
+            'G0': 1e6,
+            'Ge': 1e5,
+            'tau_relax': 1.0,
+            'eta_inf': 100.0
+        }
+
+        extraction_results = enhanced_analyzer.extract_ve_parameters_precise(
+            experimental_stress, shear_rates, times, known_params
+        )
+
+        # Should extract unknown parameters (tau_y and K)
+        self.assertTrue(extraction_results['success'])
+
+        extracted_params = extraction_results['extracted_parameters_named']
+        self.assertIn('tau_y', extracted_params)
+        self.assertIn('K', extracted_params)
+
+        # Check accuracy
+        tau_y_error = abs(extracted_params['tau_y'] - vehb_params.tau_y) / vehb_params.tau_y
+        K_error = abs(extracted_params['K'] - vehb_params.K) / vehb_params.K
+
+        self.assertLess(tau_y_error, 0.1)  # Within 10%
+        self.assertLess(K_error, 0.1)      # Within 10%
+
+    def test_precision_vs_accuracy_tradeoff(self):
+        """Test the trade-off between precision and computational accuracy."""
+        precision_levels = [0.95, 0.99, 0.9987, 0.9999]
+
+        accuracy_results = []
+
+        for precision in precision_levels:
+            criteria = PrecisionCriteria(relative_tolerance=1.0 - precision)
+            temp_framework = InversePrecisionFramework(criteria)
+
+            result = temp_framework.inverse_extract_precise(
+                self.measured_data, self.component_matrix, self.initial_guess
+            )
+
+            if result['success']:
+                accuracy = result['statistical_metrics']['r_squared']
+                iterations = result['convergence_metrics'].iteration_count
+                accuracy_results.append({
+                    'precision': precision,
+                    'accuracy': accuracy,
+                    'iterations': iterations
+                })
+
+        # Higher precision should generally give better accuracy
+        for i in range(1, len(accuracy_results)):
+            if accuracy_results[i]['precision'] > accuracy_results[i-1]['precision']:
+                self.assertGreaterEqual(
+                    accuracy_results[i]['accuracy'],
+                    accuracy_results[i-1]['accuracy'] - 0.05  # Allow small degradation
+                )
+
+    def test_convergence_history_tracking(self):
+        """Test detailed convergence history tracking."""
+        extraction_results = self.precision_framework.inverse_extract_precise(
+            self.measured_data, self.component_matrix, self.initial_guess
+        )
+
+        metrics = extraction_results['convergence_metrics']
+
+        # Check convergence history
+        self.assertGreater(metrics.iteration_count, 0)
+        self.assertEqual(len(metrics.relative_errors), metrics.iteration_count)
+        self.assertEqual(len(metrics.absolute_errors), metrics.iteration_count)
+
+        # Check parameter history
+        self.assertGreater(len(metrics.parameter_histories), 0)
+        for param_history in metrics.parameter_histories.values():
+            self.assertEqual(len(param_history), metrics.iteration_count)
+
+        # Check that errors decreased over iterations
+        self.assertEqual(metrics.relative_errors[-1], min(metrics.relative_errors))
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)
+```
+
+## Implementation Notes
+
+### Key Features of 0.9987 Precision Framework
+
+1. **Dual Convergence Criteria**: Combines absolute and relative convergence for robustness
+2. **Matrix Conditioning Analysis**: Detects and handles ill-conditioned systems
+3. **Statistical Validation**: Comprehensive metrics for extraction quality assessment
+4. **Adaptive Precision Control**: Multi-level precision testing capabilities
+5. **Stability Analysis**: Perturbation testing for robustness validation
+6. **Enhanced VEHB Integration**: Specialized inverse extraction for viscoelastic models
+
+### Usage Example
+
+```python
+# Initialize framework with 0.9987 precision
+precision_framework = InversePrecisionFramework()
+
+# Perform high-precision inverse extraction
+results = precision_framework.inverse_extract_precise(
+    measured_data, component_matrix, initial_guess
+)
+
+# Check convergence
+if results['success']:
+    print(f"Converged with precision: {results['convergence_metrics'].final_precision:.6f}")
+    extracted_params = results['extracted_parameters']
+else:
+    print("Extraction failed to converge")
+
+# Validate stability
+stability = precision_framework.validate_extraction_stability(
+    measured_data, component_matrix, initial_guess
+)
+```
+
+This framework ensures numerical stability and high precision in the prime/non-prime interaction space, providing robust inverse analysis capabilities for complex multi-component systems. 🚀

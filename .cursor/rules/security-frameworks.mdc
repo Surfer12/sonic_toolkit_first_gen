@@ -1,0 +1,179 @@
+---
+globs: *.java,*.swift
+description: "Security framework patterns and implementations across Java and Swift"
+---
+
+# 🔐 Security Framework Patterns
+
+## Reverse Koopman Penetration Testing Framework
+
+### Core Components
+- **Mathematical Engine**: Linearizes nonlinear systems for vulnerability analysis
+- **Security Scanner**: Comprehensive penetration testing across multiple vectors
+- **Statistical Validator**: K-S testing for result validation
+- **Visualization System**: Multi-platform dashboards (Swing, JavaFX, SwiftUI)
+
+### Key Classes and Patterns
+
+#### Java Implementation ([Corpus/qualia/](mdc:Corpus/qualia/))
+```java
+// Core mathematical framework
+public class ReverseKoopmanOperator {
+    public ComplexNumber[] computeReverseKoopman(double[] state, Function<double[], double[]> observable);
+    public double[][] constructObservableMatrix(List<Function<double[], Double>> observables);
+    public double[][] computeKoopmanMatrix(double[][] observableMatrix);
+}
+
+// Security assessment engine
+public class JavaPenetrationTesting {
+    public SecurityFinding[] runComprehensiveTesting();
+    public SecurityFinding[] testMemorySafety();
+    public SecurityFinding[] testSQLInjection();
+}
+
+// Statistical validation
+public class KSPenetrationTestingValidator {
+    public KSValidationResult validatePenetrationTesting(SecurityFinding[] findings);
+    public boolean calculateKSStatistic(double[] sample1, double[] sample2);
+}
+```
+
+#### Swift Implementation ([Farmer copy/Farmer/](mdc:Farmer copy/Farmer/))
+```swift
+// Core mathematical framework
+class ReverseKoopmanOperator {
+    func computeReverseKoopman(state: [Double], observable: ([Double]) -> [Double]) -> [ComplexNumber]
+    func constructObservableMatrix(observables: [([Double]) -> Double]) -> [[Double]]
+}
+
+// Security assessment engine
+class iOSPenetrationTesting {
+    func runComprehensiveTesting() -> [SecurityFinding]
+    func testBufferOverflows() -> [SecurityFinding]
+    func testAuthentication() -> [SecurityFinding]
+}
+
+// Statistical validation
+class KSPenetrationTestingValidator {
+    func validatePenetrationTesting(_ findings: [SecurityFinding]) -> KSValidationResult
+    func calculateKSStatistic(_ sample1: [Double], _ sample2: [Double]) -> Bool
+}
+```
+
+### Security Finding Structure
+```java
+public class SecurityFinding {
+    private VulnerabilityType type;
+    private Severity severity;
+    private String description;
+    private String location;
+    private String recommendation;
+    private double confidence;
+
+    // Getters and setters...
+}
+```
+
+### Common Patterns
+
+#### 1. Observable Functions
+```java
+// Java
+Function<double[], Double> observable1 = state -> state[0] * state[0];
+Function<double[], Double> observable2 = state -> Math.sin(state[1]);
+```
+
+```swift
+// Swift
+let observable1: ([Double]) -> Double = { state in state[0] * state[0] }
+let observable2: ([Double]) -> Double = { state in sin(state[1]) }
+```
+
+#### 2. Complex Number Handling
+```java
+// Java
+public class ComplexNumber {
+    private double real;
+    private double imag;
+
+    public ComplexNumber(double real, double imag) {
+        this.real = real;
+        this.imag = imag;
+    }
+}
+```
+
+```swift
+// Swift
+struct ComplexNumber {
+    let real: Double
+    let imag: Double
+
+    static func *(lhs: ComplexNumber, rhs: ComplexNumber) -> ComplexNumber {
+        return ComplexNumber(
+            real: lhs.real * rhs.real - lhs.imag * rhs.imag,
+            imag: lhs.real * rhs.imag + lhs.imag * rhs.real
+        )
+    }
+}
+```
+
+### Vulnerability Types
+- **MEMORY_SAFETY**: Buffer overflows, use-after-free, memory leaks
+- **SQL_INJECTION**: Database injection attacks
+- **AUTHENTICATION**: Weak authentication mechanisms
+- **ENCRYPTION**: Insecure cryptographic implementations
+- **NETWORK_SECURITY**: Man-in-the-middle, insecure protocols
+- **INPUT_VALIDATION**: Improper input sanitization
+- **DEPENDENCY_VULNERABILITIES**: Third-party library issues
+- **RESOURCE_MANAGEMENT**: Resource exhaustion attacks
+- **RACE_CONDITIONS**: Concurrency-related vulnerabilities
+- **INFORMATION_DISCLOSURE**: Sensitive data exposure
+
+### Testing Patterns
+
+#### Comprehensive Security Assessment
+```java
+// Java
+JavaPenetrationTesting tester = new JavaPenetrationTesting();
+SecurityFinding[] findings = tester.runComprehensiveTesting();
+
+KSPenetrationTestingValidator validator = new KSPenetrationTestingValidator();
+KSValidationResult validation = validator.validatePenetrationTesting(findings);
+```
+
+```swift
+// Swift
+let tester = iOSPenetrationTesting()
+let findings = tester.runComprehensiveTesting()
+
+let validator = KSPenetrationTestingValidator()
+let validation = validator.validatePenetrationTesting(findings)
+```
+
+### Integration with Koopman Analysis
+```java
+// Combine penetration testing with dynamical systems analysis
+ReverseKoopmanOperator koopman = new ReverseKoopmanOperator();
+JavaPenetrationTesting security = new JavaPenetrationTesting();
+
+// Run security assessment
+SecurityFinding[] findings = security.runComprehensiveTesting();
+
+// Analyze findings through Koopman lens
+double[][] stateMatrix = convertFindingsToStateMatrix(findings);
+ComplexNumber[] modes = koopman.computeReverseKoopman(stateVector, observables);
+```
+
+### Visualization Integration
+- **Java Swing**: [SecurityDashboard.java](mdc:Corpus/qualia/SecurityDashboard.java)
+- **JavaFX**: [KoopmanVisualization.java](mdc:Corpus/qualia/KoopmanVisualization.java)
+- **SwiftUI**: [DemoPenetrationTestingView.swift](mdc:Farmer copy/Farmer/DemoPenetrationTestingView.swift)
+- **Python**: [demo_visualizations.py](mdc:Corpus/qualia/demo_visualizations.py)
+
+### Best Practices
+1. **Always validate results** using K-S statistical testing
+2. **Use complex observables** for better system representation
+3. **Implement proper error handling** for mathematical operations
+4. **Document security findings** with confidence scores
+5. **Visualize results** for better understanding and reporting

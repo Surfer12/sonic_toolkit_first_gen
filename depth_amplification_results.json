@@ -1,0 +1,26 @@
+{
+  "amplification_system": "Depth Amplification Computational System",
+  "timestamp": "2025-01-08",
+  "methods_tested": [
+    "adaptive",
+    "wavelet",
+    "fourier",
+    "optimization"
+  ],
+  "summary_metrics": {
+    "adaptive_range_amp": 1.812128761336679,
+    "adaptive_snr_improvement": 1.372954812812658,
+    "adaptive_gradient_enhancement": 4.470394579920764,
+    "wavelet_range_amp": 2.817973556900784,
+    "wavelet_snr_improvement": 0.4714952732722851,
+    "wavelet_gradient_enhancement": 3.252820539466316,
+    "fourier_range_amp": 1.0399210517944544,
+    "fourier_snr_improvement": 0.9794183172353795,
+    "fourier_gradient_enhancement": 1.0519151792901338,
+    "optimization_range_amp": 6.0,
+    "optimization_snr_improvement": 0.9999999999999999,
+    "optimization_gradient_enhancement": 6.0,
+    "best_range_method": "optimization",
+    "best_snr_method": "adaptive"
+  }
+}

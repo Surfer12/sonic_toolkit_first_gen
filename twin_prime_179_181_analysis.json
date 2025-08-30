@@ -1,0 +1,36 @@
+{
+  "timestamp": "2025-08-26T06:58:18.026915",
+  "target_pair": [
+    179,
+    181
+  ],
+  "algebraic_analysis": {
+    "score": 3,
+    "sophie_germain": 1,
+    "palindromic": 1,
+    "primorial": 0,
+    "safe_prime": 1
+  },
+  "prime_distribution": {
+    "nearby_primes": 6,
+    "average_gap": 5.2,
+    "twin_density": 0.4
+  },
+  "bingham_connection": {
+    "correlation_achieved": 0.998723074566898,
+    "prime_enhancement": 1.3,
+    "success": "False"
+  },
+  "comparison_with_29_31": {
+    "(179,181)": {
+      "algebraic_score": 3,
+      "bingham_correlation": 0.998723074566898,
+      "prime_enhancement": 1.3
+    },
+    "(29,31)": {
+      "algebraic_score": 3,
+      "bingham_correlation": 0.9987715055897358,
+      "prime_enhancement": 1.3
+    }
+  }
+}
