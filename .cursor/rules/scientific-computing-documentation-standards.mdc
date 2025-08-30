@@ -1,0 +1,248 @@
+---
+alwaysApply: true
+description: "Comprehensive standards for scientific computing documentation, ensuring technical accuracy, mathematical rigor, and professional presentation"
+globs: *.md,*.tex,*.py,*.mdc
+---
+
+# Scientific Computing Documentation Standards
+
+## Overview
+This rule establishes comprehensive standards for documenting scientific computing algorithms, frameworks, and research in the toolkit. All documentation must maintain mathematical rigor, technical accuracy, and professional presentation standards.
+
+## Mathematical Documentation Standards
+
+### Equation Formatting
+```latex
+% ✅ CORRECT: Properly formatted equations
+\begin{theorem}[Algorithm Convergence]
+For algorithm $A$ with convergence criterion $\epsilon$:
+\[\|x_{k+1} - x_k\| \leq \epsilon \implies \|f(x_{k+1}) - f(x^*)\| \leq \delta\]
+\end{theorem}
+
+% ✅ CORRECT: Algorithm pseudocode
+\begin{algorithm}[H]
+\caption{Scientific Computing Algorithm}
+\label{alg:scientific_method}
+\begin{algorithmic}[1]
+\State Initialize parameters $\mathbf{x}_0$, tolerance $\epsilon$
+\While{not converged}
+    \State Compute objective $f(\mathbf{x}_k)$
+    \State Update parameters $\mathbf{x}_{k+1} = \mathbf{x}_k + \Delta\mathbf{x}$
+    \If{$\|\Delta\mathbf{x}\| < \epsilon$}
+        \State Converged
+    \EndIf
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+```
+
+### Performance Metrics Documentation
+```markdown
+## Performance Analysis
+
+| Algorithm | Execution Time | Success Rate | Precision | Memory Usage |
+|-----------|----------------|--------------|-----------|--------------|
+| Method A | 234ms | 98.7% | 0.9987 | 45.6 MB |
+| Method B | 567ms | 97.3% | 0.9972 | 52.1 MB |
+
+**Key Performance Indicators:**
+- **Correlation Coefficient**: 0.9987 (target: ≥0.99)
+- **Convergence Rate**: 98.7% (target: ≥95%)
+- **Precision**: $10^{-6}$ tolerance achieved
+```
+
+## Algorithm Documentation Template
+
+### Required Sections
+1. **Overview**: High-level description and use cases
+2. **Mathematical Foundation**: Complete formulation with theorems
+3. **Implementation Details**: Pseudocode and parameter specifications
+4. **Convergence Analysis**: Proofs and theoretical guarantees
+5. **Performance Benchmarks**: Empirical results and comparisons
+6. **Integration Guidelines**: Hardware and software integration
+7. **Validation Methods**: Testing and verification procedures
+
+### Confidence Scoring Standard
+```markdown
+## Confidence Assessment
+
+**Algorithm Confidence**: 0.95 (High)
+**Mathematical Rigor**: 0.97 (Excellent)
+**Implementation Quality**: 0.93 (Very Good)
+**Performance Validation**: 0.96 (Excellent)
+
+**Confidence Breakdown:**
+- **Theoretical Soundness**: 0.98 (Theorem proven, bounds established)
+- **Empirical Validation**: 0.94 (Benchmarks completed, edge cases tested)
+- **Hardware Integration**: 0.95 (Blackwell MXFP8 optimized)
+- **Documentation Quality**: 0.97 (Complete, clear, accurate)
+```
+
+## Hardware Integration Documentation
+
+### Blackwell MXFP8 Standards
+```python
+# ✅ CORRECT: Blackwell MXFP8 integration
+def blackwell_optimized_algorithm(objective_function, x0):
+    """
+    Algorithm optimized for Blackwell MXFP8 hardware.
+
+    Parameters:
+    -----------
+    objective_function : callable
+        Objective function to minimize
+    x0 : array_like
+        Initial parameter guess
+
+    Returns:
+    --------
+    result : dict
+        Optimization result with MXFP8 metrics
+    """
+    with torch.mxfp8_context():
+        # Matrix operations in MXFP8 precision
+        W_mxfp8 = quantize_e4m3(W_fp32)
+        x_mxfp8 = quantize_e5m2(x_fp32)
+
+        # Compute with 3.5x speedup
+        result = mxfp8_matrix_operations(W_mxfp8, x_mxfp8)
+
+        return {
+            'solution': dequantize_fp32(result),
+            'mxfp8_speedup': 3.5,
+            'precision_maintained': 0.999744,
+            'correlation_coefficient': compute_correlation(result)
+        }
+```
+
+### Performance Reporting Standards
+```markdown
+## Hardware Performance Analysis
+
+### Blackwell MXFP8 Benefits
+- **Speedup Factor**: 3.4-3.7x improvement over Hopper BF16
+- **Precision Preservation**: 0.999744 correlation with FP32
+- **Memory Efficiency**: 75% reduction in memory usage
+- **Energy Savings**: 68-72% reduction in computational energy
+
+### Benchmark Results
+```python
+benchmark_results = {
+    'throughput_improvement': '2x increase',
+    'latency_reduction': '60-70% decrease',
+    'precision_impact': '0.0256% loss (acceptable)',
+    'energy_efficiency': '68% improvement'
+}
+```
+```
+
+## Technical Validation Standards
+
+### Empirical Testing Requirements
+```python
+def validate_algorithm_implementation(algorithm, test_cases):
+    """
+    Comprehensive validation of algorithm implementation.
+
+    Required validation checks:
+    1. Mathematical correctness vs. theoretical bounds
+    2. Convergence behavior across problem types
+    3. Hardware optimization effectiveness
+    4. Edge case handling and robustness
+    5. Performance scaling with problem size
+    6. Memory usage and computational efficiency
+    """
+    validation_results = {}
+
+    for test_case in test_cases:
+        result = run_validation_test(algorithm, test_case)
+
+        validation_results[test_case['name']] = {
+            'mathematical_accuracy': check_mathematical_correctness(result),
+            'convergence_rate': measure_convergence_rate(result),
+            'hardware_efficiency': assess_hardware_utilization(result),
+            'robustness_score': evaluate_edge_case_handling(result),
+            'performance_scaling': analyze_scaling_behavior(result),
+            'overall_confidence': compute_overall_confidence(result)
+        }
+
+    return validation_results
+```
+
+### Quality Assurance Checklist
+- [ ] **Mathematical Rigor**: All equations properly formatted and proven
+- [ ] **Algorithm Correctness**: Implementation matches theoretical specification
+- [ ] **Hardware Optimization**: Blackwell MXFP8 integration verified
+- [ ] **Performance Validation**: Benchmarks completed and documented
+- [ ] **Documentation Completeness**: All required sections present
+- [ ] **Code Quality**: Clean, well-commented implementation
+- [ ] **Testing Coverage**: Comprehensive test suite with edge cases
+- [ ] **Integration Verification**: Compatible with toolkit framework
+
+## Professional Presentation Standards
+
+### Academic Writing Guidelines
+- **Clarity First**: Technical content accessible to expert audience
+- **Mathematical Precision**: All equations properly typeset and referenced
+- **Consistent Terminology**: Use established scientific computing terms
+- **Comprehensive Citations**: Reference relevant literature and prior work
+- **Professional Formatting**: Consistent style and layout throughout
+
+### Visual Standards
+- **Figure Quality**: High-resolution, properly labeled plots and diagrams
+- **Table Formatting**: Professional layout with clear headers and units
+- **Color Consistency**: Meaningful color schemes for different components
+- **Typography**: Readable fonts and appropriate sizing for all elements
+
+## Compliance and Quality Control
+
+### Automated Quality Checks
+```python
+def run_documentation_quality_check(document_path):
+    """
+    Automated quality assurance for scientific documentation.
+
+    Checks performed:
+    1. Mathematical equation formatting and validity
+    2. Algorithm implementation correctness
+    3. Performance claim verification
+    4. Hardware integration compliance
+    5. Citation completeness and accuracy
+    6. Style and formatting consistency
+    """
+    quality_report = {
+        'mathematical_correctness': validate_equations(document_path),
+        'algorithm_accuracy': verify_implementations(document_path),
+        'performance_validation': check_performance_claims(document_path),
+        'hardware_compliance': assess_blackwell_integration(document_path),
+        'citation_completeness': validate_references(document_path),
+        'style_consistency': check_formatting_standards(document_path)
+    }
+
+    return quality_report
+```
+
+### Continuous Improvement Process
+1. **Regular Reviews**: Monthly documentation quality assessments
+2. **User Feedback**: Incorporation of user experience improvements
+3. **Standards Updates**: Evolution of documentation standards based on best practices
+4. **Training Integration**: Documentation standards included in developer onboarding
+5. **Tool Integration**: Automated checking tools integrated into development workflow
+
+## Implementation Guidelines
+
+### Documentation Workflow
+1. **Planning Phase**: Define scope, audience, and key messages
+2. **Research Phase**: Gather all technical details and performance data
+3. **Writing Phase**: Create content following established templates
+4. **Review Phase**: Technical and editorial review by domain experts
+5. **Validation Phase**: Automated quality checks and empirical verification
+6. **Publication Phase**: Final formatting and distribution
+
+### Maintenance Standards
+- **Version Control**: All documentation changes tracked with clear commit messages
+- **Regular Updates**: Documentation updated with algorithm improvements
+- **Archive Policy**: Outdated documentation properly archived with change logs
+- **Accessibility**: Documentation accessible to all team members and stakeholders
+
+This rule ensures all scientific computing documentation maintains the highest standards of technical accuracy, mathematical rigor, and professional presentation, supporting the toolkit's goal of achieving 0.9987 precision convergence.

@@ -1,0 +1,488 @@
+---
+alwaysApply: false
+description: "Comprehensive framework for analyzing optimization algorithms in scientific computing, ensuring mathematical rigor and empirical validation"
+globs: *.py,*.md,*.tex
+---
+
+# Algorithm Analysis Framework
+
+## Overview
+This rule provides a comprehensive framework for analyzing optimization algorithms in the scientific computing toolkit, ensuring mathematical rigor, empirical validation, and proper documentation standards.
+
+## Analysis Structure Template
+
+### 1. Algorithm Overview
+**Required Elements:**
+- **Purpose**: Specific optimization problem addressed
+- **Mathematical Foundation**: Complete formulation with theorems
+- **Key Innovation**: Novel aspects compared to existing methods
+- **Use Cases**: Scientific domains where algorithm excels
+- **Limitations**: Known constraints and failure modes
+
+### 2. Mathematical Formulation
+**Required Structure:**
+```latex
+\begin{theorem}[Algorithm Convergence]
+For objective function $f: \mathbb{R}^n \to \mathbb{R}$ satisfying assumptions $A1-Ak$:
+\[\lim_{k \to \infty} \|x_k - x^*\| = 0 \quad \text{with probability 1}\]
+\end{theorem}
+
+\begin{proof}
+\textbf{Step 1:} Establish descent property
+\[\mathbb{E}[f(x_{k+1})] \leq f(x_k) - c \|\nabla f(x_k)\|^2\]
+
+\textbf{Step 2:} Prove convergence to stationary point
+\[\lim_{k \to \infty} \|\nabla f(x_k)\| = 0\]
+
+\textbf{Step 3:} Establish global convergence under assumptions
+\[\lim_{k \to \infty} f(x_k) = f(x^*)\]
+\end{proof}
+```
+
+### 3. Convergence Analysis Framework
+
+#### Theoretical Convergence Bounds
+```python
+def analyze_convergence_bounds(algorithm, problem_class):
+    """
+    Analyze theoretical convergence properties of algorithm.
+
+    Parameters:
+    -----------
+    algorithm : str
+        Algorithm name (LM, TR, DE, BH)
+    problem_class : str
+        Problem type (convex, non-convex, multi-modal)
+
+    Returns:
+    --------
+    convergence_analysis : dict
+        Complete convergence analysis results
+    """
+
+    # Theoretical convergence rate
+    if algorithm == 'levenberg_marquardt':
+        convergence_rate = 'quadratic_near_minimum'
+        complexity = 'O(n^3) per iteration'
+        assumptions = ['smooth objective', 'Lipschitz gradient']
+    elif algorithm == 'trust_region':
+        convergence_rate = 'superlinear'
+        complexity = 'O(n^3) for subproblem'
+        assumptions = ['twice differentiable', 'bounded Hessian']
+    elif algorithm == 'differential_evolution':
+        convergence_rate = 'linear'
+        complexity = 'O(NP × D) per generation'
+        assumptions = ['continuous objective', 'bounded domain']
+    elif algorithm == 'basin_hopping':
+        convergence_rate = 'problem_dependent'
+        complexity = 'O(local_search + perturbations)'
+        assumptions = ['local optimizer available', 'energy landscape']
+
+    # Empirical convergence analysis
+    empirical_rates = measure_empirical_convergence(algorithm, test_problems)
+
+    return {
+        'theoretical_rate': convergence_rate,
+        'worst_case_complexity': complexity,
+        'key_assumptions': assumptions,
+        'empirical_performance': empirical_rates,
+        'convergence_guarantees': establish_guarantees(algorithm)
+    }
+```
+
+#### Convergence Proof Template
+```latex
+\begin{theorem}[Convergence Guarantee]
+Under assumptions $A1-Ak$, algorithm $\mathcal{A}$ satisfies:
+\[\mathbb{E}[\|x_{k+1} - x^*\|^2] \leq \rho_k \|x_k - x^*\|^2 + \sigma_k\]
+\end{theorem}
+
+\begin{proof}
+\textbf{Induction Hypothesis:} Assume convergence at step k.
+
+\textbf{Descent Lemma:}
+\[\mathbb{E}[f(x_{k+1}) - f(x^*)] \leq (1 - \alpha \mu) \mathbb{E}[f(x_k) - f(x^*)]\]
+
+\textbf{Convergence Rate:}
+\[\mathbb{E}[\|x_{k+1} - x^*\|^2] \leq (1 - 2\alpha \mu L^{-1}) \mathbb{E}[\|x_k - x^*\|^2]\]
+
+\textbf{Global Convergence:}
+\[\lim_{k \to \infty} \mathbb{E}[f(x_k) - f(x^*)] = 0\]
+\end{proof}
+```
+
+### 4. Empirical Validation Framework
+
+#### Performance Benchmarking Standard
+```python
+def run_algorithm_benchmark_suite(algorithm, test_problems):
+    """
+    Comprehensive benchmarking of algorithm performance.
+
+    Test Problem Categories:
+    1. Unconstrained smooth problems (Rosenbrock, Rastrigin)
+    2. Constrained optimization (linear, nonlinear constraints)
+    3. Multi-modal problems (Ackley, Griewank)
+    4. High-dimensional problems (n > 1000)
+    5. Ill-conditioned problems (condition number > 10^6)
+    6. Noisy problems (stochastic objectives)
+    7. Domain-specific problems (fluid dynamics, biological transport)
+    """
+
+    benchmark_results = {}
+
+    for problem in test_problems:
+        # Run multiple trials for statistical significance
+        trials = []
+        for trial in range(30):  # 30 trials minimum
+            result = run_single_trial(algorithm, problem)
+
+            trial_result = {
+                'solution_quality': compute_solution_quality(result, problem),
+                'convergence_time': measure_convergence_time(result),
+                'function_evaluations': count_function_evaluations(result),
+                'success': check_convergence_success(result, problem),
+                'stability': assess_numerical_stability(result)
+            }
+            trials.append(trial_result)
+
+        # Statistical analysis
+        benchmark_results[problem['name']] = {
+            'mean_solution_quality': np.mean([t['solution_quality'] for t in trials]),
+            'std_solution_quality': np.std([t['solution_quality'] for t in trials]),
+            'success_rate': np.mean([t['success'] for t in trials]),
+            'median_convergence_time': np.median([t['convergence_time'] for t in trials]),
+            'robustness_score': compute_robustness_score(trials),
+            'scaling_analysis': analyze_problem_scaling(trials, problem)
+        }
+
+    return benchmark_results
+```
+
+#### Statistical Significance Testing
+```python
+def perform_statistical_comparison(algorithms, benchmark_results):
+    """
+    Statistical comparison of algorithm performance.
+
+    Tests performed:
+    1. Solution quality comparison (Mann-Whitney U test)
+    2. Convergence time comparison (bootstrap confidence intervals)
+    3. Success rate comparison (binomial test)
+    4. Robustness comparison (variance analysis)
+    5. Scaling behavior comparison (regression analysis)
+    """
+
+    statistical_tests = {}
+
+    for metric in ['solution_quality', 'convergence_time', 'success_rate']:
+        for alg1, alg2 in itertools.combinations(algorithms, 2):
+            if metric == 'solution_quality':
+                # Non-parametric test for solution quality
+                stat, p_value = mannwhitneyu(
+                    benchmark_results[alg1][metric],
+                    benchmark_results[alg2][metric],
+                    alternative='two-sided'
+                )
+                effect_size = compute_effect_size(
+                    benchmark_results[alg1][metric],
+                    benchmark_results[alg2][metric]
+                )
+            elif metric == 'success_rate':
+                # Binomial test for success rates
+                successes1 = sum(benchmark_results[alg1]['success'])
+                successes2 = sum(benchmark_results[alg2]['success'])
+                stat, p_value = binomtest(successes1, n=len(benchmark_results[alg1]['success']),
+                                        p=successes2/len(benchmark_results[alg2]['success']))
+
+            statistical_tests[f"{alg1}_vs_{alg2}_{metric}"] = {
+                'statistic': stat,
+                'p_value': p_value,
+                'significant': p_value < 0.05,
+                'effect_size': effect_size if 'effect_size' in locals() else None
+            }
+
+    return statistical_tests
+```
+
+### 5. Hardware Integration Analysis
+
+#### Blackwell MXFP8 Performance Impact
+```python
+def analyze_hardware_acceleration(algorithm, hardware_configs):
+    """
+    Analyze hardware acceleration impact on algorithm performance.
+
+    Hardware Configurations:
+    1. FP32 baseline (reference)
+    2. Blackwell MXFP8 optimized
+    3. Tensor core utilization
+    4. Memory bandwidth optimization
+    """
+
+    hardware_analysis = {}
+
+    for config in hardware_configs:
+        with hardware_context(config):
+            performance_results = benchmark_algorithm_hardware(algorithm, config)
+
+            hardware_analysis[config['name']] = {
+                'speedup_factor': performance_results['speedup'],
+                'precision_impact': performance_results['precision_loss'],
+                'memory_efficiency': performance_results['memory_usage'],
+                'energy_consumption': performance_results['energy_usage'],
+                'throughput_improvement': performance_results['throughput'],
+                'correlation_preservation': performance_results['correlation']
+            }
+
+    return hardware_analysis
+```
+
+### 6. Robustness and Stability Analysis
+
+#### Edge Case Testing Framework
+```python
+def test_algorithm_robustness(algorithm, edge_cases):
+    """
+    Test algorithm robustness under extreme conditions.
+
+    Edge Cases Tested:
+    1. Ill-conditioned problems (condition number > 10^12)
+    2. Noisy objectives (stochastic noise)
+    3. Discontinuous functions
+    4. Non-differentiable objectives
+    5. High-dimensional problems (n > 10^4)
+    6. Multi-modal landscapes (1000+ local minima)
+    7. Constrained problems with active constraints
+    8. Degenerate problems (rank-deficient Jacobians)
+    """
+
+    robustness_results = {}
+
+    for edge_case in edge_cases:
+        test_results = run_robustness_test(algorithm, edge_case)
+
+        robustness_results[edge_case['name']] = {
+            'graceful_degradation': assess_failure_mode(test_results),
+            'numerical_stability': check_numerical_stability(test_results),
+            'convergence_robustness': measure_convergence_reliability(test_results),
+            'error_handling': evaluate_error_handling(test_results),
+            'recovery_capability': assess_recovery_mechanisms(test_results)
+        }
+
+    return robustness_results
+```
+
+### 7. Scaling Analysis Framework
+
+#### Problem Size Scaling
+```python
+def analyze_scaling_behavior(algorithm, problem_sizes):
+    """
+    Analyze algorithm scaling behavior with problem size.
+
+    Scaling Analysis:
+    1. Time complexity scaling
+    2. Memory usage scaling
+    3. Convergence rate scaling
+    4. Parallelization efficiency
+    5. Numerical stability scaling
+    """
+
+    scaling_results = {}
+
+    for size in problem_sizes:
+        # Generate test problem of specified size
+        problem = generate_test_problem(size)
+
+        # Run scaling analysis
+        scaling_test = run_scaling_test(algorithm, problem)
+
+        scaling_results[f"n_{size}"] = {
+            'time_complexity': fit_complexity_model(scaling_test['times']),
+            'memory_complexity': fit_memory_model(scaling_test['memory']),
+            'convergence_scaling': analyze_convergence_scaling(scaling_test['convergence']),
+            'parallel_efficiency': measure_parallel_efficiency(scaling_test['parallel']),
+            'numerical_stability': assess_stability_scaling(scaling_test['stability'])
+        }
+
+    return scaling_results
+```
+
+### 8. Documentation and Reporting Standards
+
+#### Algorithm Analysis Report Template
+```markdown
+# Algorithm Analysis Report: [Algorithm Name]
+
+## Executive Summary
+- **Algorithm Type**: [Deterministic/Stochastic, Local/Global, Gradient-based]
+- **Target Problems**: [Problem classes where algorithm excels]
+- **Key Strengths**: [Top 3 advantages]
+- **Performance Metrics**: [Success rate, convergence speed, robustness]
+- **Hardware Optimization**: [Blackwell MXFP8 benefits]
+
+## Mathematical Foundation
+
+### Core Algorithm
+```math
+x_{k+1} = x_k + \alpha_k d_k
+```
+
+### Convergence Properties
+```math
+\lim_{k \to \infty} \|x_k - x^*\| = 0
+```
+
+### Theoretical Guarantees
+- **Convergence Rate**: [Linear/Superlinear/Quadratic]
+- **Complexity**: [Time and space complexity]
+- **Assumptions**: [Required problem properties]
+
+## Implementation Analysis
+
+### Algorithm Parameters
+| Parameter | Default Value | Range | Impact |
+|-----------|---------------|-------|--------|
+| step_size | 1.0 | 0.01-10.0 | Convergence speed |
+| tolerance | 1e-6 | 1e-12-1e-3 | Solution precision |
+| max_iter | 1000 | 100-10000 | Computational budget |
+
+### Code Structure
+```python
+class AlgorithmImplementation:
+    def __init__(self, parameters):
+        self.parameters = parameters
+
+    def optimize(self, objective_function, x0):
+        # Core optimization loop
+        while not self.convergence_check():
+            # Algorithm-specific update
+            x_new = self.compute_update(x_current)
+            x_current = x_new
+        return x_current
+```
+
+## Performance Benchmarking
+
+### Benchmark Suite Results
+| Problem | Success Rate | Median Time | Solution Quality |
+|---------|--------------|-------------|------------------|
+| Rosenbrock | 98.7% | 234ms | 1e-8 |
+| Rastrigin | 95.2% | 567ms | 1e-6 |
+| Ackley | 92.1% | 892ms | 1e-5 |
+
+### Statistical Significance
+- **Solution Quality**: p < 0.001 vs. baseline
+- **Convergence Speed**: 2.3x faster than alternatives
+- **Robustness**: 15% fewer failures on edge cases
+
+## Hardware Integration
+
+### Blackwell MXFP8 Optimization
+- **Speedup**: 3.4-3.7x improvement
+- **Precision**: 0.999744 correlation maintained
+- **Memory**: 75% reduction in usage
+- **Energy**: 68-72% reduction in consumption
+
+### Implementation Details
+```python
+with torch.mxfp8_context():
+    # Quantize matrices
+    W_mxfp8 = quantize_e4m3(W_fp32)
+    x_mxfp8 = quantize_e5m2(x_fp32)
+
+    # Optimized computation
+    result = mxfp8_matmul(W_mxfp8, x_mxfp8)
+```
+
+## Robustness Analysis
+
+### Edge Case Performance
+- **Ill-conditioned**: Maintains 85% success rate
+- **Noisy objectives**: 12% degradation in performance
+- **High-dimensional**: Scales to n=10,000 with 90% efficiency
+- **Multi-modal**: Escapes 95% of local minima
+
+### Failure Mode Analysis
+- **Graceful degradation** in extreme conditions
+- **Numerical stability** maintained across problem types
+- **Error recovery** mechanisms implemented
+- **Diagnostic output** for troubleshooting
+
+## Scaling Analysis
+
+### Complexity Scaling
+- **Time Complexity**: O(n^k) with k = [1.5-3.0]
+- **Memory Complexity**: O(n^2) for dense problems
+- **Parallel Efficiency**: 85% scaling to 1000 cores
+
+### Problem Size Limits
+- **Maximum Dimension**: n = 10^6 (memory constrained)
+- **Numerical Precision**: Maintains 1e-8 accuracy
+- **Computational Budget**: Converges within 10^4 function evaluations
+
+## Recommendations
+
+### Use Cases
+- **Primary Application**: [Problem type where algorithm excels]
+- **Alternative Methods**: [When to consider other algorithms]
+- **Hardware Requirements**: [Blackwell MXFP8 recommended/required]
+
+### Implementation Guidelines
+- **Parameter Tuning**: [Key parameters and their impact]
+- **Preprocessing**: [Problem transformation recommendations]
+- **Postprocessing**: [Solution validation and refinement]
+
+### Future Improvements
+- **Research Directions**: [Potential algorithm enhancements]
+- **Hardware Optimizations**: [Additional Blackwell MXFP8 features]
+- **Hybrid Approaches**: [Combinations with other algorithms]
+
+## Conclusion
+
+### Summary of Findings
+- **Overall Performance**: [Excellent/Good/Fair] across test suite
+- **Strengths**: [Top 3 advantages with quantitative metrics]
+- **Limitations**: [Key constraints with mitigation strategies]
+- **Hardware Synergy**: [Blackwell MXFP8 integration benefits]
+
+### Final Assessment
+**Confidence Score**: [0.85-0.98]  
+**Recommendation**: [Strongly Recommended/Recommended/Use with Caution]  
+**Maturity Level**: [Production Ready/Mature Prototype/Research Stage]
+
+---
+**Analysis Date**: [Current Date]  
+**Algorithm Version**: [Version Number]  
+**Toolkit Integration**: [Framework Version]  
+**Hardware Requirements**: Blackwell MXFP8 Recommended
+```
+
+## Quality Assurance Checklist
+
+### Mathematical Correctness
+- [ ] **Theorem Statements**: All theorems properly stated with assumptions
+- [ ] **Proof Structure**: Complete proofs with clear logical steps
+- [ ] **Notation Consistency**: Mathematical symbols used consistently
+- [ ] **Reference Accuracy**: All cited theorems and lemmas verified
+
+### Implementation Validation
+- [ ] **Code Correctness**: Implementation matches mathematical formulation
+- [ ] **Parameter Handling**: All algorithm parameters properly documented
+- [ ] **Edge Cases**: Boundary conditions and error handling tested
+- [ ] **Numerical Stability**: Stability analysis completed for critical operations
+
+### Performance Verification
+- [ ] **Benchmark Completeness**: Full test suite executed with statistical significance
+- [ ] **Hardware Optimization**: Blackwell MXFP8 integration verified and quantified
+- [ ] **Scaling Analysis**: Performance scaling analyzed across problem sizes
+- [ ] **Robustness Testing**: Edge cases and failure modes thoroughly tested
+
+### Documentation Standards
+- [ ] **Completeness**: All required sections present and comprehensive
+- [ ] **Clarity**: Technical content accessible to expert audience
+- [ ] **Consistency**: Formatting and style consistent throughout
+- [ ] **Accuracy**: All performance claims backed by empirical evidence
+
+This rule ensures comprehensive, rigorous analysis of all optimization algorithms in the scientific computing toolkit, maintaining the highest standards of mathematical accuracy, empirical validation, and professional documentation.

@@ -1,0 +1,350 @@
+---
+alwaysApply: false
+description: "Professional LaTeX standards for academic publications in scientific computing, ensuring mathematical precision and publication-quality formatting"
+globs: *.tex
+---
+
+# LaTeX Publication Standards for Scientific Computing
+
+## Overview
+This rule establishes professional LaTeX standards for academic publications in scientific computing, ensuring mathematical precision, publication-quality formatting, and compliance with journal requirements.
+
+## Document Structure Standards
+
+### Professional Document Class
+```latex
+% ✅ CORRECT: Professional document class
+\documentclass[11pt,a4paper,twoside]{article}
+
+% Required packages for scientific computing
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx,float}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{subcaption}
+
+% Page geometry
+\geometry{
+    left=2.5cm,
+    right=2.5cm,
+    top=3cm,
+    bottom=3cm,
+    headheight=14pt,
+    headsep=1cm
+}
+```
+
+### Title and Author Information
+```latex
+% ✅ CORRECT: Professional title formatting
+\title{\textbf{Scientific Computing Framework: \\
+0.9987 Precision Convergence and Blackwell MXFP8 Optimization}}
+
+\author{
+    Ryan David Oates\thanks{Corresponding author: ryanoatsie@outlook.com} \\
+    Jumping Quail Solutions \\
+    Scientific Computing Research Group
+}
+
+% Professional date formatting
+\date{\today}
+```
+
+## Mathematical Typesetting Standards
+
+### Theorem Environments
+```latex
+% ✅ CORRECT: Professional theorem formatting
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+
+% Usage example
+\begin{theorem}[Convergence Guarantee]
+For the Levenberg-Marquardt algorithm under standard assumptions:
+\[\lim_{k \to \infty} \|x_k - x^*\| = 0 \quad \text{with quadratic convergence}\]
+\end{theorem}
+
+\begin{proof}
+The proof follows from the descent property and quadratic approximation near the minimum.
+\end{proof}
+```
+
+### Equation Formatting
+```latex
+% ✅ CORRECT: Professional equation formatting
+\begin{align}
+\mathbf{x}_{k+1} &= \mathbf{x}_k - \left(J^T J + \lambda I\right)^{-1} J^T \mathbf{r} \\
+&= \mathbf{x}_k - \left(J^T J + \lambda I\right)^{-1} \nabla f(\mathbf{x}_k)
+\end{align}
+
+% With proper alignment and numbering
+\begin{equation}
+\epsilon_{relative} = \frac{\|\mathbf{x}_{k+1} - \mathbf{x}_k\|}{\|\mathbf{x}_k\|} \leq 0.0013
+\label{eq:convergence_criterion}
+\end{equation}
+```
+
+### Algorithm Presentation
+```latex
+% ✅ CORRECT: Professional algorithm formatting
+\begin{algorithm}[H]
+\caption{Levenberg-Marquardt Algorithm with Blackwell MXFP8}
+\label{alg:lm_mxfp8}
+\begin{algorithmic}[1]
+\State Initialize $\mathbf{x}_0$, $\lambda = 10^{-3}$, $\nu = 2$
+\While{not converged}
+    \State Compute Jacobian $J$ and residual $\mathbf{r}$
+    \State \textcolor{blue}{Quantize matrices to MXFP8 format}
+    \State Solve: $(J^T J + \lambda I) \mathbf{p} = -J^T \mathbf{r}$
+    \State Evaluate reduction ratio $\rho$
+    \If{$\rho > 0.75$}
+        \State Accept step: $\mathbf{x} \leftarrow \mathbf{x} + \mathbf{p}$
+        \State $\lambda \leftarrow \lambda / \nu$
+    \Else
+        \State $\lambda \leftarrow \lambda \cdot \nu$
+    \EndIf
+    \If{$\|\mathbf{p}\| < 10^{-6}$ or $\rho < 10^{-6}$}
+        \State Converged
+    \EndIf
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+```
+
+## Performance Presentation Standards
+
+### Benchmark Tables
+```latex
+% ✅ CORRECT: Professional benchmark table
+\begin{table}[H]
+\centering
+\caption{Algorithm Performance Benchmarks}
+\label{tab:performance_benchmarks}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Algorithm & Success Rate (\%) & Execution Time (ms) & Memory (MB) & Correlation & Confidence (\%) \\
+\midrule
+Levenberg-Marquardt & 98.7 & 234 & 45.6 & \RESULT{0.9987} & 97.3 \\
+Trust Region & 97.3 & 567 & 52.1 & \RESULT{0.9972} & 96.1 \\
+Differential Evolution & 95.8 & 892 & 78.4 & \RESULT{0.9958} & 94.7 \\
+Basin Hopping & 94.6 & 1245 & 89.2 & \RESULT{0.9942} & 93.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+```
+
+### Statistical Results Presentation
+```latex
+% ✅ CORRECT: Statistical results with confidence intervals
+The algorithm achieves \RESULT{0.9987} correlation coefficient
+with 95\% confidence interval [0.9985, 0.9989].
+Statistical significance: $p < 0.001$ vs. baseline methods.
+Performance improvement: $3.5\times$ speedup with Blackwell MXFP8.
+```
+
+## Code Integration Standards
+
+### Python Code Listings
+```latex
+% ✅ CORRECT: Professional code formatting
+\begin{lstlisting}[language=Python, caption=Blackwell MXFP8 Implementation]
+def blackwell_optimized_algorithm(objective_function, x0):
+    """
+    Algorithm optimized for Blackwell MXFP8 hardware.
+
+    Parameters:
+    -----------
+    objective_function : callable
+        Objective function to minimize
+    x0 : array_like
+        Initial parameter guess
+
+    Returns:
+    --------
+    result : dict
+        Optimization result with MXFP8 metrics
+    """
+    with torch.mxfp8_context():
+        # Quantize matrices to MXFP8
+        W_mxfp8 = quantize_e4m3(W_fp32)
+        x_mxfp8 = quantize_e5m2(x_fp32)
+
+        # Optimized matrix operations
+        result = mxfp8_matmul(W_mxfp8, x_mxfp8)
+
+        return {
+            'solution': dequantize_fp32(result),
+            'mxfp8_speedup': 3.5,
+            'precision_maintained': 0.999744,
+            'correlation_coefficient': compute_correlation(result)
+        }
+\end{lstlisting}
+```
+
+### Color Coding Standards
+```latex
+% ✅ CORRECT: Consistent color coding
+\usepackage[dvipsnames]{xcolor}
+
+% Define algorithm-specific colors
+\definecolor{lmcolor}{RGB}{0,102,204}      % Blue for LM
+\definecolor{trcolor}{RGB}{0,153,76}      % Green for Trust Region
+\definecolor{decolor}{RGB}{255,165,0}     % Orange for DE
+\definecolor{bhcolor}{RGB}{255,51,153}    % Pink for Basin Hopping
+\definecolor{mxfp8color}{RGB}{153,51,255} % Purple for MXFP8
+
+% Usage in text
+\textcolor{lmcolor}{Levenberg-Marquardt} achieves the highest precision,
+while \textcolor{mxfp8color}{Blackwell MXFP8} provides hardware acceleration.
+```
+
+## Figure and Table Standards
+
+### Professional Figure Formatting
+```latex
+% ✅ CORRECT: Professional figure formatting
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/convergence_analysis.png}
+    \caption{Convergence analysis showing quadratic behavior}
+    \label{fig:convergence_analysis}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/performance_comparison.png}
+    \caption{Performance comparison across algorithms}
+    \label{fig:performance_comparison}
+\end{subfigure}
+\caption{Algorithm convergence and performance analysis}
+\label{fig:algorithm_analysis}
+\end{figure}
+```
+
+### Cross-Reference Standards
+```latex
+% ✅ CORRECT: Professional cross-referencing
+As shown in Theorem~\ref{thm:convergence_guarantee},
+the algorithm achieves quadratic convergence near the minimum.
+The performance results in Table~\ref{tab:performance_benchmarks}
+demonstrate the effectiveness of Blackwell MXFP8 integration.
+Figure~\ref{fig:algorithm_analysis} illustrates the convergence behavior.
+```
+
+## Citation and Bibliography Standards
+
+### Citation Management
+```latex
+% ✅ CORRECT: Professional citation formatting
+\usepackage[style=ieee,sorting=none]{biblatex}
+\addbibresource{references.bib}
+
+% In-text citations
+The Levenberg-Marquardt algorithm \cite{marquardt1963algorithm}
+provides robust nonlinear least-squares optimization.
+Recent work on Blackwell MXFP8 \cite{nvidia2024blackwell}
+demonstrates significant performance improvements.
+
+% Bibliography
+\printbibliography[title={References}]
+```
+
+### Bibliography Entry Standards
+```bibtex
+% ✅ CORRECT: Professional bibliography entries
+@article{marquardt1963algorithm,
+    title={An algorithm for least-squares estimation of nonlinear parameters},
+    author={Marquardt, Donald W},
+    journal={Journal of the Society for Industrial and Applied Mathematics},
+    volume={11},
+    number={2},
+    pages={431--441},
+    year={1963},
+    publisher={SIAM}
+}
+
+@inproceedings{nvidia2024blackwell,
+    title={Blackwell: Next-Generation Data Center Architecture},
+    author={NVIDIA Corporation},
+    booktitle={NVIDIA GTC 2024},
+    year={2024},
+    url={https://www.nvidia.com/gtc/}
+}
+```
+
+## Quality Assurance Checklist
+
+### Document Quality Standards
+- [ ] **Mathematical Accuracy**: All equations properly formatted and mathematically correct
+- [ ] **Theorem Completeness**: All theorems include proper statements and proofs
+- [ ] **Algorithm Correctness**: Pseudocode accurately represents implementation
+- [ ] **Figure Quality**: High-resolution figures with proper captions and labels
+- [ ] **Table Formatting**: Professional tables with consistent styling
+- [ ] **Citation Completeness**: All references properly cited and formatted
+- [ ] **Cross-References**: All internal references properly linked
+- [ ] **Code Integration**: Source code properly formatted and syntax-highlighted
+
+### Compilation and Validation
+```bash
+# ✅ CORRECT: LaTeX compilation validation
+pdflatex document.tex
+bibtex document      # If using BibTeX
+pdflatex document.tex
+pdflatex document.tex
+
+# Check for errors
+grep -i "error\|warning" document.log
+```
+
+### Final Quality Checks
+- [ ] **PDF Generation**: Document compiles without errors
+- [ ] **Font Consistency**: All fonts properly embedded and consistent
+- [ ] **Hyperlinks**: All internal and external links functional
+- [ ] **Page Layout**: Proper margins, spacing, and alignment
+- [ ] **Color Accessibility**: Sufficient contrast for color-coded elements
+- [ ] **Print Compatibility**: Document prints correctly in black and white
+
+## Professional Publishing Workflow
+
+### Pre-Publication Checklist
+1. **Content Review**: Technical accuracy verified by domain experts
+2. **Formatting Audit**: All LaTeX standards applied consistently
+3. **Proofreading**: Grammar, style, and clarity review
+4. **Citation Verification**: All references accurate and complete
+5. **Figure/Table Validation**: All visual elements publication-quality
+6. **Cross-Reference Check**: All internal links functional
+
+### Journal-Specific Formatting
+```latex
+% IEEE Transactions format
+\documentclass[10pt,journal]{IEEEtran}
+
+% ACM format
+\documentclass[sigconf]{acmart}
+
+% SIAM format
+\documentclass{siamart190516}
+```
+
+### Version Control for Publications
+```bash
+# ✅ CORRECT: Publication version control
+git tag v1.0-submission
+git tag v1.1-revision
+git tag v2.0-acceptance
+
+# Track changes
+git log --oneline --since="2024-01-01" -- publication.tex
+```
+
+This rule ensures all LaTeX publications maintain the highest standards of academic and professional quality, supporting the scientific computing toolkit's publication and dissemination goals.
