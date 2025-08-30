@@ -1,0 +1,164 @@
+---
+# Security Framework Configuration (YAML)
+# Alternative configuration format for qualia framework
+
+security:
+  scan:
+    timeout: 30000
+    threads: 10
+    maxFindings: 1000
+    enableBufferOverflow: true
+    enableSqlInjection: true
+    enableXss: true
+    enableWeakEncryption: true
+    enableRaceConditions: true
+    enableMemoryLeaks: true
+
+  validation:
+    ks:
+      confidenceThreshold: 0.05
+      bootstrapSamples: 1000
+      enableEnhancedValidation: true
+      statisticalTests:
+        - kolmogorov-smirnov
+        - chi-squared
+        - mann-whitney-u
+
+database:
+  url: "jdbc:postgresql://localhost:5432/pentest_db"
+  username: "pentest_user"
+  password: "pentest_password"
+  connectionTimeout: 10000
+  maxPoolSize: 10
+  minPoolSize: 2
+  validationQuery: "SELECT 1"
+  connectionTestQuery: "SELECT 1"
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: "pentest_redis_password"
+  connectionTimeout: 2000
+  maxConnections: 20
+  minIdleConnections: 5
+  maxWaitTime: 5000
+
+gptoss:
+  api:
+    endpoint: "http://localhost:8000"
+    timeout: 15000
+    maxRetries: 3
+    retryDelay: 1000
+    circuitBreaker:
+      failureThreshold: 5
+      recoveryTimeout: 30000
+
+  test:
+    vulnerabilityLevel: "medium"
+    enablePromptInjection: true
+    enableDataLeakage: true
+    enableModelPoisoning: false
+    enableAdversarialInputs: true
+    testCases:
+      - prompt_injection_basic
+      - data_leakage_context
+      - adversarial_robustness
+
+performance:
+  monitoring:
+    enabled: true
+    interval: 5000
+    memory:
+      threshold: 0.9
+      gcMonitoring: true
+    cpu:
+      monitoring: true
+      threshold: 0.8
+    thread:
+      monitoring: true
+      maxThreads: 50
+
+logging:
+  level: "INFO"
+  file:
+    path: "logs/security-framework.log"
+    maxSize: "100MB"
+    maxFiles: 5
+    rolling: "daily"
+  console:
+    enabled: true
+    format: "json"
+  structured:
+    enabled: true
+    fields:
+      - timestamp
+      - level
+      - component
+      - vulnerability_type
+      - severity
+
+reports:
+  output:
+    directory: "reports/"
+    compression:
+      enabled: true
+      format: "gzip"
+  format:
+    - "html"
+    - "json"
+    - "txt"
+    - "pdf"
+  include:
+    performance: true
+    validation: true
+    recommendations: true
+    executive_summary: true
+  templates:
+    html: "templates/report.html"
+    pdf: "templates/report.tex"
+
+koopman:
+  analysis:
+    maxEigenvalues: 50
+    convergenceThreshold: 1e-6
+    maxIterations: 1000
+    tolerance: 1e-8
+    observable:
+      functions:
+        - "polynomial"
+        - "trigonometric"
+        - "radial"
+      maxDegree: 5
+      basisSize: 100
+    decomposition:
+      method: "svd"
+      regularization: 1e-8
+
+visualization:
+  output:
+    directory: "reports/visualizations/"
+    format: ["png", "svg", "pdf"]
+    dpi: 300
+    enableInteractive: true
+  charts:
+    theme: "professional"
+    colorPalette: "security"
+    fontSize: 12
+    gridEnabled: true
+
+environment:
+  profiles:
+    - "development"
+    - "testing"
+    - "staging"
+    - "production"
+  current: "${ENVIRONMENT:development}"
+
+features:
+  experimental:
+    koopmanDefensive: true
+    aiThreatModeling: false
+    quantumVulnerability: false
+  deprecated:
+    legacyReports: false
+    oldValidationMethods: false
