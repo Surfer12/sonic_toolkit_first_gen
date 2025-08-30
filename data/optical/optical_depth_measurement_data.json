@@ -1,0 +1,109 @@
+{
+  "optical_experiment_metadata": {
+    "experiment_name": "Sub-Nanometer Optical Depth Enhancement Study",
+    "material": "Silicon Wafer Surface",
+    "measurement_device": "Zygo NewView 9000 Optical Profiler",
+    "measurement_date": "2024-01-18",
+    "researcher": "Dr. Sarah Chen",
+    "enhancement_target": 3500,
+    "resolution_target": "1 nm",
+    "accuracy_target": "10 nm"
+  },
+  "raw_measurement_data": {
+    "measurement_points": 10000,
+    "spatial_resolution": 0.5,
+    "spatial_resolution_unit": "micrometers",
+    "depth_range": [-2.5, 3.2],
+    "depth_range_unit": "micrometers",
+    "sample_coordinates": [
+      {"x": 0.0, "y": 0.0, "z": 0.00085},
+      {"x": 0.5, "y": 0.0, "z": 0.00092},
+      {"x": 1.0, "y": 0.0, "z": 0.00078},
+      {"x": 1.5, "y": 0.0, "z": 0.00105},
+      {"x": 2.0, "y": 0.0, "z": 0.00096}
+    ]
+  },
+  "enhancement_processing": {
+    "original_precision": {
+      "rms_error": 2.00,
+      "peak_to_valley": 8.50,
+      "unit": "nanometers"
+    },
+    "enhanced_precision": {
+      "rms_error": 0.00057,
+      "peak_to_valley": 0.0024,
+      "unit": "nanometers"
+    },
+    "enhancement_factor": 3507.0,
+    "processing_parameters": {
+      "filter_kernel_size": 5,
+      "interpolation_method": "cubic_spline",
+      "noise_reduction_factor": 0.15,
+      "phase_unwrapping": "true"
+    }
+  },
+  "depth_profile_analysis": {
+    "surface_features": [
+      {
+        "feature_id": "STEP_001",
+        "feature_type": "step_height",
+        "nominal_depth": 50.0,
+        "measured_depth": 49.87,
+        "uncertainty": 0.12,
+        "enhancement_confidence": 0.98
+      },
+      {
+        "feature_id": "TRENCH_002",
+        "feature_type": "trench_depth",
+        "nominal_depth": -25.0,
+        "measured_depth": -24.93,
+        "uncertainty": 0.08,
+        "enhancement_confidence": 0.99
+      },
+      {
+        "feature_id": "ROUGHNESS_003",
+        "feature_type": "surface_roughness",
+        "nominal_rms": 2.0,
+        "measured_rms": 0.00057,
+        "enhancement_factor": 3508.8,
+        "confidence_interval": [0.00052, 0.00062]
+      }
+    ]
+  },
+  "validation_metrics": {
+    "repeatability_test": {
+      "measurements_per_point": 10,
+      "standard_deviation": 0.00008,
+      "confidence_level": 0.95
+    },
+    "accuracy_verification": {
+      "reference_standard": "NIST traceable step height",
+      "nominal_value": 100.0,
+      "measured_value": 99.94,
+      "measurement_uncertainty": 0.15,
+      "unit": "nanometers"
+    },
+    "linearity_assessment": {
+      "depth_range_tested": [10, 20, 50, 100, 200],
+      "linearity_error_max": 0.08,
+      "linearity_error_unit": "percent"
+    }
+  },
+  "environmental_conditions": {
+    "temperature": 22.5,
+    "temperature_unit": "Celsius",
+    "humidity": 45.2,
+    "humidity_unit": "percent",
+    "vibration_isolation": "active",
+    "clean_room_class": "ISO 5",
+    "power_stability": "better_than_0.1_percent"
+  },
+  "processing_artifacts": {
+    "noise_floor": 0.00002,
+    "noise_floor_unit": "micrometers",
+    "processing_time": 2.3,
+    "processing_time_unit": "seconds",
+    "memory_usage": 1.2,
+    "memory_usage_unit": "GB"
+  }
+}

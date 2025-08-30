@@ -1,0 +1,111 @@
+{
+  "biometric_dataset_metadata": {
+    "dataset_name": "Enhanced 3D Iris Recognition Dataset",
+    "collection_date": "2024-01-10",
+    "device": "Integrated Eye Depth Analyzer v3.2",
+    "resolution": "1920x1080",
+    "subjects": 150,
+    "total_samples": 2250,
+    "iris_features_extracted": 512,
+    "validation_accuracy_target": 0.85
+  },
+  "sample_subject_data": {
+    "subject_id": "SUBJ_047",
+    "demographics": {
+      "age": 32,
+      "gender": "F",
+      "ethnicity": "Caucasian"
+    },
+    "iris_characteristics": {
+      "iris_diameter_mm": 11.8,
+      "pupil_diameter_mm": 4.2,
+      "iris_texture_complexity": 8.7,
+      "color_saturation": 0.82
+    },
+    "measurement_sessions": [
+      {
+        "session_id": "SESS_047_001",
+        "timestamp": "2024-01-10T09:15:30Z",
+        "lighting_conditions": "controlled_indoor",
+        "distance_to_camera": 0.35,
+        "iris_features": {
+          "depth_profile": [2.1, 2.3, 2.0, 2.4, 1.9, 2.2, 2.1, 2.5],
+          "texture_patterns": [0.85, 0.92, 0.78, 0.89, 0.94, 0.81, 0.87, 0.96],
+          "geometric_features": {
+            "pupil_center_x": 960,
+            "pupil_center_y": 540,
+            "iris_radius": 185,
+            "iris_eccentricity": 0.12
+          }
+        },
+        "quality_metrics": {
+          "focus_score": 0.94,
+          "illumination_uniformity": 0.89,
+          "motion_blur": 0.05,
+          "occlusion_percentage": 0.02
+        }
+      },
+      {
+        "session_id": "SESS_047_002",
+        "timestamp": "2024-01-10T14:22:15Z",
+        "lighting_conditions": "natural_window_light",
+        "distance_to_camera": 0.42,
+        "iris_features": {
+          "depth_profile": [2.0, 2.2, 2.1, 2.3, 1.8, 2.1, 2.0, 2.4],
+          "texture_patterns": [0.83, 0.90, 0.76, 0.87, 0.92, 0.79, 0.85, 0.94],
+          "geometric_features": {
+            "pupil_center_x": 955,
+            "pupil_center_y": 538,
+            "iris_radius": 183,
+            "iris_eccentricity": 0.15
+          }
+        },
+        "quality_metrics": {
+          "focus_score": 0.91,
+          "illumination_uniformity": 0.82,
+          "motion_blur": 0.08,
+          "occlusion_percentage": 0.03
+        }
+      }
+    ]
+  },
+  "dataset_statistics": {
+    "age_distribution": {
+      "18-25": 45,
+      "26-35": 52,
+      "36-45": 38,
+      "46+": 15
+    },
+    "iris_quality_distribution": {
+      "excellent": 1456,
+      "good": 623,
+      "acceptable": 156,
+      "poor": 15
+    },
+    "ethnicity_distribution": {
+      "Caucasian": 89,
+      "Asian": 32,
+      "African": 18,
+      "Hispanic": 11
+    }
+  },
+  "validation_results": {
+    "identification_accuracy": 0.856,
+    "false_acceptance_rate": 0.0042,
+    "false_rejection_rate": 0.0231,
+    "equal_error_rate": 0.0136,
+    "processing_time_ms": 45.2,
+    "memory_usage_mb": 23.8
+  },
+  "feature_extraction_details": {
+    "algorithms_used": [
+      "Daugman rubber sheet model",
+      "Gabor wavelet transform",
+      "Local binary patterns",
+      "Scale-invariant feature transform"
+    ],
+    "feature_dimensions": 512,
+    "template_size_bytes": 2048,
+    "matching_algorithm": "Hamming distance with fractional bits"
+  }
+}
