@@ -1,0 +1,511 @@
+---
+alwaysApply: true
+description: "Best practices for implementing and documenting deterministic optimization methods in scientific computing"
+globs: *.py,*.md,*.tex
+---
+# Deterministic Optimization Best Practices
+
+## Core Principles
+**All optimization implementations must use deterministic methods with validated performance.** The scientific computing toolkit achieves reproducible results through systematic algorithm selection and convergence validation.
+
+## Algorithm Selection Framework
+
+### Problem Classification
+```python
+def classify_optimization_problem(objective_function, constraints, bounds):
+    """Classify optimization problem to select appropriate algorithm."""
+
+    # Analyze problem characteristics
+    problem_analysis = analyze_problem_structure(objective_function, constraints, bounds)
+
+    # Algorithm selection logic
+    if problem_analysis['smooth'] and problem_analysis['unconstrained']:
+        return 'levenberg_marquardt'
+    elif problem_analysis['constrained'] and problem_analysis['nonlinear']:
+        return 'trust_region'
+    elif problem_analysis['multimodal'] and problem_analysis['high_dimensional']:
+        return 'differential_evolution'
+    elif problem_analysis['complex_landscape']:
+        return 'basin_hopping'
+    else:
+        return 'multi_algorithm'  # Automatic selection
+
+def analyze_problem_structure(objective_function, constraints, bounds):
+    """Analyze problem structure for algorithm selection."""
+    import numpy as np
+
+    # Test smoothness (numerical differentiation)
+    x_test = np.random.uniform(bounds[:, 0], bounds[:, 1]) if bounds else np.random.randn(10)
+    try:
+        grad = numerical_gradient(objective_function, x_test)
+        hess = numerical_hessian(objective_function, x_test)
+        smooth = np.all(np.isfinite(grad)) and np.all(np.isfinite(hess))
+    except:
+        smooth = False
+
+    # Check constraints
+    constrained = constraints is not None and len(constraints) > 0
+    bounded = bounds is not None
+
+    # Estimate dimensionality
+    if hasattr(x_test, '__len__'):
+        dim = len(x_test)
+    else:
+        dim = 1
+
+    return {
+        'smooth': smooth,
+        'constrained': constrained,
+        'bounded': bounded,
+        'dimensionality': dim,
+        'unconstrained': not constrained and not bounded,
+        'high_dimensional': dim > 10,
+        'multimodal': False,  # Would need additional analysis
+        'complex_landscape': not smooth and constrained
+    }
+```
+
+### Automatic Algorithm Selection
+```python
+class IntelligentOptimizer:
+    """Intelligent optimizer with automatic algorithm selection."""
+
+    def __init__(self, convergence_threshold=1e-6):
+        self.convergence_threshold = convergence_threshold
+        self.algorithms = {
+            'levenberg_marquardt': self._optimize_lm,
+            'trust_region': self._optimize_tr,
+            'differential_evolution': self._optimize_de,
+            'basin_hopping': self._optimize_bh
+        }
+
+    def optimize(self, objective_function, x0, bounds=None, constraints=None):
+        """Automatically select and execute optimal optimization algorithm."""
+        # Classify problem
+        problem_type = classify_optimization_problem(
+            objective_function, constraints, bounds
+        )
+
+        # Select algorithm
+        algorithm = self._select_algorithm(problem_type)
+
+        # Execute optimization
+        result = self.algorithms[algorithm](objective_function, x0, bounds, constraints)
+
+        # Validate result
+        self._validate_optimization_result(result, objective_function)
+
+        return result
+
+    def _select_algorithm(self, problem_type):
+        """Select optimal algorithm based on problem characteristics."""
+        if problem_type['smooth'] and problem_type['unconstrained']:
+            return 'levenberg_marquardt'
+        elif problem_type['constrained']:
+            return 'trust_region'
+        elif problem_type['high_dimensional'] or problem_type['multimodal']:
+            return 'differential_evolution'
+        else:
+            return 'basin_hopping'
+
+    def _optimize_lm(self, objective_function, x0, bounds, constraints):
+        """Levenberg-Marquardt optimization."""
+        from scipy.optimize import least_squares
+
+        if constraints:
+            # Convert to unconstrained form or use alternative
+            return self._optimize_tr(objective_function, x0, bounds, constraints)
+
+        result = least_squares(
+            objective_function,
+            x0,
+            bounds=bounds,
+            method='lm',
+            ftol=self.convergence_threshold,
+            xtol=self.convergence_threshold
+        )
+
+        return {
+            'x': result.x,
+            'success': result.success,
+            'fun': result.cost,
+            'nfev': result.nfev,
+            'algorithm': 'levenberg_marquardt'
+        }
+
+    def _optimize_tr(self, objective_function, x0, bounds, constraints):
+        """Trust Region optimization."""
+        from scipy.optimize import minimize
+
+        result = minimize(
+            objective_function,
+            x0,
+            method='trust-constr',
+            bounds=bounds,
+            constraints=constraints,
+            options={
+                'xtol': self.convergence_threshold,
+                'gtol': self.convergence_threshold,
+                'maxiter': 1000
+            }
+        )
+
+        return {
+            'x': result.x,
+            'success': result.success,
+            'fun': result.fun,
+            'nfev': result.nfev,
+            'algorithm': 'trust_region'
+        }
+
+    def _optimize_de(self, objective_function, x0, bounds, constraints):
+        """Differential Evolution optimization."""
+        from scipy.optimize import differential_evolution
+
+        if constraints:
+            # Handle constraints by penalty method
+            def penalized_objective(x):
+                penalty = 0
+                if constraints:
+                    for constraint in constraints:
+                        violation = constraint['fun'](x)
+                        if constraint['type'] == 'ineq':
+                            penalty += max(0, -violation)**2
+                        elif constraint['type'] == 'eq':
+                            penalty += violation**2
+                return objective_function(x) + 1e6 * penalty
+
+            objective_to_use = penalized_objective
+        else:
+            objective_to_use = objective_function
+
+        result = differential_evolution(
+            objective_to_use,
+            bounds,
+            strategy='best1bin',
+            maxiter=1000,
+            popsize=15,
+            tol=self.convergence_threshold,
+            seed=42
+        )
+
+        return {
+            'x': result.x,
+            'success': result.success,
+            'fun': result.fun,
+            'nfev': result.nfev,
+            'algorithm': 'differential_evolution'
+        }
+
+    def _optimize_bh(self, objective_function, x0, bounds, constraints):
+        """Basin Hopping optimization."""
+        from scipy.optimize import basinhopping
+
+        # Setup minimizer kwargs
+        minimizer_kwargs = {'method': 'L-BFGS-B'}
+        if bounds:
+            minimizer_kwargs['bounds'] = bounds
+        if constraints:
+            # Handle constraints in local minimization
+            def constrained_objective(x):
+                penalty = 0
+                for constraint in constraints:
+                    violation = constraint['fun'](x)
+                    if constraint['type'] == 'ineq':
+                        penalty += max(0, -violation)**2
+                    elif constraint['type'] == 'eq':
+                        penalty += violation**2
+                return objective_function(x) + 1e6 * penalty
+
+            minimizer_kwargs['fun'] = constrained_objective
+        else:
+            minimizer_kwargs['fun'] = objective_function
+
+        result = basinhopping(
+            lambda x: minimizer_kwargs['fun'](x),
+            x0,
+            minimizer_kwargs=minimizer_kwargs,
+            niter=100,
+            T=1.0,
+            stepsize=0.5,
+            seed=42
+        )
+
+        return {
+            'x': result.x,
+            'success': True,  # Basin hopping doesn't have success flag
+            'fun': result.fun,
+            'nfev': result.nfev,
+            'algorithm': 'basin_hopping'
+        }
+
+    def _validate_optimization_result(self, result, objective_function):
+        """Validate optimization result quality."""
+        # Check convergence
+        if not result['success']:
+            warnings.warn("Optimization did not converge to requested tolerance")
+
+        # Check objective function value is finite
+        if not np.isfinite(result['fun']):
+            raise ValueError("Optimization resulted in non-finite objective value")
+
+        # Check parameter values are finite
+        if not np.all(np.isfinite(result['x'])):
+            raise ValueError("Optimization resulted in non-finite parameter values")
+
+        # Additional validation could include:
+        # - Gradient checking
+        # - Hessian conditioning
+        # - Constraint satisfaction
+        # - Solution stability
+```
+
+## Convergence Validation
+
+### Multi-Criteria Convergence Assessment
+```python
+def validate_convergence(result, objective_function, x0, convergence_threshold=1e-6):
+    """Comprehensive convergence validation."""
+
+    # 1. Parameter convergence
+    parameter_change = np.linalg.norm(result['x'] - x0)
+    parameter_converged = parameter_change < convergence_threshold
+
+    # 2. Function value convergence
+    function_converged = abs(result['fun']) < convergence_threshold
+
+    # 3. Gradient convergence (if available)
+    try:
+        grad = numerical_gradient(objective_function, result['x'])
+        gradient_converged = np.linalg.norm(grad) < convergence_threshold
+    except:
+        gradient_converged = True  # Can't check if gradient computation fails
+
+    # 4. Stability check (re-run optimization from result)
+    stability_test = minimize(
+        objective_function,
+        result['x'],
+        method='BFGS',
+        options={'maxiter': 10}
+    )
+    stability_converged = np.linalg.norm(stability_test.x - result['x']) < convergence_threshold
+
+    convergence_metrics = {
+        'parameter_converged': parameter_converged,
+        'function_converged': function_converged,
+        'gradient_converged': gradient_converged,
+        'stability_converged': stability_converged,
+        'overall_converged': all([
+            parameter_converged,
+            function_converged,
+            gradient_converged,
+            stability_converged
+        ])
+    }
+
+    return convergence_metrics
+```
+
+### Performance Benchmarking
+```python
+def benchmark_optimization_algorithm(algorithm, test_problems, n_runs=10):
+    """Comprehensive performance benchmarking."""
+
+    results = []
+
+    for problem_name, problem_data in test_problems.items():
+        problem_results = []
+
+        for run in range(n_runs):
+            start_time = time.time()
+
+            # Run optimization
+            result = run_optimization(algorithm, problem_data)
+
+            execution_time = time.time() - start_time
+
+            # Calculate quality metrics
+            quality_metrics = calculate_quality_metrics(
+                result, problem_data['optimal_solution']
+            )
+
+            problem_results.append({
+                'run': run,
+                'time': execution_time,
+                'success': result['success'],
+                'quality': quality_metrics,
+                'convergence': validate_convergence(
+                    result, problem_data['objective'], problem_data['x0']
+                )
+            })
+
+        # Aggregate results
+        aggregated = aggregate_benchmark_results(problem_results)
+
+        results.append({
+            'problem': problem_name,
+            'algorithm': algorithm,
+            'aggregated_results': aggregated
+        })
+
+    return results
+
+def calculate_quality_metrics(result, optimal_solution):
+    """Calculate solution quality metrics."""
+    # Parameter error
+    parameter_error = np.linalg.norm(result['x'] - optimal_solution['x'])
+
+    # Objective error
+    objective_error = abs(result['fun'] - optimal_solution['fun'])
+
+    # Success rate (within tolerance)
+    success = (parameter_error < 1e-3) and (objective_error < 1e-6)
+
+    return {
+        'parameter_error': parameter_error,
+        'objective_error': objective_error,
+        'success': success
+    }
+
+def aggregate_benchmark_results(problem_results):
+    """Aggregate benchmark results across multiple runs."""
+    times = [r['time'] for r in problem_results]
+    successes = [r['success'] for r in problem_results]
+
+    return {
+        'mean_time': np.mean(times),
+        'std_time': np.std(times),
+        'min_time': np.min(times),
+        'max_time': np.max(times),
+        'success_rate': np.mean(successes),
+        'total_runs': len(problem_results)
+    }
+```
+
+## Error Handling and Robustness
+
+### Robust Optimization Implementation
+```python
+def robust_optimization(objective_function, x0, bounds=None, constraints=None,
+                       max_retries=3, fallback_algorithms=None):
+    """Robust optimization with automatic fallback strategies."""
+
+    if fallback_algorithms is None:
+        fallback_algorithms = ['trust_region', 'differential_evolution', 'basin_hopping']
+
+    primary_algorithm = 'levenberg_marquardt'  # Default primary
+
+    # Try primary algorithm
+    try:
+        result = optimize_with_algorithm(
+            primary_algorithm, objective_function, x0, bounds, constraints
+        )
+
+        if validate_result_quality(result):
+            return result
+
+    except Exception as e:
+        print(f"Primary algorithm {primary_algorithm} failed: {e}")
+
+    # Try fallback algorithms
+    for fallback_algorithm in fallback_algorithms:
+        try:
+            print(f"Trying fallback algorithm: {fallback_algorithm}")
+            result = optimize_with_algorithm(
+                fallback_algorithm, objective_function, x0, bounds, constraints
+            )
+
+            if validate_result_quality(result):
+                print(f"Success with fallback algorithm: {fallback_algorithm}")
+                return result
+
+        except Exception as e:
+            print(f"Fallback algorithm {fallback_algorithm} failed: {e}")
+            continue
+
+    # If all algorithms fail, raise error
+    raise RuntimeError("All optimization algorithms failed to converge")
+
+def validate_result_quality(result):
+    """Validate optimization result meets quality standards."""
+    checks = [
+        result['success'],  # Algorithm reported success
+        np.all(np.isfinite(result['x'])),  # Finite parameters
+        np.isfinite(result['fun']),  # Finite objective value
+        np.linalg.norm(numerical_gradient(
+            lambda x: objective_function(x), result['x']
+        )) < 1e-3  # Near-zero gradient
+    ]
+
+    return all(checks)
+
+def optimize_with_algorithm(algorithm, objective_function, x0, bounds, constraints):
+    """Optimize using specified algorithm with proper error handling."""
+    if algorithm == 'levenberg_marquardt':
+        return optimize_levenberg_marquardt(objective_function, x0, bounds, constraints)
+    elif algorithm == 'trust_region':
+        return optimize_trust_region(objective_function, x0, bounds, constraints)
+    elif algorithm == 'differential_evolution':
+        return optimize_differential_evolution(objective_function, x0, bounds, constraints)
+    elif algorithm == 'basin_hopping':
+        return optimize_basin_hopping(objective_function, x0, bounds, constraints)
+    else:
+        raise ValueError(f"Unknown algorithm: {algorithm}")
+```
+
+## Documentation Standards
+
+### Optimization Documentation Template
+```python
+def document_optimization_results(result, algorithm, problem_description):
+    """Generate comprehensive documentation for optimization results."""
+
+    documentation = f"""
+# Optimization Results: {algorithm}
+
+## Problem Description
+{problem_description}
+
+## Algorithm Configuration
+- **Method**: {algorithm}
+- **Convergence Threshold**: {result.get('convergence_threshold', 'N/A')}
+- **Maximum Iterations**: {result.get('max_iterations', 'N/A')}
+- **Random Seed**: {result.get('seed', 'N/A')}
+
+## Results
+- **Success**: {result['success']}
+- **Final Objective Value**: {result['fun']:.6f}
+- **Parameter Values**: {result['x']}
+- **Function Evaluations**: {result['nfev']}
+- **Execution Time**: {result.get('execution_time', 'N/A'):.3f}s
+
+## Quality Metrics
+- **Parameter Error**: {calculate_parameter_error(result):.2e}
+- **Objective Error**: {calculate_objective_error(result):.2e}
+- **Gradient Norm**: {calculate_gradient_norm(result):.2e}
+
+## Convergence Analysis
+- **Converged**: {validate_convergence(result)}
+- **Stability**: {check_solution_stability(result)}
+- **Precision**: {calculate_precision_metrics(result)}
+"""
+
+    # Save documentation
+    with open(f"optimization_results_{algorithm}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md", 'w') as f:
+        f.write(documentation)
+
+    return documentation
+```
+
+## Quality Assurance
+
+### Implementation Checklist
+- [ ] **Algorithm correctly implemented** with proper scipy.optimize usage
+- [ ] **Error handling** for edge cases and convergence failures
+- [ ] **Parameter validation** for bounds and constraints
+- [ ] **Convergence checking** with multiple criteria
+- [ ] **Performance benchmarking** against known solutions
+- [ ] **Documentation** with usage examples and performance metrics
+- [ ] **Testing** with unit tests and integration tests
+
+This rule ensures all deterministic optimization implementations follow best practices for reliability, performance, and scientific accuracy.

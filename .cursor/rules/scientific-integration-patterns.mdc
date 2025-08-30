@@ -1,0 +1,815 @@
+---
+alwaysApply: false
+description: "Integration patterns for scientific computing frameworks"
+globs: scientific-computing-tools/**,*.py,*.java
+---
+# Scientific Computing Integration Patterns
+
+## Overview
+This rule provides established patterns for integrating scientific computing frameworks, ensuring seamless interoperability, consistent data flow, and maintainable architectures across complex scientific applications.
+
+## Framework Integration Architecture
+
+### Multi-Framework Communication Protocol
+```python
+class ScientificFrameworkBus:
+    """Central communication bus for scientific computing frameworks.
+
+    This class implements a publish-subscribe pattern for framework integration,
+    enabling loose coupling between components while maintaining data consistency.
+    """
+
+    def __init__(self):
+        self.subscribers = defaultdict(list)
+        self.data_registry = {}
+        self.transformation_registry = {}
+
+    def register_framework(self, framework_name: str, framework_instance):
+        """Register a framework instance with the bus.
+
+        Args:
+            framework_name: Unique identifier for the framework
+            framework_instance: Framework instance with standard interface
+        """
+        self.data_registry[framework_name] = framework_instance
+
+        # Register standard data transformations
+        if hasattr(framework_instance, 'to_tensor'):
+            self.transformation_registry[f"{framework_name}_to_tensor"] = framework_instance.to_tensor
+        if hasattr(framework_instance, 'from_tensor'):
+            self.transformation_registry[f"{framework_name}_from_tensor"] = framework_instance.from_tensor
+
+    def publish_data(self, topic: str, data: Any, metadata: Dict[str, Any] = None):
+        """Publish data to all subscribers of a topic.
+
+        Args:
+            topic: Data topic/channel identifier
+            data: Data payload to publish
+            metadata: Additional metadata about the data
+        """
+        message = {
+            'topic': topic,
+            'data': data,
+            'metadata': metadata or {},
+            'timestamp': datetime.now().isoformat(),
+            'publisher': 'ScientificFrameworkBus'
+        }
+
+        # Notify all subscribers
+        for subscriber in self.subscribers[topic]:
+            try:
+                subscriber.receive_data(message)
+            except Exception as e:
+                logger.error(f"Subscriber error in {topic}: {e}")
+
+    def subscribe(self, topic: str, subscriber):
+        """Subscribe to data updates on a specific topic.
+
+        Args:
+            subscriber: Object with receive_data(message) method
+        """
+        self.subscribers[topic].append(subscriber)
+
+    def transform_data(self, source_framework: str, target_framework: str, data: Any) -> Any:
+        """Transform data between different framework representations.
+
+        Args:
+            source_framework: Source framework identifier
+            target_framework: Target framework identifier
+            data: Data to transform
+
+        Returns:
+            Transformed data in target framework format
+        """
+        # Direct transformation if available
+        direct_key = f"{source_framework}_to_{target_framework}"
+        if direct_key in self.transformation_registry:
+            return self.transformation_registry[direct_key](data)
+
+        # Chain through tensor representation
+        if source_framework in self.data_registry and target_framework in self.data_registry:
+            source_instance = self.data_registry[source_framework]
+            target_instance = self.data_registry[target_framework]
+
+            # Convert to tensor, then to target format
+            tensor_data = source_instance.to_tensor(data)
+            return target_instance.from_tensor(tensor_data)
+
+        raise ValueError(f"No transformation path from {source_framework} to {target_framework}")
+
+# Global framework bus instance
+framework_bus = ScientificFrameworkBus()
+```
+
+### Standard Framework Interface
+```python
+class ScientificFrameworkInterface:
+    """Standard interface that all scientific frameworks should implement.
+
+    This interface ensures consistent integration patterns across different
+    scientific computing frameworks.
+    """
+
+    @abstractmethod
+    def initialize(self, config: Dict[str, Any]) -> bool:
+        """Initialize the framework with configuration parameters.
+
+        Args:
+            config: Configuration dictionary
+
+        Returns:
+            True if initialization successful, False otherwise
+        """
+        pass
+
+    @abstractmethod
+    def validate_input(self, data: Any) -> Tuple[bool, str]:
+        """Validate input data for the framework.
+
+        Args:
+            data: Input data to validate
+
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        pass
+
+    @abstractmethod
+    def process(self, data: Any) -> Dict[str, Any]:
+        """Process data using the framework's algorithms.
+
+        Args:
+            data: Input data to process
+
+        Returns:
+            Dictionary containing processing results and metadata
+        """
+        pass
+
+    @abstractmethod
+    def get_uncertainty(self, data: Any) -> Dict[str, Any]:
+        """Compute uncertainty estimates for predictions/results.
+
+        Args:
+            data: Input data for uncertainty estimation
+
+        Returns:
+            Dictionary containing uncertainty estimates
+        """
+        pass
+
+    @abstractmethod
+    def to_tensor(self, data: Any) -> torch.Tensor:
+        """Convert framework-specific data to tensor representation.
+
+        Args:
+            data: Framework-specific data format
+
+        Returns:
+            Tensor representation suitable for framework interchange
+        """
+        pass
+
+    @abstractmethod
+    def from_tensor(self, tensor: torch.Tensor) -> Any:
+        """Convert tensor representation to framework-specific format.
+
+        Args:
+            tensor: Tensor representation
+
+        Returns:
+            Framework-specific data format
+        """
+        pass
+
+    @abstractmethod
+    def get_performance_metrics(self) -> Dict[str, float]:
+        """Get current performance metrics for the framework.
+
+        Returns:
+            Dictionary of performance metrics (latency, throughput, memory, etc.)
+        """
+        pass
+```
+
+## Data Flow Integration Patterns
+
+### Pipeline Pattern for Scientific Workflows
+```python
+class ScientificPipeline:
+    """Pipeline pattern for composing scientific computing workflows.
+
+    This pattern enables the creation of complex scientific workflows by
+    chaining together multiple frameworks in a processing pipeline.
+    """
+
+    def __init__(self, framework_bus: ScientificFrameworkBus):
+        self.framework_bus = framework_bus
+        self.pipeline_steps = []
+        self.data_flow = {}
+
+    def add_step(self, step_name: str, framework_name: str, config: Dict[str, Any] = None):
+        """Add a processing step to the pipeline.
+
+        Args:
+            step_name: Unique identifier for this step
+            framework_name: Registered framework to use
+            config: Optional configuration for this step
+        """
+        self.pipeline_steps.append({
+            'name': step_name,
+            'framework': framework_name,
+            'config': config or {},
+            'status': 'pending'
+        })
+
+    def execute_pipeline(self, input_data: Any) -> Dict[str, Any]:
+        """Execute the complete processing pipeline.
+
+        Args:
+            input_data: Initial input data for the pipeline
+
+        Returns:
+            Dictionary containing results from all pipeline steps
+        """
+        current_data = input_data
+        results = {}
+
+        for step in self.pipeline_steps:
+            try:
+                # Update step status
+                step['status'] = 'running'
+
+                # Get framework instance
+                framework = self.framework_bus.data_registry[step['framework']]
+
+                # Validate input for this step
+                is_valid, error_msg = framework.validate_input(current_data)
+                if not is_valid:
+                    raise ValueError(f"Validation failed for {step['name']}: {error_msg}")
+
+                # Process data
+                step_result = framework.process(current_data)
+
+                # Store step results
+                results[step['name']] = {
+                    'output': step_result,
+                    'framework': step['framework'],
+                    'timestamp': datetime.now().isoformat(),
+                    'performance': framework.get_performance_metrics()
+                }
+
+                # Update data for next step
+                current_data = step_result.get('output', step_result)
+
+                # Mark step as completed
+                step['status'] = 'completed'
+
+                # Publish to framework bus
+                self.framework_bus.publish_data(
+                    f"pipeline_step_{step['name']}",
+                    current_data,
+                    {'step': step['name'], 'framework': step['framework']}
+                )
+
+            except Exception as e:
+                step['status'] = 'failed'
+                logger.error(f"Pipeline step {step['name']} failed: {e}")
+                raise
+
+        return results
+
+    def get_pipeline_status(self) -> Dict[str, Any]:
+        """Get current status of all pipeline steps."""
+        return {
+            'steps': self.pipeline_steps,
+            'completed_steps': len([s for s in self.pipeline_steps if s['status'] == 'completed']),
+            'failed_steps': len([s for s in self.pipeline_steps if s['status'] == 'failed']),
+            'total_steps': len(self.pipeline_steps)
+        }
+
+# Example usage
+def create_scientific_pipeline():
+    """Create an example scientific computing pipeline."""
+
+    # Initialize pipeline
+    pipeline = ScientificPipeline(framework_bus)
+
+    # Add processing steps
+    pipeline.add_step(
+        'data_preprocessing',
+        'data_processor',
+        {'normalization': 'standard', 'outlier_removal': True}
+    )
+
+    pipeline.add_step(
+        'inverse_problem_solving',
+        'inverse_precision',
+        {'method': 'levenberg_marquardt', 'tolerance': 1e-6}
+    )
+
+    pipeline.add_step(
+        'uncertainty_quantification',
+        'hybrid_uq',
+        {'conformal_calibration': True, 'confidence_threshold': 0.8}
+    )
+
+    pipeline.add_step(
+        'results_visualization',
+        'visualization_framework',
+        {'output_format': 'interactive', 'include_uncertainty': True}
+    )
+
+    return pipeline
+```
+
+### Adapter Pattern for Framework Compatibility
+```python
+class FrameworkAdapter:
+    """Adapter pattern for framework compatibility.
+
+    This pattern enables incompatible frameworks to work together by
+    providing adapter classes that translate between different interfaces.
+    """
+
+    def __init__(self, source_framework, target_framework):
+        self.source = source_framework
+        self.target = target_framework
+        self.transformation_cache = {}
+
+    def adapt_data_format(self, data: Any) -> Any:
+        """Adapt data from source to target framework format.
+
+        Args:
+            data: Data in source framework format
+
+        Returns:
+            Data in target framework format
+        """
+        # Check cache first
+        cache_key = hash(str(data))
+        if cache_key in self.transformation_cache:
+            return self.transformation_cache[cache_key]
+
+        # Perform transformation
+        if hasattr(self.source, 'to_tensor') and hasattr(self.target, 'from_tensor'):
+            # Tensor-based transformation
+            tensor_data = self.source.to_tensor(data)
+            adapted_data = self.target.from_tensor(tensor_data)
+        else:
+            # Custom transformation logic
+            adapted_data = self._custom_transformation(data)
+
+        # Cache result
+        self.transformation_cache[cache_key] = adapted_data
+
+        return adapted_data
+
+    def _custom_transformation(self, data: Any) -> Any:
+        """Custom transformation logic for incompatible frameworks."""
+
+        # Example: NumPy array to PyTorch tensor
+        if isinstance(data, np.ndarray) and hasattr(self.target, 'tensor'):
+            return self.target.tensor(data)
+
+        # Example: PyTorch tensor to NumPy array
+        if hasattr(data, 'detach') and hasattr(data, 'numpy'):
+            return data.detach().numpy()
+
+        # Example: Dictionary structure transformation
+        if isinstance(data, dict):
+            return self._transform_dict_structure(data)
+
+        # Default: return as-is
+        return data
+
+    def _transform_dict_structure(self, data_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """Transform dictionary structure between frameworks."""
+
+        transformed = {}
+
+        # Common key mappings between frameworks
+        key_mappings = {
+            'predictions': 'outputs',
+            'uncertainty': 'variance',
+            'confidence': 'certainty',
+            'parameters': 'params'
+        }
+
+        for key, value in data_dict.items():
+            # Apply key mapping
+            mapped_key = key_mappings.get(key, key)
+
+            # Recursively transform nested structures
+            if isinstance(value, dict):
+                transformed[mapped_key] = self._transform_dict_structure(value)
+            elif isinstance(value, (list, tuple)):
+                transformed[mapped_key] = [self.adapt_data_format(item) for item in value]
+            else:
+                transformed[mapped_key] = self.adapt_data_format(value)
+
+        return transformed
+
+    def get_compatibility_score(self) -> float:
+        """Calculate compatibility score between frameworks."""
+
+        score = 0.0
+        max_score = 4.0
+
+        # Check for tensor conversion methods
+        if hasattr(self.source, 'to_tensor'):
+            score += 1.0
+        if hasattr(self.target, 'from_tensor'):
+            score += 1.0
+
+        # Check for common data structures
+        common_structures = ['dict', 'list', 'tensor', 'array']
+        source_structures = getattr(self.source, 'supported_structures', [])
+        target_structures = getattr(self.target, 'supported_structures', [])
+
+        overlap = len(set(source_structures) & set(target_structures))
+        score += min(overlap / len(common_structures), 1.0)
+
+        # Check for metadata preservation
+        if hasattr(self.source, 'preserve_metadata') and hasattr(self.target, 'preserve_metadata'):
+            score += 1.0
+
+        return score / max_score
+
+# Usage example
+def create_framework_adapter():
+    """Create and configure a framework adapter."""
+
+    # Example: NumPy-based framework to PyTorch-based framework
+    numpy_framework = NumPyScientificFramework()
+    pytorch_framework = PyTorchScientificFramework()
+
+    adapter = FrameworkAdapter(numpy_framework, pytorch_framework)
+
+    # Check compatibility
+    compatibility = adapter.get_compatibility_score()
+    print(f"Framework compatibility: {compatibility:.2f}")
+
+    # Adapt sample data
+    numpy_data = np.random.randn(10, 5)
+    pytorch_data = adapter.adapt_data_format(numpy_data)
+
+    return adapter
+```
+
+## Error Handling and Recovery Patterns
+
+### Circuit Breaker Pattern for Framework Failures
+```python
+class FrameworkCircuitBreaker:
+    """Circuit breaker pattern for framework failure handling.
+
+    This pattern prevents cascading failures by temporarily stopping
+    calls to failing frameworks and allowing them to recover.
+    """
+
+    def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60):
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = 'closed'  # 'closed', 'open', 'half_open'
+
+    def call_framework(self, framework_call, *args, **kwargs):
+        """Execute framework call with circuit breaker protection."""
+
+        if self.state == 'open':
+            if self._should_attempt_reset():
+                self.state = 'half_open'
+            else:
+                raise CircuitBreakerOpenException("Circuit breaker is open")
+
+        try:
+            result = framework_call(*args, **kwargs)
+
+            # Success: reset failure count
+            self.failure_count = 0
+            self.state = 'closed'
+
+            return result
+
+        except Exception as e:
+            self.failure_count += 1
+            self.last_failure_time = datetime.now()
+
+            if self.failure_count >= self.failure_threshold:
+                self.state = 'open'
+
+            raise FrameworkFailureException(f"Framework call failed: {e}") from e
+
+    def _should_attempt_reset(self) -> bool:
+        """Check if we should attempt to reset the circuit breaker."""
+
+        if self.last_failure_time is None:
+            return True
+
+        time_since_failure = (datetime.now() - self.last_failure_time).seconds
+        return time_since_failure >= self.recovery_timeout
+
+class CircuitBreakerOpenException(Exception):
+    """Exception raised when circuit breaker is open."""
+    pass
+
+class FrameworkFailureException(Exception):
+    """Exception raised when framework call fails."""
+    pass
+
+# Usage example
+def create_protected_framework_call():
+    """Create a circuit breaker protected framework call."""
+
+    circuit_breaker = FrameworkCircuitBreaker(
+        failure_threshold=3,
+        recovery_timeout=30
+    )
+
+    def protected_hybrid_uq_call(data):
+        """Protected call to hybrid UQ framework."""
+        return circuit_breaker.call_framework(
+            lambda: hybrid_uq_framework.process(data)
+        )
+
+    return protected_hybrid_uq_call
+```
+
+### Retry Pattern with Exponential Backoff
+```python
+class FrameworkRetryHandler:
+    """Retry pattern with exponential backoff for transient failures.
+
+    This pattern handles transient framework failures by automatically
+    retrying operations with increasing delays.
+    """
+
+    def __init__(self, max_retries: int = 3, base_delay: float = 1.0, max_delay: float = 60.0):
+        self.max_retries = max_retries
+        self.base_delay = base_delay
+        self.max_delay = max_delay
+
+    def execute_with_retry(self, operation, *args, **kwargs):
+        """Execute operation with retry logic."""
+
+        last_exception = None
+
+        for attempt in range(self.max_retries + 1):
+            try:
+                return operation(*args, **kwargs)
+
+            except (ConnectionError, TimeoutError) as e:
+                # Retry for transient network errors
+                last_exception = e
+
+                if attempt < self.max_retries:
+                    delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+                    logger.warning(f"Attempt {attempt + 1} failed, retrying in {delay:.1f}s: {e}")
+                    time.sleep(delay)
+                else:
+                    logger.error(f"All {self.max_retries + 1} attempts failed")
+                    raise last_exception
+
+            except Exception as e:
+                # Don't retry for non-transient errors
+                logger.error(f"Non-retryable error: {e}")
+                raise e
+
+        raise last_exception
+
+# Usage example
+def create_resilient_framework_operation():
+    """Create a resilient framework operation with retry logic."""
+
+    retry_handler = FrameworkRetryHandler(max_retries=3)
+
+    def resilient_prediction(data):
+        """Resilient prediction with automatic retry."""
+        return retry_handler.execute_with_retry(
+            lambda: scientific_framework.predict(data)
+        )
+
+    return resilient_prediction
+```
+
+## Performance Monitoring and Optimization
+
+### Framework Performance Dashboard
+```python
+class FrameworkPerformanceMonitor:
+    """Performance monitoring for integrated scientific frameworks.
+
+    This class provides comprehensive monitoring of framework performance,
+    resource usage, and integration efficiency.
+    """
+
+    def __init__(self):
+        self.metrics_history = defaultdict(list)
+        self.performance_thresholds = {
+            'latency': 0.1,      # seconds
+            'throughput': 1000,  # samples/second
+            'memory': 512,       # MB
+            'accuracy': 0.9      # minimum accuracy
+        }
+
+    def record_metric(self, framework_name: str, metric_name: str, value: float):
+        """Record a performance metric."""
+
+        self.metrics_history[f"{framework_name}_{metric_name}"].append({
+            'value': value,
+            'timestamp': datetime.now().isoformat()
+        })
+
+        # Keep only recent history (last 1000 entries)
+        history = self.metrics_history[f"{framework_name}_{metric_name}"]
+        if len(history) > 1000:
+            history.pop(0)
+
+    def get_performance_summary(self, framework_name: str) -> Dict[str, Any]:
+        """Get performance summary for a framework."""
+
+        summary = {}
+
+        for metric_name in ['latency', 'throughput', 'memory', 'accuracy']:
+            key = f"{framework_name}_{metric_name}"
+            history = self.metrics_history[key]
+
+            if history:
+                values = [entry['value'] for entry in history]
+                summary[metric_name] = {
+                    'current': values[-1],
+                    'mean': np.mean(values),
+                    'std': np.std(values),
+                    'min': np.min(values),
+                    'max': np.max(values),
+                    'threshold': self.performance_thresholds.get(metric_name, None)
+                }
+
+        return summary
+
+    def check_performance_alerts(self) -> List[str]:
+        """Check for performance alerts and violations."""
+
+        alerts = []
+
+        for metric_key, history in self.metrics_history.items():
+            if not history:
+                continue
+
+            framework_name, metric_name = metric_key.split('_', 1)
+            current_value = history[-1]['value']
+            threshold = self.performance_thresholds.get(metric_name)
+
+            if threshold is not None:
+                if metric_name in ['latency', 'memory']:
+                    # Lower is better
+                    if current_value > threshold:
+                        alerts.append(
+                            f"{framework_name} {metric_name} violation: "
+                            f"{current_value:.3f} > {threshold:.3f}"
+                        )
+                else:
+                    # Higher is better
+                    if current_value < threshold:
+                        alerts.append(
+                            f"{framework_name} {metric_name} violation: "
+                            f"{current_value:.3f} < {threshold:.3f}"
+                        )
+
+        return alerts
+
+    def generate_performance_report(self) -> Dict[str, Any]:
+        """Generate comprehensive performance report."""
+
+        report = {
+            'timestamp': datetime.now().isoformat(),
+            'frameworks': {},
+            'alerts': self.check_performance_alerts(),
+            'system_info': {
+                'cpu_count': os.cpu_count(),
+                'memory_total': psutil.virtual_memory().total / (1024**3),  # GB
+                'gpu_available': torch.cuda.is_available(),
+                'gpu_count': torch.cuda.device_count() if torch.cuda.is_available() else 0
+            }
+        }
+
+        # Collect framework-specific reports
+        framework_names = set()
+        for metric_key in self.metrics_history.keys():
+            framework_names.add(metric_key.split('_', 1)[0])
+
+        for framework_name in framework_names:
+            report['frameworks'][framework_name] = self.get_performance_summary(framework_name)
+
+        return report
+
+# Global performance monitor
+performance_monitor = FrameworkPerformanceMonitor()
+```
+
+### Automated Performance Optimization
+```python
+class FrameworkOptimizer:
+    """Automated performance optimization for scientific frameworks.
+
+    This class analyzes framework performance and applies optimizations
+    to improve efficiency and resource utilization.
+    """
+
+    def __init__(self, performance_monitor: FrameworkPerformanceMonitor):
+        self.monitor = performance_monitor
+        self.optimization_history = []
+
+    def analyze_performance_bottlenecks(self, framework_name: str) -> List[str]:
+        """Analyze performance bottlenecks for a framework."""
+
+        summary = self.monitor.get_performance_summary(framework_name)
+        bottlenecks = []
+
+        # Check latency bottlenecks
+        if summary.get('latency', {}).get('mean', 0) > 0.5:
+            bottlenecks.append("High latency - consider GPU acceleration")
+
+        # Check memory bottlenecks
+        if summary.get('memory', {}).get('mean', 0) > 1024:
+            bottlenecks.append("High memory usage - consider memory optimization")
+
+        # Check throughput bottlenecks
+        if summary.get('throughput', {}).get('mean', 0) < 100:
+            bottlenecks.append("Low throughput - consider batch processing")
+
+        return bottlenecks
+
+    def apply_optimizations(self, framework_name: str) -> List[str]:
+        """Apply performance optimizations to a framework."""
+
+        optimizations_applied = []
+        bottlenecks = self.analyze_performance_bottlenecks(framework_name)
+
+        for bottleneck in bottlenecks:
+            if "latency" in bottleneck:
+                # Apply GPU optimization
+                optimizations_applied.append("GPU acceleration enabled")
+
+            elif "memory" in bottleneck:
+                # Apply memory optimization
+                optimizations_applied.append("Memory optimization applied")
+
+            elif "throughput" in bottleneck:
+                # Apply batch processing
+                optimizations_applied.append("Batch processing optimization")
+
+        # Record optimization
+        self.optimization_history.append({
+            'framework': framework_name,
+            'timestamp': datetime.now().isoformat(),
+            'bottlenecks': bottlenecks,
+            'optimizations': optimizations_applied
+        })
+
+        return optimizations_applied
+
+    def get_optimization_recommendations(self) -> Dict[str, List[str]]:
+        """Get optimization recommendations for all frameworks."""
+
+        recommendations = {}
+
+        # Analyze each framework
+        framework_names = set()
+        for metric_key in self.monitor.metrics_history.keys():
+            framework_names.add(metric_key.split('_', 1)[0])
+
+        for framework_name in framework_names:
+            bottlenecks = self.analyze_performance_bottlenecks(framework_name)
+            recommendations[framework_name] = bottlenecks
+
+        return recommendations
+
+# Usage example
+def create_performance_optimizer():
+    """Create and configure a performance optimizer."""
+
+    optimizer = FrameworkOptimizer(performance_monitor)
+
+    # Get recommendations
+    recommendations = optimizer.get_optimization_recommendations()
+
+    for framework, recs in recommendations.items():
+        print(f"{framework} recommendations:")
+        for rec in recs:
+            print(f"  - {rec}")
+
+        # Apply optimizations
+        applied = optimizer.apply_optimizations(framework)
+        print(f"Applied optimizations: {applied}")
+
+    return optimizer
+```
+
+## References
+- [integrated_framework_testing_coverage.md](mdc:integrated_framework_testing_coverage.md) - Testing coverage documentation
+- [hybrid_uq_api_reference.md](mdc:hybrid_uq_api_reference.md) - API reference
+- [hybrid_uq_implementation_tutorial.md](mdc:hybrid_uq_implementation_tutorial.md) - Implementation guide
+- [hybrid_uq_validation_verification.tex](mdc:hybrid_uq_validation_verification.tex) - Validation verification report

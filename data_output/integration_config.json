@@ -1,0 +1,84 @@
+{
+  "integration_config": {
+    "version": "1.0",
+    "description": "Configuration for Corpus data flow integration",
+    "last_updated": "2024-01-26T12:00:00Z"
+  },
+  "directory_mapping": {
+    "data_input": "../data",
+    "corpus_processing": "../Corpus/qualia",
+    "data_output": ".",
+    "farmer_ios": "../Farmer",
+    "documentation": "../docs"
+  },
+  "data_flow_pipelines": {
+    "security_pipeline": {
+      "input_data": "data/security/java_application_vulnerability_data.json",
+      "processing_framework": "Corpus/qualia/JavaPenetrationTesting.java",
+      "output_report": "reports/security_analysis_report.json",
+      "visualization_output": "visualizations/security_dashboard.html"
+    },
+    "biometric_pipeline": {
+      "input_data": "data/biometric/iris_recognition_dataset.json",
+      "processing_framework": "integrated_eye_depth_system.py",
+      "output_report": "reports/biometric_analysis_report.json",
+      "validation_metrics": "results/biometric_validation_metrics.json"
+    },
+    "rheology_pipeline": {
+      "input_data": "data/rheology/herschel_bulkley_experimental_data.json",
+      "processing_framework": "scientific_computing_tools/inverse_precision_framework.py",
+      "output_report": "reports/rheology_analysis_report.json",
+      "parameter_estimation": "results/rheology_parameter_estimation.json"
+    },
+    "optical_pipeline": {
+      "input_data": "data/optical/optical_depth_measurement_data.json",
+      "processing_framework": "optical_depth_enhancement.py",
+      "output_report": "reports/optical_analysis_report.json",
+      "enhancement_results": "results/optical_enhancement_results.json"
+    },
+    "biological_pipeline": {
+      "input_data": "data/biological/biological_transport_experimental_data.json",
+      "processing_framework": "biological_transport_modeling.py",
+      "output_report": "reports/biological_analysis_report.json",
+      "transport_analysis": "results/biological_transport_analysis.json"
+    }
+  },
+  "processing_parameters": {
+    "convergence_threshold": 0.9987,
+    "bootstrap_samples": 1000,
+    "confidence_level": 0.95,
+    "max_processing_time": 300,
+    "memory_limit_mb": 2048
+  },
+  "output_formats": {
+    "reports": ["json", "html", "pdf"],
+    "visualizations": ["png", "svg", "html"],
+    "raw_data": ["json", "csv"],
+    "logs": ["txt", "json"]
+  },
+  "quality_assurance": {
+    "validation_checks": [
+      "data_integrity",
+      "processing_completion",
+      "result_consistency",
+      "performance_metrics"
+    ],
+    "error_handling": {
+      "max_retries": 3,
+      "timeout_seconds": 300,
+      "fallback_processing": true
+    }
+  },
+  "integration_testing": {
+    "test_scenarios": [
+      "single_dataset_processing",
+      "multi_dataset_batch_processing",
+      "error_recovery_testing",
+      "performance_benchmarking"
+    ],
+    "validation_datasets": [
+      "data/rheology/herschel_bulkley_experimental_data.json",
+      "data/security/java_application_vulnerability_data.json"
+    ]
+  }
+}

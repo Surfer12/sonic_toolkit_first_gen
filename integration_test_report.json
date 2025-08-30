@@ -1,0 +1,270 @@
+{
+  "test_timestamp": "2025-08-29T22:38:00.881555",
+  "components_tested": [
+    {
+      "component": "directory_structure",
+      "tests": [
+        {
+          "component": "data",
+          "test": "directory_exists",
+          "status": "passed",
+          "details": "Directory exists"
+        },
+        {
+          "component": "Corpus",
+          "test": "directory_exists",
+          "status": "passed",
+          "details": "Directory exists"
+        },
+        {
+          "component": "data_output",
+          "test": "directory_exists",
+          "status": "passed",
+          "details": "Directory exists"
+        },
+        {
+          "component": "Farmer",
+          "test": "directory_exists",
+          "status": "passed",
+          "details": "Directory exists"
+        },
+        {
+          "component": "docs",
+          "test": "directory_exists",
+          "status": "passed",
+          "details": "Directory exists"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "component": "data_directory",
+      "tests": [
+        {
+          "test": "subdir_rheology",
+          "status": "passed",
+          "details": "Subdirectory rheology exists"
+        },
+        {
+          "test": "subdir_security",
+          "status": "passed",
+          "details": "Subdirectory security exists"
+        },
+        {
+          "test": "subdir_biometric",
+          "status": "passed",
+          "details": "Subdirectory biometric exists"
+        },
+        {
+          "test": "subdir_optical",
+          "status": "passed",
+          "details": "Subdirectory optical exists"
+        },
+        {
+          "test": "subdir_biological",
+          "status": "passed",
+          "details": "Subdirectory biological exists"
+        },
+        {
+          "test": "file_README.md",
+          "status": "passed",
+          "details": "File README.md exists"
+        },
+        {
+          "test": "file_process_experimental_data.py",
+          "status": "passed",
+          "details": "File process_experimental_data.py exists"
+        },
+        {
+          "test": "dataset_rheology",
+          "status": "passed",
+          "details": "Dataset herschel_bulkley_experimental_data.json exists"
+        },
+        {
+          "test": "dataset_security",
+          "status": "passed",
+          "details": "Dataset java_application_vulnerability_data.json exists"
+        },
+        {
+          "test": "dataset_biometric",
+          "status": "passed",
+          "details": "Dataset iris_recognition_dataset.json exists"
+        },
+        {
+          "test": "dataset_optical",
+          "status": "passed",
+          "details": "Dataset optical_depth_measurement_data.json exists"
+        },
+        {
+          "test": "dataset_biological",
+          "status": "passed",
+          "details": "Dataset biological_transport_experimental_data.json exists"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "component": "corpus_directory",
+      "tests": [
+        {
+          "test": "java_file_JavaPenetrationTesting.java",
+          "status": "passed",
+          "details": "Java file JavaPenetrationTesting.java exists"
+        },
+        {
+          "test": "java_file_ReverseKoopmanOperator.java",
+          "status": "passed",
+          "details": "Java file ReverseKoopmanOperator.java exists"
+        },
+        {
+          "test": "java_file_README.md",
+          "status": "passed",
+          "details": "Java file README.md exists"
+        },
+        {
+          "test": "java_file_build.sh",
+          "status": "passed",
+          "details": "Java file build.sh exists"
+        },
+        {
+          "test": "java_compilation_available",
+          "status": "passed",
+          "details": "Java compilation available"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "component": "farmer_directory",
+      "tests": [
+        {
+          "test": "swift_file_Package.swift",
+          "status": "passed",
+          "details": "Swift file Package.swift exists"
+        },
+        {
+          "test": "swift_file_Sources/UOIFCore/iOSPenetrationTesting.swift",
+          "status": "passed",
+          "details": "Swift file Sources/UOIFCore/iOSPenetrationTesting.swift exists"
+        },
+        {
+          "test": "swift_file_Sources/UOIFCore/ReverseKoopmanOperator.swift",
+          "status": "passed",
+          "details": "Swift file Sources/UOIFCore/ReverseKoopmanOperator.swift exists"
+        },
+        {
+          "test": "swift_file_Tests/UOIFCoreTests/iOSPenetrationTestingTests.swift",
+          "status": "passed",
+          "details": "Swift file Tests/UOIFCoreTests/iOSPenetrationTestingTests.swift exists"
+        },
+        {
+          "test": "swift_compilation_available",
+          "status": "passed",
+          "details": "Swift compilation available"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "component": "docs_directory",
+      "tests": [
+        {
+          "test": "doc_file_index.md",
+          "status": "passed",
+          "details": "Documentation file index.md exists"
+        },
+        {
+          "test": "doc_file_achievements-showcase.md",
+          "status": "passed",
+          "details": "Documentation file achievements-showcase.md exists"
+        },
+        {
+          "test": "doc_file_frameworks/inverse-precision.md",
+          "status": "passed",
+          "details": "Documentation file frameworks/inverse-precision.md exists"
+        },
+        {
+          "test": "doc_file__config.yml",
+          "status": "passed",
+          "details": "Documentation file _config.yml exists"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "component": "data_output_directory",
+      "tests": [
+        {
+          "test": "subdir_results",
+          "status": "passed",
+          "details": "Subdirectory results exists"
+        },
+        {
+          "test": "subdir_reports",
+          "status": "passed",
+          "details": "Subdirectory reports exists"
+        },
+        {
+          "test": "subdir_visualizations",
+          "status": "passed",
+          "details": "Subdirectory visualizations exists"
+        },
+        {
+          "test": "subdir_logs",
+          "status": "passed",
+          "details": "Subdirectory logs exists"
+        },
+        {
+          "test": "file_data_flow_processor.py",
+          "status": "passed",
+          "details": "File data_flow_processor.py exists"
+        },
+        {
+          "test": "file_integration_runner.py",
+          "status": "passed",
+          "details": "File integration_runner.py exists"
+        },
+        {
+          "test": "file_integration_config.json",
+          "status": "passed",
+          "details": "File integration_config.json exists"
+        },
+        {
+          "test": "file_README.md",
+          "status": "passed",
+          "details": "File README.md exists"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "component": "integration_workflow",
+      "tests": [
+        {
+          "test": "data_flow_processor_import",
+          "status": "passed",
+          "details": "Data flow processor imported successfully"
+        },
+        {
+          "test": "processor_initialization",
+          "status": "passed",
+          "details": "Processor initialized successfully"
+        },
+        {
+          "test": "configuration_loading",
+          "status": "passed",
+          "details": "Integration configuration loaded successfully"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "overall_status": "unknown",
+  "summary": {
+    "total_components": 7,
+    "passed_components": 7,
+    "failed_components": 0,
+    "success_rate": 1.0,
+    "overall_status": "passed"
+  }
+}
