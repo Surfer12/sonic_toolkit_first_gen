@@ -2,7 +2,7 @@
 
 **Independent Mathematical Framework with Serendipitous Blackwell Convergence**
 
-This folder contains the complete research publication portfolio for the Scientific Computing Toolkit, featuring **11 publication-ready LaTeX documents** that showcase a remarkable scientific achievement: an independently designed mathematical framework that achieved the **0.9987 precision convergence criterion** and subsequently demonstrated **perfect convergence** with NVIDIA Blackwell's MXFP8 architecture.
+This folder contains the complete research publication portfolio for the Scientific Computing Toolkit, featuring **19 publication-ready LaTeX documents** that demonstrate cutting-edge research in scientific computing, optimization algorithms, and hardware-software integration. All documents maintain the highest standards of academic excellence with rigorous mathematical analysis, empirical validation, and professional formatting suitable for submission to top-tier scientific journals.
 
 ## 🏆 **Key Achievement: Independent Design, Serendipitous Validation**
 
@@ -68,7 +68,24 @@ Each publication document follows academic standards with:
 | **Algorithm Analysis** | 3 | LM, Trust Region, Basin Hopping, MCMC compliance |
 | **Technical Mechanisms** | 2 | Precision convergence, toolkit capabilities |
 | **Specialized Research** | 3 | Rebus interpretation, HB proofs, hybrid UQ |
-| **Total Publications** | **11** | **Complete research portfolio** |
+| **Advanced Research** | 8 | UPOCF, Bayesian assembly, zeta functions, AI alignment |
+| **Total Publications** | **19** | **Complete research portfolio** |
+
+### **Newly Added Research Publications (8 Additional)**
+
+| Document | Research Focus | Key Contribution |
+|----------|----------------|------------------|
+| **`upocf_paper.tex`** | UPOCF Framework Analysis | Unified Proof Management for Complex Domains |
+| **`hierarchical_bayesian_assembly_paper.tex`** | Bayesian Cognitive Modeling | Hierarchical Assembly Theory Integration |
+| **`enhanced_zeta_sonic_function_publication.tex`** | Zeta Function Research | Advanced Sonic Function Analysis |
+| **`alignment_breakthrough_paper.tex`** | AI Alignment Research | Breakthrough in AI Alignment Methodologies |
+| **`mxfp8_blackwell_correlation_paper.tex`** | Hardware Optimization | Blackwell MXFP8 Correlation Analysis |
+| **`paper_mxfp8_blackwell_correlation.tex`** | Hardware Integration | Blackwell Hardware Integration Study |
+| **`psi-framework-academic-paper.tex`** | Consciousness Framework | PSI Function Academic Publication |
+| **`uoif_analysis_2025.tex`** | UOIF Framework | 2025 UOIF Analysis and Applications |
+| **`contraction_spectral_theorems.tex`** | Spectral Analysis | Advanced Spectral Theorem Research |
+
+**Total Publications: 19 publication-ready LaTeX documents**
 
 ## 🚀 Usage Guidelines
 
