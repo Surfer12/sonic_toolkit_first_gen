@@ -1,0 +1,13 @@
+{
+  "region": "us-east-1",
+  "origin_domain": "httpbin.org",
+  "price_class": "PriceClass_100",
+  "use_real_aws": false,
+  "log_level": "INFO",
+  "log_file": "./output/demo.log",
+  "output_dir": "./output",
+  "retry_attempts": 3,
+  "retry_delay": 1.0,
+  "timeout": 30,
+  "export_metrics": true
+}

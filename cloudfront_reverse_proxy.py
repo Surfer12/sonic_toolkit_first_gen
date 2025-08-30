@@ -770,7 +770,8 @@ class CloudFrontReverseProxy:
         monitoring_results["end_time"] = time.time()
         monitoring_results["total_duration"] = monitoring_results["end_time"] - monitoring_results["start_time"]
 
-        print("✅ Cryptographic monitoring complete"        return monitoring_results
+        print("✅ Cryptographic monitoring complete")
+        return monitoring_results
 
     def _analyze_crypto_performance(self, monitoring_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze cryptographic performance from monitoring data."""
