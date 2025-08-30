@@ -1,0 +1,689 @@
+---
+globs: *.py
+description: Automated validation and testing for Python scientific computing code
+---
+# Python Validation and Testing for Scientific Computing
+
+## Automated Syntax Validation
+
+### Pre-commit Syntax Checking
+**Implement automated syntax validation to catch errors before commits.**
+
+#### ✅ CORRECT: Comprehensive pre-commit validation
+```bash
+#!/bin/bash
+# .git/hooks/pre-commit
+
+echo "🔍 Running comprehensive Python validation..."
+
+# 1. Basic syntax check
+echo "Checking Python syntax..."
+python -m py_compile *.py
+if [ $? -ne 0 ]; then
+    echo "❌ Python syntax errors found"
+    echo "Run 'python -m py_compile *.py' to see details"
+    exit 1
+fi
+
+# 2. Import validation
+echo "Checking imports..."
+python -c "import ast; [ast.parse(open(f).read()) for f in ['$(ls *.py)']]"
+if [ $? -ne 0 ]; then
+    echo "❌ Import or syntax errors found"
+    exit 1
+fi
+
+# 3. Common error pattern detection
+echo "Checking for common error patterns..."
+python scripts/check_python_patterns.py
+if [ $? -ne 0 ]; then
+    echo "❌ Common Python error patterns detected"
+    exit 1
+fi
+
+echo "✅ All Python validation checks passed"
+```
+
+### Custom Pattern Detection Script
+**Create automated scripts to detect common Python error patterns.**
+
+#### ✅ CORRECT: Pattern detection implementation
+```python
+# scripts/check_python_patterns.py
+import ast
+import re
+import sys
+from pathlib import Path
+
+class PythonPatternChecker:
+    """Check Python files for common error patterns."""
+
+    def __init__(self):
+        self.error_patterns = [
+            # Unterminated string literals
+            (r'^[^#]*"[^"]*$', "Unterminated string literal (missing closing quote)"),
+            (r"^[^#]*'[^']*$", "Unterminated string literal (missing closing quote)"),
+
+            # Print statement concatenation errors
+            (r'print\([^)]*print\(', "Multiple print statements without separation"),
+
+            # Missing commas in function calls/lists
+            (r'(\w+)\s*\n\s*\w+', "Possible missing comma between items"),
+        ]
+
+    def check_file(self, file_path):
+        """Check a single Python file for error patterns."""
+        errors = []
+
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+
+            # Check each line for patterns
+            for i, line in enumerate(lines, 1):
+                for pattern, description in self.error_patterns:
+                    if re.search(pattern, line):
+                        # Additional context checking
+                        if self._is_false_positive(line, lines, i):
+                            continue
+                        errors.append({
+                            'line': i,
+                            'content': line.strip(),
+                            'error': description,
+                            'pattern': pattern
+                        })
+
+            # AST-based checks
+            ast_errors = self._check_ast_patterns(file_path)
+            errors.extend(ast_errors)
+
+        except Exception as e:
+            errors.append({
+                'line': 0,
+                'content': '',
+                'error': f"Could not analyze file: {e}",
+                'pattern': 'file_error'
+            })
+
+        return errors
+
+    def _is_false_positive(self, line, lines, line_num):
+        """Check if a pattern match is likely a false positive."""
+        # Skip if line ends with backslash (line continuation)
+        if line.strip().endswith('\\'):
+            return True
+
+        # Skip if next line starts with closing quote
+        if line_num < len(lines):
+            next_line = lines[line_num].strip()
+            if next_line.startswith('"') or next_line.startswith("'"):
+                return True
+
+        return False
+
+    def _check_ast_patterns(self, file_path):
+        """Use AST to check for structural patterns."""
+        errors = []
+
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            tree = ast.parse(content)
+
+            # Check for print statement issues
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
+                    if isinstance(node.value.func, ast.Name) and node.value.func.id == 'print':
+                        # Check print arguments
+                        if len(node.value.args) > 1:
+                            # Multiple arguments to print - check for formatting
+                            pass
+
+        except SyntaxError as e:
+            errors.append({
+                'line': getattr(e, 'lineno', 0),
+                'content': '',
+                'error': f"AST syntax error: {e}",
+                'pattern': 'ast_syntax'
+            })
+
+        return errors
+
+def main():
+    """Main entry point for pattern checking."""
+    checker = PythonPatternChecker()
+    all_errors = []
+
+    # Check all Python files in current directory
+    for py_file in Path('.').glob('*.py'):
+        errors = checker.check_file(py_file)
+        if errors:
+            all_errors.extend([{'file': str(py_file), **error} for error in errors])
+
+    # Report errors
+    if all_errors:
+        print("❌ Python pattern errors found:")
+        for error in all_errors:
+            print(f"  {error['file']}:{error['line']}: {error['error']}")
+            if error['content']:
+                print(f"    {error['content']}")
+        return 1
+    else:
+        print("✅ No Python pattern errors found")
+        return 0
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+## Scientific Computing Testing Framework
+
+### Automated Test Generation
+**Generate comprehensive tests for scientific computing functions.**
+
+#### ✅ CORRECT: Scientific test framework
+```python
+# tests/test_scientific_functions.py
+import pytest
+import numpy as np
+from scipy.optimize import least_squares
+import sys
+import os
+
+# Add source directory to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from scientific_module import ScientificCalculator
+
+class TestScientificCalculator:
+    """Comprehensive tests for scientific calculator functionality."""
+
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.calculator = ScientificCalculator()
+        self.test_data = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+        self.parameters = {'a': 1.0, 'b': 2.0, 'c': 0.5}
+
+    def test_basic_functionality(self):
+        """Test basic calculator functionality."""
+        result = self.calculator.calculate_basic(self.test_data)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == len(self.test_data)
+        assert np.all(np.isfinite(result))
+
+    def test_parameter_validation(self):
+        """Test parameter validation."""
+        # Valid parameters should work
+        result = self.calculator.calculate_with_params(self.test_data, self.parameters)
+        assert result is not None
+
+        # Invalid parameters should raise errors
+        with pytest.raises(ValueError):
+            self.calculator.calculate_with_params(self.test_data, {})
+
+        with pytest.raises(ValueError):
+            self.calculator.calculate_with_params(self.test_data, {'invalid': 'params'})
+
+    def test_edge_cases(self):
+        """Test edge cases and boundary conditions."""
+        # Empty array
+        with pytest.raises(ValueError):
+            self.calculator.calculate_basic(np.array([]))
+
+        # Single element
+        single_result = self.calculator.calculate_basic(np.array([1.0]))
+        assert len(single_result) == 1
+
+        # Large numbers
+        large_data = np.array([1e10, 2e10, 3e10])
+        large_result = self.calculator.calculate_basic(large_data)
+        assert np.all(np.isfinite(large_result))
+
+        # NaN and Inf values
+        nan_data = np.array([1.0, np.nan, 3.0])
+        with pytest.raises(ValueError):
+            self.calculator.calculate_basic(nan_data)
+
+    def test_numerical_stability(self):
+        """Test numerical stability across different scales."""
+        scales = [1e-6, 1e-3, 1e0, 1e3, 1e6]
+
+        for scale in scales:
+            scaled_data = self.test_data * scale
+            result = self.calculator.calculate_basic(scaled_data)
+
+            # Check numerical stability
+            assert np.all(np.isfinite(result))
+            assert not np.allclose(result, 0)  # Should not be all zeros
+
+    def test_performance_requirements(self):
+        """Test that functions meet performance requirements."""
+        import time
+
+        large_data = np.random.rand(10000)
+
+        start_time = time.time()
+        result = self.calculator.calculate_basic(large_data)
+        execution_time = time.time() - start_time
+
+        # Should complete within reasonable time (adjust threshold as needed)
+        assert execution_time < 1.0, f"Execution took {execution_time:.3f}s"
+
+    def test_memory_usage(self):
+        """Test memory usage doesn't exceed limits."""
+        import tracemalloc
+
+        tracemalloc.start()
+
+        result = self.calculator.calculate_basic(self.test_data)
+
+        current, peak = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+
+        # Memory usage should be reasonable (adjust threshold as needed)
+        assert peak < 50 * 1024 * 1024, f"Peak memory: {peak / 1024 / 1024:.1f} MB"
+
+    def test_convergence_properties(self):
+        """Test convergence properties for optimization functions."""
+        def test_function(x):
+            return (x[0] - 1)**2 + (x[1] - 2)**2
+
+        x0 = np.array([0.0, 0.0])
+        result = least_squares(test_function, x0)
+
+        # Check convergence
+        assert result.success, "Optimization should converge"
+        assert np.allclose(result.x, [1.0, 2.0], atol=1e-6), "Should find correct minimum"
+
+    def test_error_handling(self):
+        """Test comprehensive error handling."""
+        # Test various error conditions
+        error_conditions = [
+            (np.array([]), "Empty array"),
+            (np.array([np.nan, 1.0]), "NaN values"),
+            (np.array([np.inf, 1.0]), "Infinite values"),
+            (None, "None input"),
+            ("invalid", "String input")
+        ]
+
+        for invalid_input, description in error_conditions:
+            with pytest.raises((ValueError, TypeError)):
+                self.calculator.calculate_basic(invalid_input)
+
+    def test_reproducibility(self):
+        """Test that results are reproducible."""
+        # Run calculation multiple times
+        results = []
+        for _ in range(3):
+            result = self.calculator.calculate_basic(self.test_data)
+            results.append(result)
+
+        # All results should be identical
+        for i in range(1, len(results)):
+            np.testing.assert_array_almost_equal(results[0], results[i])
+
+    def test_cross_platform_compatibility(self):
+        """Test that results are consistent across platforms."""
+        result = self.calculator.calculate_basic(self.test_data)
+
+        # Check that result properties are platform-independent
+        assert np.all(np.isfinite(result))
+        assert result.dtype in [np.float32, np.float64]
+
+    def test_backward_compatibility(self):
+        """Test backward compatibility with previous versions."""
+        # This would test against known reference results
+        reference_result = np.array([2.0, 3.0, 4.0, 5.0, 6.0])  # Example
+
+        result = self.calculator.calculate_basic(np.array([1.0, 2.0, 3.0, 4.0, 5.0]))
+
+        # Should match reference (within tolerance)
+        np.testing.assert_allclose(result, reference_result, rtol=1e-10)
+```
+
+### Continuous Integration Testing
+**Implement comprehensive CI/CD testing for scientific code.**
+
+#### ✅ CORRECT: CI/CD configuration
+```yaml
+# .github/workflows/python-testing.yml
+name: Python Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Run syntax validation
+      run: |
+        python -m py_compile *.py
+        python scripts/check_python_patterns.py
+
+    - name: Run tests
+      run: |
+        pytest tests/ -v --cov=scientific_module --cov-report=xml
+
+    - name: Run performance tests
+      run: |
+        python scripts/performance_test.py
+
+    - name: Check code quality
+      run: |
+        flake8 *.py --max-line-length=120
+        mypy *.py --ignore-missing-imports
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+```
+
+## Automated Code Quality Monitoring
+
+### Quality Metrics Dashboard
+**Implement automated quality monitoring and reporting.**
+
+#### ✅ CORRECT: Quality monitoring implementation
+```python
+# scripts/quality_monitor.py
+import json
+import subprocess
+import sys
+from pathlib import Path
+from datetime import datetime
+
+class QualityMonitor:
+    """Monitor and report code quality metrics."""
+
+    def __init__(self, source_directory="."):
+        self.source_directory = Path(source_directory)
+        self.metrics = {}
+
+    def run_quality_checks(self):
+        """Run comprehensive quality checks."""
+        print("🔍 Running quality checks...")
+
+        self.metrics = {
+            'timestamp': datetime.now().isoformat(),
+            'syntax_check': self._check_syntax(),
+            'import_check': self._check_imports(),
+            'pattern_check': self._check_patterns(),
+            'test_coverage': self._check_test_coverage(),
+            'performance_benchmarks': self._run_performance_benchmarks(),
+            'code_quality': self._check_code_quality()
+        }
+
+        return self.metrics
+
+    def _check_syntax(self):
+        """Check Python syntax."""
+        try:
+            result = subprocess.run(
+                ['python', '-m', 'py_compile'] + list(self.source_directory.glob('*.py')),
+                capture_output=True, text=True
+            )
+            return {
+                'passed': result.returncode == 0,
+                'errors': result.stderr.split('\n') if result.stderr else []
+            }
+        except Exception as e:
+            return {'passed': False, 'errors': [str(e)]}
+
+    def _check_imports(self):
+        """Check import statements."""
+        import_errors = []
+
+        for py_file in self.source_directory.glob('*.py'):
+            try:
+                with open(py_file, 'r') as f:
+                    content = f.read()
+
+                # Try to import the module
+                module_name = py_file.stem
+                spec = importlib.util.spec_from_file_location(module_name, py_file)
+
+                if spec is None:
+                    import_errors.append(f"Cannot create spec for {py_file}")
+
+            except Exception as e:
+                import_errors.append(f"Import error in {py_file}: {e}")
+
+        return {
+            'passed': len(import_errors) == 0,
+            'errors': import_errors
+        }
+
+    def _check_patterns(self):
+        """Check for common error patterns."""
+        try:
+            result = subprocess.run(
+                ['python', 'scripts/check_python_patterns.py'],
+                capture_output=True, text=True, cwd=self.source_directory
+            )
+            return {
+                'passed': result.returncode == 0,
+                'output': result.stdout,
+                'errors': result.stderr.split('\n') if result.stderr else []
+            }
+        except Exception as e:
+            return {'passed': False, 'errors': [str(e)]}
+
+    def _check_test_coverage(self):
+        """Check test coverage."""
+        try:
+            result = subprocess.run(
+                ['pytest', '--cov=scientific_module', '--cov-report=term-missing'],
+                capture_output=True, text=True, cwd=self.source_directory
+            )
+            coverage_output = result.stdout + result.stderr
+            return {
+                'passed': result.returncode == 0,
+                'coverage': self._parse_coverage(coverage_output),
+                'output': coverage_output
+            }
+        except Exception as e:
+            return {'passed': False, 'errors': [str(e)]}
+
+    def _run_performance_benchmarks(self):
+        """Run performance benchmarks."""
+        try:
+            result = subprocess.run(
+                ['python', 'scripts/performance_test.py'],
+                capture_output=True, text=True, cwd=self.source_directory
+            )
+            return {
+                'passed': result.returncode == 0,
+                'metrics': self._parse_performance_metrics(result.stdout),
+                'output': result.stdout
+            }
+        except Exception as e:
+            return {'passed': False, 'errors': [str(e)]}
+
+    def _check_code_quality(self):
+        """Check code quality metrics."""
+        quality_metrics = {}
+
+        # Line count
+        total_lines = 0
+        for py_file in self.source_directory.glob('*.py'):
+            with open(py_file, 'r') as f:
+                total_lines += len(f.readlines())
+        quality_metrics['total_lines'] = total_lines
+
+        # Function count
+        function_count = 0
+        for py_file in self.source_directory.glob('*.py'):
+            with open(py_file, 'r') as f:
+                content = f.read()
+                function_count += content.count('def ')
+        quality_metrics['function_count'] = function_count
+
+        return quality_metrics
+
+    def _parse_coverage(self, coverage_output):
+        """Parse coverage percentage from pytest output."""
+        for line in coverage_output.split('\n'):
+            if 'TOTAL' in line and '%' in line:
+                try:
+                    coverage_str = line.split()[-1].rstrip('%')
+                    return float(coverage_str)
+                except (ValueError, IndexError):
+                    pass
+        return 0.0
+
+    def _parse_performance_metrics(self, performance_output):
+        """Parse performance metrics from output."""
+        metrics = {}
+        for line in performance_output.split('\n'):
+            if ':' in line:
+                key, value = line.split(':', 1)
+                key = key.strip()
+                value = value.strip()
+                try:
+                    # Try to convert to float
+                    metrics[key] = float(value)
+                except ValueError:
+                    metrics[key] = value
+        return metrics
+
+    def generate_report(self):
+        """Generate quality report."""
+        if not self.metrics:
+            self.run_quality_checks()
+
+        report = {
+            'summary': {
+                'overall_passed': all(
+                    check.get('passed', False)
+                    for check in self.metrics.values()
+                    if isinstance(check, dict) and 'passed' in check
+                ),
+                'total_checks': len([k for k in self.metrics.keys() if k != 'timestamp']),
+                'passed_checks': len([
+                    k for k, v in self.metrics.items()
+                    if isinstance(v, dict) and v.get('passed', False)
+                ])
+            },
+            'details': self.metrics
+        }
+
+        # Save report
+        report_file = self.source_directory / 'quality_report.json'
+        with open(report_file, 'w') as f:
+            json.dump(report, f, indent=2)
+
+        return report
+
+def main():
+    """Main entry point."""
+    monitor = QualityMonitor()
+    report = monitor.generate_report()
+
+    print("📊 Quality Report Summary:")
+    print(f"Overall Status: {'✅ PASSED' if report['summary']['overall_passed'] else '❌ FAILED'}")
+    print(f"Passed Checks: {report['summary']['passed_checks']}/{report['summary']['total_checks']}")
+
+    if not report['summary']['overall_passed']:
+        print("\n❌ Failed Checks:")
+        for check_name, check_data in report['details'].items():
+            if isinstance(check_data, dict) and not check_data.get('passed', True):
+                print(f"  • {check_name}: {' , '.join(check_data.get('errors', ['Unknown error']))}")
+
+    return 0 if report['summary']['overall_passed'] else 1
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+## Integration with Development Workflow
+
+### IDE Integration
+```json
+// .vscode/settings.json
+{
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.formatting.provider": "black",
+    "python.formatting.blackArgs": ["--line-length", "120"],
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false
+}
+```
+
+### Automated Quality Gates
+```python
+# scripts/quality_gate.py
+def run_quality_gate():
+    """Run quality gate checks before commits/merges."""
+    import subprocess
+    import sys
+
+    checks = [
+        ("Syntax Check", ["python", "-m", "py_compile", "*.py"]),
+        ("Pattern Check", ["python", "scripts/check_python_patterns.py"]),
+        ("Import Check", ["python", "-c", "import scientific_module"]),
+        ("Test Suite", ["pytest", "tests/", "--tb=short"]),
+        ("Coverage Check", ["pytest", "--cov=scientific_module", "--cov-fail-under=80"]),
+        ("Quality Check", ["python", "scripts/quality_monitor.py"])
+    ]
+
+    failed_checks = []
+
+    for check_name, command in checks:
+        print(f"🔍 Running {check_name}...")
+        try:
+            result = subprocess.run(command, capture_output=True, text=True)
+            if result.returncode != 0:
+                print(f"❌ {check_name} failed:")
+                if result.stdout:
+                    print(result.stdout)
+                if result.stderr:
+                    print(result.stderr)
+                failed_checks.append(check_name)
+            else:
+                print(f"✅ {check_name} passed")
+        except Exception as e:
+            print(f"❌ {check_name} error: {e}")
+            failed_checks.append(check_name)
+
+    if failed_checks:
+        print(f"\n❌ Quality gate failed: {', '.join(failed_checks)}")
+        return False
+    else:
+        print("\n✅ All quality checks passed!")
+        return True
+
+if __name__ == "__main__":
+    success = run_quality_gate()
+    sys.exit(0 if success else 1)
+```
+
+This rule establishes comprehensive automated validation and testing frameworks specifically designed for scientific computing Python code, ensuring high quality and preventing the types of syntax errors we encountered.

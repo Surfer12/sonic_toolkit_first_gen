@@ -1,8 +1,7 @@
 ---
-globs: *.py,*.json,*.md
 description: "Data flow patterns, integration workflows, and processing pipelines for the scientific computing toolkit"
+alwaysApply: false
 ---
-
 # 🔄 Data Flow Integration Patterns
 
 This rule defines the complete data flow architecture and integration patterns for the scientific computing toolkit, ensuring seamless workflow from experimental data to publication-ready results.

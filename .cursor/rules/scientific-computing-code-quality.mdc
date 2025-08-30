@@ -1,0 +1,473 @@
+---
+globs: *.py
+description: Code quality standards for scientific computing Python code
+---
+# Scientific Computing Code Quality Standards
+
+## Print Statement Best Practices
+
+### Proper Print Statement Separation
+**Always separate multiple print statements with proper syntax and formatting.**
+
+#### ✅ CORRECT: Well-formatted print statements
+```python
+# Individual statements with proper formatting
+print(f"Parameter: {value:.6f}")
+print(f"Target: {target:.1f}")
+print("Analysis complete")
+
+# Formatted output blocks
+print("\n" + "="*50)
+print("SCIENTIFIC COMPUTING ANALYSIS RESULTS")
+print("="*50)
+print(f"Convergence achieved: {converged}")
+print(f"Final precision: {precision:.2e}")
+print(f"Execution time: {time:.3f} seconds")
+print("="*50)
+```
+
+#### ❌ INCORRECT: Syntax error patterns to avoid
+```python
+# SYNTAX ERROR - missing commas and separators
+print(".6f"        print(".1f"        print("complete")
+
+# SYNTAX ERROR - concatenated without proper separation
+print("First")print("Second")print("Third")
+
+# SYNTAX ERROR - missing parentheses or quotes
+print("Incomplete string
+print("Missing closing parenthesis"
+```
+
+#### ✅ CORRECT: Scientific output formatting
+```python
+def print_analysis_results(analysis_data):
+    """Print formatted analysis results for scientific computing."""
+    print("\n" + "═"*60)
+    print("🔬 SCIENTIFIC ANALYSIS RESULTS")
+    print("═"*60)
+
+    # Parameter summary
+    print(f"📊 Parameters:")
+    print(f"   • Model: {analysis_data.get('model_name', 'Unknown')}")
+    print(f"   • Data points: {analysis_data.get('n_points', 0):,}")
+    print(f"   • Dimensions: {analysis_data.get('dimensions', 'N/A')}")
+
+    # Results summary
+    if 'results' in analysis_data:
+        results = analysis_data['results']
+        print(f"\n📈 Results:")
+        print(f"   • Converged: {'✅' if results.get('converged') else '❌'}")
+        print(f"   • Precision: {results.get('precision', 0):.2e}")
+        print(f"   • Error: {results.get('error', 0):.2e}")
+        print(f"   • Iterations: {results.get('iterations', 0)}")
+
+    # Performance metrics
+    if 'performance' in analysis_data:
+        perf = analysis_data['performance']
+        print(f"\n⚡ Performance:")
+        print(f"   • Execution time: {perf.get('time', 0):.3f}s")
+        print(f"   • Memory usage: {perf.get('memory_mb', 0):.1f} MB")
+        print(f"   • CPU usage: {perf.get('cpu_percent', 0):.1f}%")
+
+    print("═"*60)
+    print("🎯 Analysis complete")
+    print("═"*60)
+```
+
+### String Handling in Scientific Output
+**Use proper string concatenation and formatting for scientific results.**
+
+#### ✅ CORRECT: String building patterns
+```python
+# Method 1: List accumulation and join
+output_lines = []
+output_lines.append("Scientific Analysis Report")
+output_lines.append("=" * 40)
+output_lines.append(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+output_lines.append(f"Parameters: {', '.join(f'{k}={v}' for k, v in params.items())}")
+
+result_text = "\n".join(output_lines)
+
+# Method 2: String concatenation with proper formatting
+result_text = (
+    "Scientific Analysis Report\n"
+    "=" * 40 + "\n"
+    f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+    f"Parameters: {', '.join(f'{k}={v}' for k, v in params.items())}\n"
+)
+```
+
+#### ❌ INCORRECT: Error-prone string patterns
+```python
+# SYNTAX ERROR - unterminated string
+result_text += "Incomplete analysis result
+
+# SYNTAX ERROR - missing concatenation operator
+result_text = "First part" "Second part"  # Implicit concatenation
+
+# POOR PRACTICE - string concatenation in loop
+result = ""
+for item in items:
+    result += f"Item: {item}\n"  # Inefficient for large lists
+```
+
+## Scientific Computing Documentation Standards
+
+### Function Documentation
+**Use comprehensive docstrings following NumPy/SciPy conventions.**
+
+#### ✅ CORRECT: Complete function documentation
+```python
+def optimize_herschel_bulkley_parameters(stress_data, strain_rate_data,
+                                       initial_guess=None, bounds=None):
+    """
+    Optimize Herschel-Bulkley model parameters using deterministic methods.
+
+    This function fits the Herschel-Bulkley constitutive model to experimental
+    rheological data using Levenberg-Marquardt optimization with robust
+    error handling and uncertainty quantification.
+
+    Parameters
+    ----------
+    stress_data : array_like
+        Experimental stress measurements [Pa]
+    strain_rate_data : array_like
+        Corresponding strain rate measurements [1/s]
+    initial_guess : array_like, optional
+        Initial parameter guess [tau_y, K, n]
+        Default: [10.0, 1.0, 0.5]
+    bounds : list of tuples, optional
+        Parameter bounds [(tau_min, tau_max), (K_min, K_max), (n_min, n_max)]
+        Default: [(0, 1000), (1e-6, 1e6), (0.1, 2.0)]
+
+    Returns
+    -------
+    dict
+        Optimization results containing:
+        - 'parameters': Optimized [tau_y, K, n]
+        - 'success': Boolean convergence flag
+        - 'fun': Final objective function value
+        - 'nfev': Number of function evaluations
+        - 'uncertainty': Parameter uncertainty estimates
+
+    Raises
+    ------
+    ValueError
+        If input arrays have different lengths or invalid data
+    RuntimeError
+        If optimization fails to converge
+
+    Notes
+    -----
+    The Herschel-Bulkley model is defined as:
+    τ = τ_y + K * γ̇^n
+
+    where:
+    - τ: shear stress [Pa]
+    - τ_y: yield stress [Pa]
+    - K: consistency index [Pa·s^n]
+    - γ̇: shear rate [1/s]
+    - n: power-law index [-]
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> stress = np.array([50, 60, 70, 80, 90])
+    >>> strain_rate = np.array([0.1, 1.0, 10.0, 50.0, 100.0])
+    >>> result = optimize_herschel_bulkley_parameters(stress, strain_rate)
+    >>> print(f"Yield stress: {result['parameters'][0]:.2f} Pa")
+    Yield stress: 45.67 Pa
+    """
+    # Implementation with comprehensive error handling
+    pass
+```
+
+### Class Documentation
+**Document classes with detailed attribute and method descriptions.**
+
+#### ✅ CORRECT: Class documentation
+```python
+class ScientificOptimizer:
+    """
+    Advanced optimizer for scientific computing applications.
+
+    This class provides deterministic optimization methods specifically
+    designed for scientific computing problems, including robust error
+    handling, convergence monitoring, and uncertainty quantification.
+
+    Attributes
+    ----------
+    algorithm : str
+        Optimization algorithm ('lm', 'trust-constr', 'differential_evolution')
+    max_iterations : int
+        Maximum number of iterations (default: 1000)
+    tolerance : float
+        Convergence tolerance (default: 1e-6)
+    bounds : list of tuples, optional
+        Parameter bounds for bounded optimization
+
+    Methods
+    -------
+    optimize(objective_function, x0)
+        Perform optimization with comprehensive result analysis
+    validate_convergence(result)
+        Check optimization convergence and quality
+    estimate_uncertainty(result)
+        Estimate parameter uncertainties using bootstrap methods
+
+    Examples
+    --------
+    >>> optimizer = ScientificOptimizer(algorithm='lm', tolerance=1e-8)
+    >>> result = optimizer.optimize(rosenbrock_function, x0=[-1, 1])
+    >>> print(f"Converged: {result['success']}")
+    Converged: True
+    """
+
+    def __init__(self, algorithm='lm', max_iterations=1000, tolerance=1e-6):
+        """Initialize optimizer with specified parameters."""
+        self.algorithm = algorithm
+        self.max_iterations = max_iterations
+        self.tolerance = tolerance
+        self.bounds = None
+```
+
+## Error Handling and Validation
+
+### Robust Error Handling
+**Implement comprehensive error handling for scientific computations.**
+
+#### ✅ CORRECT: Scientific error handling
+```python
+def robust_scientific_calculation(data, parameters):
+    """
+    Perform scientific calculation with comprehensive error handling.
+    """
+    # Input validation
+    if not isinstance(data, np.ndarray):
+        raise TypeError("Data must be numpy array")
+
+    if data.size == 0:
+        raise ValueError("Data array cannot be empty")
+
+    if np.any(~np.isfinite(data)):
+        raise ValueError("Data contains non-finite values")
+
+    # Parameter validation
+    required_params = ['model_type', 'tolerance', 'max_iter']
+    missing_params = [p for p in required_params if p not in parameters]
+    if missing_params:
+        raise ValueError(f"Missing required parameters: {missing_params}")
+
+    try:
+        # Main calculation with logging
+        logger.info(f"Starting calculation with {data.shape} data points")
+
+        result = perform_calculation(data, parameters)
+
+        # Result validation
+        if not validate_result(result):
+            raise RuntimeError("Calculation result validation failed")
+
+        logger.info("Calculation completed successfully")
+        return result
+
+    except np.linalg.LinAlgError as e:
+        logger.error(f"Linear algebra error: {e}")
+        raise RuntimeError("Numerical computation failed") from e
+
+    except MemoryError as e:
+        logger.error(f"Memory error: {e}")
+        raise RuntimeError("Insufficient memory for calculation") from e
+
+    except Exception as e:
+        logger.error(f"Unexpected error in calculation: {e}")
+        logger.debug(f"Data shape: {data.shape}")
+        logger.debug(f"Parameters: {parameters}")
+        raise RuntimeError("Scientific calculation failed") from e
+```
+
+### Result Validation
+**Always validate computation results before returning.**
+
+#### ✅ CORRECT: Result validation
+```python
+def validate_scientific_result(result, expected_properties):
+    """
+    Validate scientific computation results.
+
+    Parameters
+    ----------
+    result : dict
+        Computation result to validate
+    expected_properties : dict
+        Expected result properties for validation
+
+    Returns
+    -------
+    bool
+        True if validation passes
+    """
+    # Check result structure
+    required_keys = expected_properties.get('required_keys', [])
+    for key in required_keys:
+        if key not in result:
+            logger.error(f"Missing required result key: {key}")
+            return False
+
+    # Check numerical properties
+    if 'parameters' in result:
+        params = result['parameters']
+        if not np.all(np.isfinite(params)):
+            logger.error("Non-finite parameter values detected")
+            return False
+
+        if expected_properties.get('parameter_bounds'):
+            bounds = expected_properties['parameter_bounds']
+            if not all(bounds[i][0] <= params[i] <= bounds[i][1] for i in range(len(params))):
+                logger.error("Parameter values outside expected bounds")
+                return False
+
+    # Check convergence if applicable
+    if 'success' in result and not result['success']:
+        logger.warning("Optimization did not converge to specified tolerance")
+
+    return True
+```
+
+## Performance Monitoring
+
+### Computation Performance Tracking
+**Monitor and report computational performance for scientific applications.**
+
+#### ✅ CORRECT: Performance monitoring
+```python
+import time
+import psutil
+import tracemalloc
+
+class PerformanceMonitor:
+    """Monitor computational performance for scientific applications."""
+
+    def __init__(self):
+        self.start_time = None
+        self.process = psutil.Process()
+
+    def start_monitoring(self):
+        """Start performance monitoring."""
+        self.start_time = time.time()
+        tracemalloc.start()
+        self.initial_memory = self.process.memory_info().rss / 1024 / 1024  # MB
+
+    def get_performance_report(self):
+        """Generate comprehensive performance report."""
+        if self.start_time is None:
+            raise RuntimeError("Monitoring not started")
+
+        execution_time = time.time() - self.start_time
+        current_memory = self.process.memory_info().rss / 1024 / 1024  # MB
+        memory_usage = current_memory - self.initial_memory
+
+        current, peak = tracemalloc.get_traced_memory()
+        peak_memory = peak / 1024 / 1024  # MB
+
+        cpu_percent = self.process.cpu_percent(interval=1.0)
+
+        return {
+            'execution_time': execution_time,
+            'memory_usage_mb': memory_usage,
+            'peak_memory_mb': peak_memory,
+            'cpu_percent': cpu_percent,
+            'performance_score': self._calculate_performance_score(
+                execution_time, memory_usage, cpu_percent
+            )
+        }
+
+    def _calculate_performance_score(self, time, memory, cpu):
+        """Calculate overall performance score (lower is better)."""
+        # Weighted score considering time, memory, and CPU efficiency
+        time_weight = 0.5
+        memory_weight = 0.3
+        cpu_weight = 0.2
+
+        # Normalize metrics (example normalization)
+        normalized_time = min(time / 10.0, 1.0)  # Expect < 10s
+        normalized_memory = min(memory / 100.0, 1.0)  # Expect < 100MB
+        normalized_cpu = cpu / 100.0
+
+        return (
+            time_weight * normalized_time +
+            memory_weight * normalized_memory +
+            cpu_weight * normalized_cpu
+        )
+```
+
+## Code Organization Standards
+
+### File Structure Best Practices
+**Organize scientific computing code with clear separation of concerns.**
+
+#### ✅ CORRECT: Scientific code organization
+```python
+# scientific_module/
+# ├── __init__.py
+# ├── core/
+# │   ├── models.py          # Mathematical models
+# │   ├── optimizers.py      # Optimization algorithms
+# │   └── validators.py      # Validation functions
+# ├── utils/
+# │   ├── data_processing.py # Data handling utilities
+# │   ├── visualization.py   # Plotting functions
+# │   └── helpers.py         # Helper functions
+# ├── analysis/
+# │   ├── statistical.py     # Statistical analysis
+# │   ├── uncertainty.py     # Uncertainty quantification
+# │   └── sensitivity.py     # Sensitivity analysis
+# ├── examples/
+# │   ├── basic_usage.py     # Basic usage examples
+# │   ├── advanced_analysis.py # Advanced examples
+# │   └── tutorials/         # Tutorial notebooks
+# ├── tests/
+# │   ├── test_models.py     # Model tests
+# │   ├── test_optimizers.py # Optimizer tests
+# │   ├── test_integration.py # Integration tests
+# │   └── fixtures/          # Test data fixtures
+# └── docs/
+#     ├── api_reference.md   # API documentation
+#     ├── examples.md        # Usage examples
+#     └── theory.md          # Theoretical background
+```
+
+### Import Organization
+**Organize imports according to PEP 8 and scientific computing conventions.**
+
+#### ✅ CORRECT: Import organization
+```python
+# Standard library imports (alphabetical)
+import logging
+import time
+from typing import Dict, List, Optional, Tuple
+
+# Third-party scientific libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy import optimize, stats
+import sklearn
+
+# Local imports (relative)
+from .core.models import ScientificModel
+from .core.optimizers import ScientificOptimizer
+from .utils.data_processing import DataProcessor
+from .analysis.uncertainty import UncertaintyAnalyzer
+
+# Optional imports with try-except
+try:
+    import torch
+    HAS_PYTORCH = True
+except ImportError:
+    HAS_PYTORCH = False
+    torch = None
+```
+
+This rule establishes comprehensive code quality standards specifically tailored for scientific computing applications, ensuring robust, well-documented, and maintainable code.

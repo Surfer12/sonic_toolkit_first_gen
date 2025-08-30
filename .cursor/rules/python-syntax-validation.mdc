@@ -1,0 +1,287 @@
+---
+globs: *.py
+description: Python syntax validation and error prevention for scientific computing
+---
+# Python Syntax Validation for Scientific Computing
+
+## Critical Syntax Error Prevention
+
+### String Literal Integrity
+**ALWAYS verify string literals are properly terminated and formatted.**
+
+#### ✅ CORRECT: Properly terminated strings
+```python
+# Single-line strings
+print("This is a complete string")
+result_text = "Analysis complete"
+
+# Multi-line strings with proper quotes
+description = """Multi-line
+string content"""
+```
+
+#### ❌ INCORRECT: Unterminated string literals
+```python
+# Missing closing quote - SYNTAX ERROR
+print("This string is missing its closing quote
+
+# Missing closing parenthesis - SYNTAX ERROR
+result_text += "incomplete string
+```
+
+#### ✅ CORRECT: Multi-line string concatenation
+```python
+# Use proper concatenation
+result_text = (
+    "First line\n"
+    "Second line\n"
+    "Third line"
+)
+
+# Or use join method
+lines = [
+    "First line",
+    "Second line",
+    "Third line"
+]
+result_text = "\n".join(lines)
+```
+
+### Print Statement Formatting
+**Separate multiple print statements with proper syntax.**
+
+#### ✅ CORRECT: Individual print statements
+```python
+print(f"Parameter: {value:.6f}")
+print(f"Target: {target:.1f}")
+print("Analysis complete")
+```
+
+#### ❌ INCORRECT: Missing commas/separators
+```python
+# SYNTAX ERROR - missing comma
+print(".6f" print(".1f" print("Analysis complete")
+
+# SYNTAX ERROR - concatenated without separator
+print("First")print("Second")
+```
+
+#### ✅ CORRECT: Formatted print blocks
+```python
+# Use proper formatting
+print(f"Parameter: {value:.6f}")
+print(f"Target: {target:.1f}")
+print("Analysis complete")
+
+# Or use multi-line formatting
+print(
+    f"Parameter: {value:.6f}\n"
+    f"Target: {target:.1f}\n"
+    "Analysis complete"
+)
+```
+
+### Parentheses and Bracket Matching
+**Always ensure matching parentheses, brackets, and braces.**
+
+#### ✅ CORRECT: Matched parentheses
+```python
+# Function calls
+result = function_name(argument1, argument2)
+
+# Mathematical expressions
+calculation = (a + b) * (c - d)
+
+# String formatting
+formatted = f"Value: {value:.2f}"
+```
+
+#### ❌ INCORRECT: Unmatched parentheses
+```python
+# SYNTAX ERROR - missing closing parenthesis
+result = function_name(argument1, argument2
+
+# SYNTAX ERROR - mismatched brackets
+calculation = (a + b * (c - d
+```
+
+## Scientific Computing Code Quality Standards
+
+### Import Organization
+```python
+# ✅ CORRECT: Organized imports
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import least_squares, minimize
+
+# Standard library imports
+import os
+import sys
+
+# Local imports
+from .models import HerschelBulkleyModel
+```
+
+### Error Handling Patterns
+```python
+# ✅ CORRECT: Proper exception handling
+try:
+    result = perform_calculation(data)
+    validate_result(result)
+except ValueError as e:
+    logger.error(f"Validation error: {e}")
+    raise
+except Exception as e:
+    logger.error(f"Unexpected error: {e}")
+    raise RuntimeError("Calculation failed") from e
+```
+
+### Documentation Standards
+```python
+# ✅ CORRECT: Comprehensive docstrings
+def calculate_viscosity(stress, strain_rate, parameters):
+    """
+    Calculate viscosity using Herschel-Bulkley model.
+
+    Parameters
+    ----------
+    stress : array_like
+        Applied stress values [Pa]
+    strain_rate : array_like
+        Strain rate values [1/s]
+    parameters : dict
+        Model parameters {'tau_y': yield_stress, 'K': consistency, 'n': power_law_index}
+
+    Returns
+    -------
+    viscosity : ndarray
+        Calculated viscosity values [Pa·s]
+
+    Raises
+    ------
+    ValueError
+        If input arrays have different lengths
+    """
+    # Implementation
+    pass
+```
+
+## Automated Syntax Validation
+
+### Pre-commit Hook Template
+```bash
+#!/bin/bash
+# .git/hooks/pre-commit
+
+# Run Python syntax check
+python -m py_compile *.py
+if [ $? -ne 0 ]; then
+    echo "❌ Python syntax errors found"
+    exit 1
+fi
+
+# Run additional linting
+python -m flake8 *.py --max-line-length=120
+if [ $? -ne 0 ]; then
+    echo "❌ Code style issues found"
+    exit 1
+fi
+
+echo "✅ All syntax and style checks passed"
+```
+
+### IDE Integration
+```json
+// .vscode/settings.json
+{
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.formatting.provider": "black",
+    "python.formatting.blackArgs": ["--line-length", "120"],
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    }
+}
+```
+
+## Common Error Patterns to Avoid
+
+### Pattern 1: String Concatenation Issues
+```python
+# ❌ AVOID: Implicit string concatenation without proper formatting
+result = "Value: " + str(value) + ", Error: " + str(error)
+
+# ✅ PREFER: f-string formatting
+result = f"Value: {value}, Error: {error}"
+
+# ✅ OR: .format() method
+result = "Value: {}, Error: {}".format(value, error)
+```
+
+### Pattern 2: Missing Import Dependencies
+```python
+# ❌ FORGET: Import required modules
+result = np.array(data)  # NameError if numpy not imported
+
+# ✅ REMEMBER: Explicit imports
+import numpy as np
+result = np.array(data)
+```
+
+### Pattern 3: Indentation Errors
+```python
+# ❌ INCORRECT: Mixed tabs and spaces
+def function():
+    if condition:
+	print("indented with tab")  # SYNTAX ERROR
+        print("indented with spaces")
+
+# ✅ CORRECT: Consistent spaces
+def function():
+    if condition:
+        print("indented with spaces")
+        print("more consistent spacing")
+```
+
+## Quality Assurance Checklist
+
+### Pre-Commit Validation
+- [ ] **Syntax Check**: `python -m py_compile *.py` passes
+- [ ] **Style Check**: `python -m flake8 *.py` passes
+- [ ] **Import Check**: All required modules imported
+- [ ] **Type Check**: `python -m mypy *.py` passes (optional)
+
+### Code Review Standards
+- [ ] **String Literals**: All strings properly terminated
+- [ ] **Print Statements**: Properly formatted and separated
+- [ ] **Parentheses Matching**: All brackets properly closed
+- [ ] **Import Organization**: Imports properly organized and complete
+- [ ] **Error Handling**: Appropriate exception handling implemented
+- [ ] **Documentation**: Comprehensive docstrings for public functions
+
+### Automated Testing
+```python
+def test_syntax_validation():
+    """Test that all Python files compile without syntax errors."""
+    import subprocess
+    import glob
+
+    python_files = glob.glob("*.py")
+    failed_files = []
+
+    for file in python_files:
+        try:
+            subprocess.run(['python', '-m', 'py_compile', file],
+                         capture_output=True, check=True)
+        except subprocess.CalledProcessError:
+            failed_files.append(file)
+
+    if failed_files:
+        raise AssertionError(f"Syntax errors in files: {failed_files}")
+
+    print(f"✅ All {len(python_files)} Python files compiled successfully")
+```
+
+This rule prevents the types of syntax errors encountered during development and ensures high-quality Python code in the scientific computing toolkit.

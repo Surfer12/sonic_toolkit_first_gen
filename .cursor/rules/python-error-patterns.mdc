@@ -1,0 +1,372 @@
+---
+globs: *.py
+description: Common Python error patterns and prevention strategies
+---
+# Common Python Error Patterns in Scientific Computing
+
+## String and Print Statement Errors
+
+### Unterminated String Literals
+**Pattern**: String literals that are not properly closed with matching quotes.
+
+#### Detection Pattern
+```python
+# Look for lines ending with quote but missing closing quote
+result_text += "  # SYNTAX ERROR - missing closing quote
+
+# Or lines with opening quote but no closing
+print("This is incomplete  # SYNTAX ERROR
+```
+
+#### Prevention
+```python
+# ✅ Always ensure quotes are properly matched
+result_text += "Complete string literal"
+
+# ✅ Use multi-line strings for complex content
+result_text += (
+    "First part of string\n"
+    "Second part of string\n"
+    "Third part of string"
+)
+
+# ✅ Check for quote matching in IDE/editor
+# Most editors highlight unmatched quotes
+```
+
+### Print Statement Concatenation Errors
+**Pattern**: Multiple print statements combined without proper separators.
+
+#### Detection Pattern
+```python
+# Missing commas between print statements
+print(".6f"        print(".1f"        print("complete")  # SYNTAX ERROR
+```
+
+#### Prevention
+```python
+# ✅ Use separate print statements
+print(f"Parameter: {value:.6f}")
+print(f"Target: {target:.1f}")
+print("Analysis complete")
+
+# ✅ Or combine with proper formatting
+print(
+    f"Parameter: {value:.6f}\n"
+    f"Target: {target:.1f}\n"
+    "Analysis complete"
+)
+```
+
+### F-String Formatting Errors
+**Pattern**: Incorrect f-string syntax or unclosed braces.
+
+#### Detection Pattern
+```python
+# Missing closing brace
+print(f"Value: {value")  # SYNTAX ERROR
+
+# Nested quotes without proper escaping
+print(f"Result: {data['key']}")  # May cause issues
+```
+
+#### Prevention
+```python
+# ✅ Proper f-string formatting
+print(f"Value: {value:.6f}")
+
+# ✅ Handle nested quotes
+key = 'target'
+print(f"Result: {data[key]}")
+
+# ✅ Complex formatting
+print(f"Complex: {value:.6f} ± {error:.2e} ({confidence:.1%})")
+```
+
+## Import and Module Errors
+
+### Missing Import Statements
+**Pattern**: Using modules or functions without proper import statements.
+
+#### Detection Pattern
+```python
+# Using numpy without import
+result = array(data)  # NameError: name 'array' is not defined
+
+# Using custom modules without import
+model = HerschelBulkley()  # NameError if not imported
+```
+
+#### Prevention
+```python
+# ✅ Explicit imports at top of file
+import numpy as np
+from scipy.optimize import least_squares
+from .models import HerschelBulkley
+
+# ✅ Import organization
+# Standard library
+import os
+import sys
+
+# Third-party libraries
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Local imports
+from .models import FluidModel
+from .utils import ValidationTools
+```
+
+### Circular Import Issues
+**Pattern**: Modules that import each other causing circular dependencies.
+
+#### Detection Pattern
+```python
+# module_a.py
+from module_b import function_b
+
+# module_b.py
+from module_a import function_a  # Circular import error
+```
+
+#### Prevention
+```python
+# ✅ Restructure to avoid circular imports
+# Use local imports inside functions
+def function_that_needs_b():
+    from .module_b import function_b
+    return function_b()
+
+# ✅ Or use import at the end of file
+# Place import statements after all other code
+```
+
+## Indentation and Block Errors
+
+### Mixed Tab and Space Indentation
+**Pattern**: Inconsistent use of tabs and spaces for indentation.
+
+#### Detection Pattern
+```python
+def function():
+    if condition:
+	print("tab indentation")  # SYNTAX ERROR - mixed tabs/spaces
+        print("space indentation")
+```
+
+#### Prevention
+```python
+# ✅ Use consistent spacing (4 spaces recommended)
+def function():
+    if condition:
+        print("consistent spacing")
+        print("proper indentation")
+
+# ✅ Configure editor to use spaces only
+# Set editor preferences to convert tabs to spaces
+```
+
+### Incorrect Block Structure
+**Pattern**: Missing colons or incorrect indentation in control structures.
+
+#### Detection Pattern
+```python
+# Missing colon
+if condition  # SYNTAX ERROR
+    print("This will fail")
+
+# Incorrect indentation
+if condition:
+print("Wrong indentation")  # SYNTAX ERROR
+    print("More wrong indentation")
+```
+
+#### Prevention
+```python
+# ✅ Proper control structure syntax
+if condition:
+    print("Correct indentation")
+    if nested_condition:
+        print("Nested correct indentation")
+
+# ✅ Use consistent indentation style
+for item in items:
+    if item > threshold:
+        process_item(item)
+    else:
+        skip_item(item)
+```
+
+## Scientific Computing Specific Errors
+
+### Array Dimension Mismatches
+**Pattern**: Operations on arrays with incompatible dimensions.
+
+#### Detection Pattern
+```python
+# Array shape mismatch
+a = np.array([1, 2, 3])  # shape (3,)
+b = np.array([[1, 2], [3, 4]])  # shape (2, 2)
+result = a + b  # ValueError: operands could not be broadcast together
+```
+
+#### Prevention
+```python
+# ✅ Check array shapes before operations
+assert a.shape[0] == b.shape[0], f"Shape mismatch: {a.shape} vs {b.shape}"
+
+# ✅ Use broadcasting rules appropriately
+a = np.array([1, 2, 3])  # shape (3,)
+b = np.array([[1], [2], [3]])  # shape (3, 1)
+result = a + b  # Broadcasting works: shape (3, 3)
+```
+
+### Mathematical Operation Errors
+**Pattern**: Invalid mathematical operations in scientific calculations.
+
+#### Detection Pattern
+```python
+# Division by zero
+result = numerator / 0  # ZeroDivisionError
+
+# Invalid logarithm
+result = np.log(-1)  # Warning: invalid value encountered
+
+# Complex number issues
+result = np.sqrt(-1)  # Complex result when real expected
+```
+
+#### Prevention
+```python
+# ✅ Add validation checks
+if denominator == 0:
+    raise ValueError("Division by zero detected")
+
+# ✅ Handle edge cases
+if value <= 0:
+    raise ValueError("Logarithm requires positive values")
+
+# ✅ Specify data types appropriately
+result = np.sqrt(complex_value) if complex_value < 0 else np.sqrt(complex_value)
+```
+
+## Error Handling Best Practices
+
+### Exception Handling Patterns
+```python
+# ✅ Comprehensive error handling
+try:
+    result = perform_scientific_calculation(data, parameters)
+    validate_result(result)
+except ValueError as e:
+    logger.error(f"Validation error in calculation: {e}")
+    raise ValueError("Invalid input parameters") from e
+except RuntimeError as e:
+    logger.error(f"Runtime error during calculation: {e}")
+    # Attempt recovery or graceful degradation
+    result = fallback_calculation(data)
+except Exception as e:
+    logger.error(f"Unexpected error: {e}")
+    raise RuntimeError("Calculation failed unexpectedly") from e
+```
+
+### Logging and Debugging
+```python
+# ✅ Proper logging for scientific computations
+import logging
+
+logger = logging.getLogger(__name__)
+
+def scientific_function(data, parameters):
+    logger.info(f"Starting calculation with {len(data)} data points")
+    logger.debug(f"Parameters: {parameters}")
+
+    try:
+        result = perform_calculation(data, parameters)
+        logger.info("Calculation completed successfully")
+        return result
+    except Exception as e:
+        logger.error(f"Calculation failed: {e}")
+        logger.debug(f"Data shape: {np.array(data).shape}")
+        logger.debug(f"Parameters: {parameters}")
+        raise
+```
+
+## Automated Error Detection
+
+### Pre-commit Hooks
+```bash
+#!/bin/bash
+# .git/hooks/pre-commit
+
+echo "🔍 Running Python error pattern checks..."
+
+# Check for common syntax errors
+python -m py_compile *.py
+if [ $? -ne 0 ]; then
+    echo "❌ Syntax errors found"
+    exit 1
+fi
+
+# Check for print statement errors (custom check)
+python scripts/check_print_statements.py
+if [ $? -ne 0 ]; then
+    echo "❌ Print statement errors found"
+    exit 1
+fi
+
+# Check for import issues
+python -m pyflakes *.py
+if [ $? -ne 0 ]; then
+    echo "❌ Import issues found"
+    exit 1
+fi
+
+echo "✅ All error pattern checks passed"
+```
+
+### Custom Validation Scripts
+```python
+# scripts/check_print_statements.py
+import ast
+import sys
+
+def check_print_statements(filename):
+    """Check for common print statement errors."""
+    with open(filename, 'r') as f:
+        content = f.read()
+
+    try:
+        tree = ast.parse(content)
+    except SyntaxError as e:
+        print(f"Syntax error in {filename}: {e}")
+        return False
+
+    # Check for suspicious patterns
+    lines = content.split('\n')
+    for i, line in enumerate(lines, 1):
+        # Check for print statements without proper separation
+        if 'print(' in line and line.count('print(') > 1:
+            print(f"Warning: Multiple print statements on line {i}")
+            return False
+
+        # Check for unterminated strings
+        if ('"' in line or "'" in line):
+            # Simple check for obvious issues
+            if line.count('"') % 2 != 0 and not line.strip().endswith('\\'):
+                print(f"Warning: Possible unterminated string on line {i}")
+                return False
+
+    return True
+
+if __name__ == "__main__":
+    success = True
+    for filename in sys.argv[1:]:
+        if not check_print_statements(filename):
+            success = False
+
+    sys.exit(0 if success else 1)
+```
+
+This rule helps identify and prevent the most common Python error patterns encountered in scientific computing development, ensuring higher code quality and fewer debugging issues.
