@@ -31,6 +31,16 @@ from .decision_equations import (
     DecisionParameters,
     OptimizationResult
 )
+from .hb_validation import (
+    HBModelValidator,
+    HBValidationResult,
+    HBModelParameters
+)
+from .lstm_integration import (
+    LSTMTemporalValidator,
+    LSTMTemporalIntegration,
+    LSTMTemporalAnalysis
+)
 
 __all__ = [
     'SourceHierarchy', 'SourceType',
@@ -42,5 +52,11 @@ __all__ = [
     'UOIFTemporalIntegrator',
     'DecisionEquations',
     'DecisionParameters',
-    'OptimizationResult'
+    'OptimizationResult',
+    'HBModelValidator',
+    'HBValidationResult',
+    'HBModelParameters',
+    'LSTMTemporalValidator',
+    'LSTMTemporalIntegration',
+    'LSTMTemporalAnalysis'
 ]
