@@ -1,0 +1,245 @@
+---
+alwaysApply: false
+description: "Research workflow standards for scientific computing from hypothesis to publication"
+globs: *.md,*.tex,*.py,*.ipynb
+---
+# 🔬 Scientific Research Workflow Standards
+
+This rule establishes comprehensive standards for managing the complete scientific research workflow in the scientific computing toolkit, from initial hypothesis through publication and dissemination.
+
+## 🎯 Research Workflow Framework
+
+### Phase 1: Research Planning & Design
+**Objectives**: Establish clear research objectives and methodology
+
+**Required Documentation**:
+```markdown
+## Research Plan
+- **Hypothesis**: Clear, testable scientific hypothesis
+- **Objectives**: Specific, measurable research goals
+- **Methodology**: Detailed experimental/computational approach
+- **Expected Outcomes**: Anticipated results and impact
+- **Success Criteria**: Metrics for evaluating research success
+- **Timeline**: Realistic schedule with milestones
+- **Resource Requirements**: Computational resources, data needs
+```
+
+**Quality Standards**:
+- ✅ Hypothesis must be falsifiable and scientifically grounded
+- ✅ Objectives must be SMART (Specific, Measurable, Achievable, Relevant, Time-bound)
+- ✅ Methodology must include validation and reproducibility measures
+
+### Phase 2: Implementation & Development
+**Objectives**: Execute research methodology with rigorous implementation
+
+**Implementation Standards**:
+```python
+# Required code structure for research implementations
+class ResearchImplementation:
+    """Standard research implementation template"""
+
+    def __init__(self, config: ResearchConfig):
+        """Initialize with validated research configuration"""
+        self.validate_config(config)
+        self.setup_logging()
+        self.initialize_resources()
+
+    def validate_config(self, config):
+        """Validate research configuration against standards"""
+        # Implementation details...
+
+    def execute_research(self):
+        """Execute research methodology"""
+        # Implementation details...
+
+    def validate_results(self):
+        """Validate results against success criteria"""
+        # Implementation details...
+```
+
+**Quality Assurance**:
+- ✅ Code must include comprehensive error handling
+- ✅ All parameters must be validated and documented
+- ✅ Results must be reproducible with fixed random seeds
+- ✅ Performance must meet baseline requirements
+
+### Phase 3: Validation & Analysis
+**Objectives**: Validate results and perform comprehensive analysis
+
+**Validation Framework**:
+```python
+def validate_research_results(results: ResearchResults) -> ValidationReport:
+    """Comprehensive validation of research results"""
+
+    validation_checks = {
+        'statistical_significance': check_statistical_significance(results),
+        'reproducibility': check_reproducibility(results),
+        'methodological_soundness': check_methodological_soundness(results),
+        'error_bounds': check_error_bounds(results),
+        'cross_validation': perform_cross_validation(results),
+        'sensitivity_analysis': perform_sensitivity_analysis(results)
+    }
+
+    return ValidationReport(
+        overall_score=calculate_overall_score(validation_checks),
+        detailed_checks=validation_checks,
+        recommendations=generate_recommendations(validation_checks)
+    )
+```
+
+**Analysis Standards**:
+- ✅ Statistical analysis with appropriate significance tests
+- ✅ Error analysis with confidence intervals
+- ✅ Sensitivity analysis for parameter robustness
+- ✅ Cross-validation for generalizability
+- ✅ Comparative analysis against baselines
+
+### Phase 4: Publication Preparation
+**Objectives**: Prepare research for academic publication
+
+**Publication Standards**:
+```latex
+% Required LaTeX publication structure
+\documentclass[11pt,a4paper]{article}
+
+% Title and abstract
+\title{Research Title}
+\author{Author Information}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Clear, concise abstract summarizing research contribution
+\end{abstract}
+
+% Introduction with problem statement and significance
+\section{Introduction}
+% Methodology with implementation details
+\section{Methodology}
+% Results with validation evidence
+\section{Results}
+% Discussion of implications
+\section{Discussion}
+% Conclusion and future work
+\section{Conclusion}
+
+\bibliography{references}
+\end{document}
+```
+
+**Publication Checklist**:
+- ✅ Title accurately reflects research contribution
+- ✅ Abstract summarizes key findings and impact
+- ✅ Introduction establishes significance and novelty
+- ✅ Methodology provides sufficient detail for reproducibility
+- ✅ Results include statistical validation and error analysis
+- ✅ Discussion addresses implications and limitations
+- ✅ Conclusion highlights contributions and future directions
+
+### Phase 5: Peer Review & Revision
+**Objectives**: Address reviewer feedback and strengthen research
+
+**Review Response Framework**:
+```markdown
+## Response to Reviewers
+
+### Reviewer 1 Comments
+**Original Comment**: [Reviewer comment]
+
+**Response**: [Detailed response addressing concern]
+
+**Changes Made**: [Specific modifications to manuscript]
+
+### Reviewer 2 Comments
+**Original Comment**: [Reviewer comment]
+
+**Response**: [Detailed response addressing concern]
+
+**Changes Made**: [Specific modifications to manuscript]
+```
+
+**Revision Standards**:
+- ✅ All reviewer concerns must be addressed substantively
+- ✅ Changes must be tracked and clearly documented
+- ✅ Additional analyses must be conducted if requested
+- ✅ Response must be professional and constructive
+
+### Phase 6: Dissemination & Impact
+**Objectives**: Maximize research impact through broad dissemination
+
+**Dissemination Strategy**:
+```markdown
+## Dissemination Plan
+
+### Academic Channels
+- [ ] Submit to peer-reviewed journals
+- [ ] Present at conferences
+- [ ] Share on academic social networks
+- [ ] Deposit in institutional repository
+
+### Practical Channels
+- [ ] Create software packages/tools
+- [ ] Develop tutorials and documentation
+- [ ] Engage with practitioner communities
+- [ ] Contribute to open-source projects
+
+### Impact Tracking
+- [ ] Monitor citations and downloads
+- [ ] Track practical applications
+- [ ] Engage with research community
+- [ ] Measure real-world impact
+```
+
+**Impact Assessment**:
+- ✅ Citation tracking and analysis
+- ✅ Practical application identification
+- ✅ Community engagement metrics
+- ✅ Long-term research impact evaluation
+
+## 📊 Quality Assurance Framework
+
+### Research Quality Metrics
+```python
+def assess_research_quality(research_project: ResearchProject) -> QualityReport:
+    """Comprehensive research quality assessment"""
+
+    quality_dimensions = {
+        'scientific_rigor': assess_scientific_rigor(research_project),
+        'methodological_soundness': assess_methodological_soundness(research_project),
+        'reproducibility': assess_reproducibility(research_project),
+        'innovation': assess_innovation(research_project),
+        'impact': assess_impact(research_project),
+        'documentation_quality': assess_documentation_quality(research_project)
+    }
+
+    return QualityReport(
+        overall_score=calculate_overall_score(quality_dimensions),
+        dimension_scores=quality_dimensions,
+        improvement_recommendations=generate_improvements(quality_dimensions)
+    )
+```
+
+### Continuous Improvement Process
+- **Regular Review**: Quarterly assessment of research processes
+- **Methodology Updates**: Incorporate latest best practices
+- **Tool Enhancement**: Improve research tools and automation
+- **Training Integration**: Regular researcher training sessions
+
+## 🎯 Success Metrics
+
+### Research Excellence Indicators
+- ✅ **Publication Rate**: Consistent publication in high-impact journals
+- ✅ **Citation Impact**: Above-average citation rates in field
+- ✅ **Funding Success**: Competitive grant acquisition
+- ✅ **Collaboration Network**: Broad interdisciplinary partnerships
+- ✅ **Reproducibility Score**: High replication success rates
+
+### Innovation Metrics
+- ✅ **Novelty Index**: New methods and approaches developed
+- ✅ **Cross-Domain Impact**: Applications across multiple fields
+- ✅ **Technology Transfer**: Practical implementations and tools
+- ✅ **Knowledge Advancement**: Fundamental insights and discoveries
+
+This rule ensures all research in the scientific computing toolkit follows rigorous, reproducible, and impactful methodologies from initial hypothesis to final dissemination.

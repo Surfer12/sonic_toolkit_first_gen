@@ -1,0 +1,436 @@
+---
+alwaysApply: false
+description: "Comprehensive standards for hardware acceleration across GPU, TPU, and specialized processors"
+globs: *.py,*.cpp,*.cu,*.h,*.cuh
+---
+# 🚀 Hardware Acceleration Standards
+
+This rule establishes comprehensive standards for hardware acceleration in the scientific computing toolkit, covering GPU, TPU, and specialized processors beyond Blackwell MXFP8, ensuring optimal performance, portability, and maintainability across diverse hardware architectures.
+
+## 🎯 Hardware Acceleration Framework
+
+### Architecture-Aware Optimization Strategy
+```python
+# Hardware abstraction layer for cross-platform acceleration
+class HardwareAccelerationManager:
+    """Unified hardware acceleration interface"""
+
+    def __init__(self):
+        self.detect_hardware_capabilities()
+        self.initialize_acceleration_backends()
+        self.optimize_for_detected_hardware()
+
+    def detect_hardware_capabilities(self):
+        """Detect available hardware acceleration capabilities"""
+        self.capabilities = {
+            'nvidia_cuda': self.detect_cuda_support(),
+            'nvidia_tensorrt': self.detect_tensorrt_support(),
+            'amd_hip': self.detect_hip_support(),
+            'intel_oneapi': self.detect_oneapi_support(),
+            'google_tpu': self.detect_tpu_support(),
+            'apple_metal': self.detect_metal_support(),
+            'qualcomm_hexagon': self.detect_hexagon_support(),
+            'specialized_fpga': self.detect_fpga_support()
+        }
+
+    def select_optimal_backend(self, algorithm_requirements):
+        """Select optimal hardware backend based on algorithm needs"""
+        # Algorithm characterization
+        compute_intensity = self.assess_compute_intensity(algorithm_requirements)
+        memory_bandwidth = self.assess_memory_requirements(algorithm_requirements)
+        precision_requirements = self.assess_precision_needs(algorithm_requirements)
+
+        # Hardware matching
+        optimal_hardware = self.match_algorithm_to_hardware(
+            compute_intensity, memory_bandwidth, precision_requirements
+        )
+
+        return optimal_hardware
+```
+
+### Hardware-Specific Optimization Standards
+
+#### NVIDIA GPU Optimization Standards
+```cpp
+// CUDA kernel optimization template
+template<typename T>
+__global__ void optimized_scientific_kernel(
+    const T* __restrict__ input,
+    T* __restrict__ output,
+    const int size,
+    const T alpha,
+    const T beta
+) {
+    // Shared memory optimization
+    __shared__ T shared_cache[BLOCK_SIZE];
+
+    const int tid = threadIdx.x;
+    const int gid = blockIdx.x * blockDim.x + tid;
+
+    // Coalesced memory access pattern
+    if (gid < size) {
+        // Prefetch data into shared memory
+        shared_cache[tid] = input[gid];
+        __syncthreads();
+
+        // Compute with optimal register usage
+        T result = shared_cache[tid] * alpha + beta;
+
+        // Coalesced write-back
+        output[gid] = result;
+    }
+}
+
+// Host-side optimization
+void optimize_cuda_execution(const dim3& grid, const dim3& block) {
+    // Stream optimization for concurrent execution
+    cudaStream_t stream;
+    cudaStreamCreate(&stream);
+
+    // Memory prefetching
+    cudaMemPrefetchAsync(d_input, size * sizeof(T), device_id, stream);
+    cudaMemPrefetchAsync(d_output, size * sizeof(T), device_id, stream);
+
+    // Kernel launch with stream
+    optimized_scientific_kernel<<<grid, block, 0, stream>>>(
+        d_input, d_output, size, alpha, beta
+    );
+
+    // Overlap computation with data transfer
+    cudaStreamSynchronize(stream);
+    cudaStreamDestroy(stream);
+}
+```
+
+#### Google TPU Optimization Standards
+```python
+# TPU-compatible computation graph
+def create_tpu_optimized_model(input_shape, hidden_dims):
+    """Create TPU-optimized neural network model"""
+
+    with tf.device('/TPU:0'):
+        # TPU-optimized layers
+        model = tf.keras.Sequential([
+            tf.keras.layers.Dense(hidden_dims[0],
+                                activation='relu',
+                                kernel_initializer='he_normal',
+                                input_shape=input_shape),
+            # Additional hidden layers optimized for TPU
+            *[tf.keras.layers.Dense(units,
+                                  activation='relu',
+                                  kernel_initializer='he_normal')
+              for units in hidden_dims[1:]],
+            tf.keras.layers.Dense(1, activation='linear')
+        ])
+
+        # TPU-specific compilation
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+            loss='mse',
+            metrics=['mae'],
+            steps_per_execution=128  # TPU batch optimization
+        )
+
+    return model
+
+# TPU training strategy
+def train_on_tpu(model, train_dataset, validation_dataset):
+    """TPU-optimized training strategy"""
+
+    # TPU strategy for distributed training
+    strategy = tf.distribute.TPUStrategy()
+
+    with strategy.scope():
+        # Create distributed model
+        distributed_model = create_tpu_optimized_model()
+
+        # TPU-optimized training
+        history = distributed_model.fit(
+            train_dataset,
+            validation_data=validation_dataset,
+            epochs=100,
+            steps_per_epoch=1000,  # TPU batch size optimization
+            validation_steps=100,
+            callbacks=[
+                tf.keras.callbacks.EarlyStopping(patience=10),
+                tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=5)
+            ]
+        )
+
+    return history
+```
+
+#### AMD GPU Optimization Standards
+```cpp
+// HIP kernel for AMD GPUs
+__global__ void hip_scientific_kernel(
+    const float* __restrict__ input,
+    float* __restrict__ output,
+    const int size
+) {
+    const int gid = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (gid < size) {
+        // AMD-specific optimizations
+        // Use of LDS (Local Data Store) instead of shared memory
+        __shared__ float lds_cache[256];
+
+        // Wavefront-aware programming
+        const int wavefront_id = threadIdx.x / 64;
+        const int lane_id = threadIdx.x % 64;
+
+        // Optimized memory access patterns for RDNA architecture
+        lds_cache[threadIdx.x] = input[gid];
+        __syncthreads();
+
+        // Compute with wavefront optimization
+        float result = wavefront_reduce_sum(lds_cache, lane_id);
+
+        output[gid] = result;
+    }
+}
+```
+
+### Performance Benchmarking Across Hardware
+
+#### Cross-Hardware Performance Analysis
+```python
+def benchmark_cross_hardware_performance(algorithm, hardware_platforms):
+    """Benchmark algorithm performance across multiple hardware platforms"""
+
+    performance_results = {}
+
+    for platform in hardware_platforms:
+        # Platform-specific setup
+        if platform == 'nvidia_blackwell':
+            results = benchmark_blackwell_mxfp8(algorithm)
+        elif platform == 'google_tpu':
+            results = benchmark_tpu_bfloat16(algorithm)
+        elif platform == 'amd_mi300':
+            results = benchmark_amd_fp8(algorithm)
+        elif platform == 'intel_gaudi':
+            results = benchmark_intel_bf16(algorithm)
+
+        performance_results[platform] = {
+            'throughput': results.throughput,
+            'latency': results.latency,
+            'power_efficiency': results.power_efficiency,
+            'memory_bandwidth': results.memory_bandwidth,
+            'precision_maintenance': results.precision_maintenance
+        }
+
+    return performance_results
+```
+
+#### Hardware-Specific Precision Analysis
+```python
+def analyze_precision_across_hardware(algorithm, test_data):
+    """Analyze precision maintenance across different hardware platforms"""
+
+    precision_results = {}
+
+    # Reference CPU implementation
+    cpu_result = run_cpu_reference(algorithm, test_data)
+    reference_precision = calculate_precision(cpu_result, test_data.true_values)
+
+    for hardware in ['blackwell_mxfp8', 'tpu_bfloat16', 'amd_fp8', 'intel_bf16']:
+        hw_result = run_hardware_accelerated(algorithm, test_data, hardware)
+        hw_precision = calculate_precision(hw_result, test_data.true_values)
+
+        precision_results[hardware] = {
+            'precision_maintenance': hw_precision / reference_precision,
+            'absolute_precision': hw_precision,
+            'relative_error': abs(hw_precision - reference_precision) / reference_precision
+        }
+
+    return precision_results
+```
+
+### Memory Optimization Standards
+
+#### Unified Memory Management
+```cpp
+// Cross-platform memory management
+class UnifiedMemoryManager {
+public:
+    UnifiedMemoryManager() {
+        detect_memory_capabilities();
+        initialize_memory_pools();
+    }
+
+    template<typename T>
+    T* allocate_unified_memory(size_t size) {
+        #ifdef __CUDA__
+            // CUDA unified memory
+            T* ptr;
+            cudaMallocManaged(&ptr, size * sizeof(T));
+            return ptr;
+        #elif defined(__HIP__)
+            // HIP unified memory
+            T* ptr;
+            hipMallocManaged(&ptr, size * sizeof(T));
+            return ptr;
+        #else
+            // CPU memory with NUMA awareness
+            return allocate_numa_aware<T>(size);
+        #endif
+    }
+
+    void prefetch_memory(void* ptr, size_t size, int target_device) {
+        #ifdef __CUDA__
+            cudaMemPrefetchAsync(ptr, size, target_device);
+        #elif defined(__HIP__)
+            hipMemPrefetchAsync(ptr, size, target_device);
+        #endif
+    }
+
+private:
+    void detect_memory_capabilities() {
+        // Detect unified memory support
+        // Detect NUMA configuration
+        // Detect memory bandwidth capabilities
+    }
+
+    void initialize_memory_pools() {
+        // Create memory pools for different allocation patterns
+        // Optimize for common allocation sizes
+        // Set up prefetch strategies
+    }
+};
+```
+
+### Energy Efficiency Optimization
+
+#### Power-Aware Computation
+```python
+def optimize_for_power_efficiency(algorithm, power_budget):
+    """Optimize algorithm for power efficiency within budget"""
+
+    # Power modeling
+    power_model = create_power_model(algorithm)
+
+    # Optimization under power constraint
+    optimized_config = optimize_power_constrained(
+        algorithm, power_budget, power_model
+    )
+
+    return {
+        'optimal_configuration': optimized_config,
+        'expected_power_usage': power_model.predict(optimized_config),
+        'performance_impact': calculate_performance_impact(optimized_config),
+        'energy_efficiency': calculate_energy_efficiency(optimized_config)
+    }
+
+def create_power_model(algorithm):
+    """Create power consumption model for algorithm"""
+    # Measure power consumption across different configurations
+    # Build regression model for power prediction
+    # Include hardware-specific power characteristics
+
+    return power_model
+```
+
+### Scalability and Parallelization Standards
+
+#### Distributed Computing Patterns
+```python
+def implement_distributed_acceleration(algorithm, num_devices):
+    """Implement distributed acceleration across multiple devices"""
+
+    # Device detection and topology analysis
+    device_topology = analyze_device_topology()
+
+    # Data partitioning strategy
+    data_partitions = partition_data_for_devices(num_devices, device_topology)
+
+    # Communication optimization
+    communication_strategy = optimize_device_communication(device_topology)
+
+    # Pipeline implementation
+    pipeline = create_acceleration_pipeline(
+        algorithm, data_partitions, communication_strategy
+    )
+
+    return pipeline
+
+def analyze_device_topology():
+    """Analyze available device topology for optimal distribution"""
+    # Detect device interconnects
+    # Measure inter-device bandwidth
+    # Identify optimal communication patterns
+    # Consider NUMA effects
+
+    return device_topology
+```
+
+### Quality Assurance and Validation
+
+#### Hardware Acceleration Testing Standards
+```python
+def validate_hardware_acceleration(algorithm, hardware_platforms):
+    """Comprehensive validation of hardware acceleration implementations"""
+
+    validation_results = {}
+
+    for platform in hardware_platforms:
+        # Functional correctness
+        correctness_result = validate_functional_correctness(algorithm, platform)
+
+        # Performance validation
+        performance_result = validate_performance_claims(algorithm, platform)
+
+        # Precision validation
+        precision_result = validate_precision_maintenance(algorithm, platform)
+
+        # Stability validation
+        stability_result = validate_stability(algorithm, platform)
+
+        validation_results[platform] = {
+            'functional_correctness': correctness_result,
+            'performance_validation': performance_result,
+            'precision_validation': precision_result,
+            'stability_validation': stability_result,
+            'overall_compliance': calculate_overall_compliance([
+                correctness_result, performance_result,
+                precision_result, stability_result
+            ])
+        }
+
+    return validation_results
+```
+
+### Documentation and Maintenance Standards
+
+#### Hardware-Specific Documentation
+```markdown
+## Hardware Acceleration Documentation Template
+
+### Hardware Platform: [Platform Name]
+**Architecture**: [GPU/TPU/CPU/etc.]
+**Key Features**: [Special capabilities and optimizations]
+**Supported Precision**: [FP32/FP16/INT8/etc.]
+
+#### Implementation Details
+- **Memory Management**: [Strategy and optimizations]
+- **Kernel Optimization**: [Thread/block configuration, memory access patterns]
+- **Precision Handling**: [Mixed precision strategies, quantization approaches]
+- **Performance Tuning**: [Optimization techniques and best practices]
+
+#### Performance Benchmarks
+| Metric | Value | Units | Notes |
+|--------|-------|-------|-------|
+| Throughput | XXX | ops/sec | Peak performance |
+| Latency | XXX | ms | End-to-end |
+| Memory Bandwidth | XXX | GB/s | Utilized bandwidth |
+| Power Efficiency | XXX | ops/W | Energy efficiency |
+
+#### Known Limitations
+- [Limitation 1]: [Description and mitigation]
+- [Limitation 2]: [Description and mitigation]
+
+#### Maintenance Guidelines
+- [Maintenance task 1]: [Frequency and procedure]
+- [Maintenance task 2]: [Frequency and procedure]
+```
+
+This rule ensures all hardware acceleration implementations in the scientific computing toolkit follow rigorous standards for performance optimization, portability, and maintainability across diverse hardware architectures.

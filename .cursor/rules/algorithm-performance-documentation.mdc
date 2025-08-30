@@ -1,0 +1,314 @@
+---
+alwaysApply: false
+description: "Standards for documenting and comparing algorithm performance in scientific computing"
+globs: *.md,*.tex,*.py,*.ipynb
+---
+# 📊 Algorithm Performance Documentation Standards
+
+This rule establishes comprehensive standards for documenting, benchmarking, and comparing algorithm performance in the scientific computing toolkit, ensuring consistent, reproducible, and scientifically rigorous performance evaluation.
+
+## 🎯 Performance Documentation Framework
+
+### Algorithm Performance Profile Template
+```markdown
+## Algorithm Performance Profile: [Algorithm Name]
+
+### Algorithm Overview
+- **Category**: [Optimization/Integration/Approximation/etc.]
+- **Problem Class**: [Convex/Non-convex/Linear/Nonlinear/etc.]
+- **Complexity**: [Time/Space complexity analysis]
+- **Convergence**: [Convergence properties and guarantees]
+
+### Performance Characteristics
+
+#### Computational Performance
+| Metric | Value | Units | Conditions |
+|--------|-------|-------|------------|
+| **Time Complexity** | O(n²) | - | Worst case |
+| **Space Complexity** | O(n) | - | Peak usage |
+| **Average Execution Time** | 234ms | milliseconds | N=1000 |
+| **Memory Peak Usage** | 45.6MB | megabytes | N=1000 |
+| **Cache Efficiency** | 87.3% | percentage | L2 hit rate |
+
+#### Convergence Properties
+| Property | Value | Confidence | Notes |
+|----------|-------|------------|-------|
+| **Convergence Rate** | Quadratic | High | Near optimum |
+| **Success Rate** | 98.7% | High | N=1000 problems |
+| **Precision Achieved** | 1e-6 | High | Tolerance threshold |
+| **Robustness** | 94.2% | High | Ill-conditioned problems |
+
+#### Hardware Utilization
+| Hardware Component | Utilization | Efficiency | Notes |
+|-------------------|-------------|------------|-------|
+| **CPU Cores** | 87% | 92% | Parallel processing |
+| **Memory Bandwidth** | 78% | 85% | Data throughput |
+| **Cache Hit Rate** | 89% | 94% | Memory hierarchy |
+| **GPU Utilization** | 95% | 91% | Blackwell MXFP8 |
+```
+
+### Benchmarking Standards
+
+#### Standard Benchmark Suites
+```python
+# Required benchmark suite structure
+class AlgorithmBenchmarkSuite:
+    """Standardized benchmarking framework"""
+
+    def __init__(self, algorithm_name: str):
+        self.algorithm_name = algorithm_name
+        self.benchmark_problems = self.load_standard_problems()
+        self.performance_metrics = self.initialize_metrics()
+
+    def run_comprehensive_benchmark(self) -> PerformanceReport:
+        """Run complete benchmark suite"""
+        results = {}
+
+        for problem in self.benchmark_problems:
+            result = self.benchmark_single_problem(problem)
+            results[problem.name] = result
+
+        return self.generate_performance_report(results)
+
+    def benchmark_single_problem(self, problem) -> ProblemResult:
+        """Benchmark algorithm on single problem instance"""
+        # Warm-up run
+        self.warm_up(problem)
+
+        # Multiple timed runs
+        execution_times = []
+        memory_usage = []
+        convergence_metrics = []
+
+        for run in range(self.n_runs):
+            result = self.run_single_execution(problem)
+            execution_times.append(result.execution_time)
+            memory_usage.append(result.memory_usage)
+            convergence_metrics.append(result.convergence_metric)
+
+        return ProblemResult(
+            problem_name=problem.name,
+            mean_time=np.mean(execution_times),
+            std_time=np.std(execution_times),
+            peak_memory=np.max(memory_usage),
+            convergence_rate=np.mean(convergence_metrics),
+            success_rate=self.calculate_success_rate(convergence_metrics)
+        )
+```
+
+#### Performance Metrics Standards
+
+##### Time Performance Metrics
+- ✅ **Wall Clock Time**: Total execution time from start to finish
+- ✅ **CPU Time**: Actual CPU processing time
+- ✅ **User Time**: Time spent in user code
+- ✅ **System Time**: Time spent in system calls
+- ✅ **Scalability**: Performance scaling with problem size
+
+##### Memory Performance Metrics
+- ✅ **Peak Memory Usage**: Maximum memory allocation during execution
+- ✅ **Memory Efficiency**: Memory usage per unit of computation
+- ✅ **Cache Performance**: Cache hit rates and memory hierarchy utilization
+- ✅ **Memory Bandwidth**: Data transfer rates between memory levels
+
+##### Accuracy and Convergence Metrics
+- ✅ **Convergence Rate**: Speed of approaching optimal solution
+- ✅ **Success Rate**: Percentage of problems solved successfully
+- ✅ **Precision Achieved**: Final accuracy relative to known solutions
+- ✅ **Robustness**: Performance on ill-conditioned or difficult problems
+
+##### Hardware Utilization Metrics
+- ✅ **CPU Utilization**: Percentage of CPU capacity used
+- ✅ **GPU Utilization**: Percentage of GPU capacity used (especially Blackwell MXFP8)
+- ✅ **Memory Bandwidth**: Actual vs. theoretical memory throughput
+- ✅ **Power Consumption**: Energy efficiency metrics
+
+### Comparative Analysis Framework
+
+#### Performance Comparison Template
+```markdown
+## Algorithm Comparison: [Algorithm A] vs [Algorithm B]
+
+### Problem Set Characteristics
+- **Problem Size**: N=1000, D=10 dimensions
+- **Problem Type**: Nonlinear least-squares optimization
+- **Difficulty Level**: Mixed (convex + non-convex)
+- **Condition Number**: κ = 10³ (moderately ill-conditioned)
+
+### Performance Comparison Results
+
+#### Execution Time Comparison
+| Algorithm | Mean Time | Std Dev | Min Time | Max Time |
+|-----------|-----------|---------|----------|----------|
+| **Algorithm A** | 234ms | 12ms | 215ms | 267ms |
+| **Algorithm B** | 567ms | 34ms | 498ms | 623ms |
+| **Speedup Factor** | **2.42x** | - | - | - |
+
+#### Memory Usage Comparison
+| Algorithm | Peak Memory | Memory Efficiency | Cache Hit Rate |
+|-----------|-------------|-------------------|----------------|
+| **Algorithm A** | 45.6MB | 87% | 89% |
+| **Algorithm B** | 78.4MB | 72% | 76% |
+| **Improvement** | **41.8% less** | **21% better** | **17% better** |
+
+#### Convergence Quality Comparison
+| Algorithm | Success Rate | Final Precision | Convergence Rate |
+|-----------|--------------|-----------------|------------------|
+| **Algorithm A** | 98.7% | 1e-8 | Quadratic |
+| **Algorithm B** | 94.2% | 1e-6 | Superlinear |
+| **Advantage** | **4.5% better** | **100x better** | Faster locally |
+
+### Statistical Significance Testing
+```python
+def perform_statistical_comparison(results_a, results_b):
+    """Perform statistical comparison of algorithm performance"""
+
+    # Time comparison
+    time_stat, time_p_value = stats.ttest_ind(results_a.times, results_b.times)
+
+    # Memory comparison
+    memory_stat, memory_p_value = stats.ttest_ind(results_a.memory, results_b.memory)
+
+    # Success rate comparison
+    success_stat, success_p_value = stats.fisher_exact([
+        [results_a.successes, results_a.failures],
+        [results_b.successes, results_b.failures]
+    ])
+
+    return StatisticalComparison(
+        time_significant=time_p_value < 0.05,
+        memory_significant=memory_p_value < 0.05,
+        success_significant=success_p_value < 0.05,
+        effect_sizes=calculate_effect_sizes(results_a, results_b)
+    )
+```
+
+### Hardware-Specific Performance Analysis
+
+#### Blackwell MXFP8 Performance Standards
+```python
+def analyze_blackwell_performance(algorithm_results):
+    """Analyze algorithm performance on Blackwell hardware"""
+
+    blackwell_metrics = {
+        'mxfp8_efficiency': calculate_mxfp8_efficiency(algorithm_results),
+        'tensor_core_utilization': measure_tensor_core_usage(algorithm_results),
+        'memory_bandwidth_utilization': measure_memory_bandwidth(algorithm_results),
+        'power_efficiency': calculate_power_efficiency(algorithm_results),
+        'precision_maintenance': verify_precision_maintenance(algorithm_results)
+    }
+
+    performance_score = calculate_overall_performance_score(blackwell_metrics)
+
+    return BlackwellPerformanceAnalysis(
+        metrics=blackwell_metrics,
+        performance_score=performance_score,
+        optimization_recommendations=generate_recommendations(blackwell_metrics)
+    )
+```
+
+#### Multi-Hardware Performance Comparison
+```markdown
+## Multi-Hardware Performance Analysis
+
+### Hardware Platforms Tested
+- **NVIDIA Blackwell**: MXFP8 precision, 4th-gen tensor cores, 192GB HBM3e
+- **NVIDIA Hopper**: BF16 precision, 3rd-gen tensor cores, 96GB HBM3
+- **AMD MI300**: FP8 precision, CDNA 3 architecture, 192GB HBM3
+- **Google TPU v5**: BFloat16 precision, systolic array architecture
+
+### Performance Scaling Analysis
+
+#### Blackwell MXFP8 Scaling Results
+| Problem Size | Blackwell Time | Blackwell Memory | Efficiency |
+|-------------|----------------|------------------|------------|
+| N=100 | 23.4ms | 12.3MB | 94.2% |
+| N=1000 | 234ms | 45.6MB | 92.8% |
+| N=10000 | 2.34s | 156.7MB | 91.3% |
+| N=100000 | 23.4s | 567.8MB | 89.7% |
+
+#### Cross-Hardware Comparison
+| Hardware | Relative Speed | Memory Efficiency | Precision Maintenance |
+|----------|----------------|-------------------|----------------------|
+| **Blackwell** | **1.0x** | **1.0x** | **0.999744** |
+| Hopper | 0.67x | 0.82x | 0.999123 |
+| MI300 | 0.71x | 0.95x | 0.999567 |
+| TPU v5 | 0.58x | 0.76x | 0.998945 |
+```
+
+### Performance Regression Detection
+
+#### Automated Regression Monitoring
+```python
+def monitor_performance_regression(current_results, baseline_results):
+    """Monitor for performance regressions against baseline"""
+
+    regression_indicators = {
+        'time_regression': detect_time_regression(current_results, baseline_results),
+        'memory_regression': detect_memory_regression(current_results, baseline_results),
+        'accuracy_regression': detect_accuracy_regression(current_results, baseline_results),
+        'convergence_regression': detect_convergence_regression(current_results, baseline_results)
+    }
+
+    if any(regression_indicators.values()):
+        alert_message = generate_regression_alert(regression_indicators)
+        notify_developers(alert_message)
+
+    return regression_indicators
+```
+
+#### Regression Analysis Framework
+```python
+def analyze_performance_regression(historical_data, current_data):
+    """Detailed regression analysis"""
+
+    # Time series analysis
+    time_trend = analyze_time_trend(historical_data.times, current_data.times)
+    memory_trend = analyze_memory_trend(historical_data.memory, current_data.memory)
+
+    # Statistical significance testing
+    significance_tests = perform_regression_significance_tests(historical_data, current_data)
+
+    # Root cause analysis
+    root_causes = identify_potential_root_causes(significance_tests)
+
+    return RegressionAnalysis(
+        time_trend=time_trend,
+        memory_trend=memory_trend,
+        significance_tests=significance_tests,
+        root_causes=root_causes,
+        mitigation_recommendations=generate_mitigation_recommendations(root_causes)
+    )
+```
+
+### Documentation Quality Standards
+
+#### Performance Documentation Checklist
+- ✅ **Algorithm Description**: Clear description of algorithm and use cases
+- ✅ **Complexity Analysis**: Time and space complexity with proofs
+- ✅ **Performance Metrics**: Comprehensive metrics with statistical analysis
+- ✅ **Hardware Specifications**: Detailed hardware configuration and utilization
+- ✅ **Benchmark Methodology**: Reproducible benchmark setup and procedures
+- ✅ **Comparative Analysis**: Fair comparison with alternative algorithms
+- ✅ **Limitations**: Known limitations and failure modes
+- ✅ **Recommendations**: Usage recommendations and best practices
+
+#### Automated Documentation Generation
+```python
+def generate_performance_documentation(algorithm_results, hardware_specs):
+    """Automatically generate comprehensive performance documentation"""
+
+    documentation_sections = {
+        'overview': generate_overview_section(algorithm_results),
+        'complexity': generate_complexity_section(algorithm_results),
+        'benchmarks': generate_benchmark_section(algorithm_results),
+        'hardware': generate_hardware_section(hardware_specs),
+        'comparison': generate_comparison_section(algorithm_results),
+        'limitations': generate_limitations_section(algorithm_results),
+        'recommendations': generate_recommendations_section(algorithm_results)
+    }
+
+    return compile_documentation(documentation_sections)
+```
+
+This rule ensures all algorithm performance documentation in the scientific computing toolkit follows rigorous, comprehensive, and scientifically valid standards for benchmarking, comparison, and analysis.
