@@ -1,0 +1,192 @@
+---
+globs: *performance*,*benchmark*,*validation*,*metrics*
+description: "Performance benchmarking and validation frameworks"
+---
+# 📊 Performance Benchmarking & Validation Frameworks
+
+## Performance Benchmarking ([performance_benchmarking.py](mdc:performance_benchmarking.py))
+
+### Core Features
+- **Real-time Performance Monitoring** - Memory, CPU, execution time tracking
+- **Statistical Analysis** - Confidence intervals, trends, regression detection
+- **Multi-component Benchmarking** - Individual scientific framework analysis
+- **Performance Dashboard Generation** - Visual performance comparisons
+
+### Key Classes and Methods
+```python
+class PerformanceBenchmarker:
+    def benchmark_component(self, component_name, benchmark_name, component_function, *args) -> BenchmarkResult
+    def create_performance_dashboard(self, results, save_path) -> plt.Figure
+    def detect_performance_regressions(self, baseline_results, current_results) -> Dict[str, Any]
+
+@dataclass
+class BenchmarkResult:
+    component_name: str
+    benchmark_name: str
+    metrics: PerformanceMetrics  # execution_time, peak_memory, cpu_utilization, etc.
+    statistical_summary: Dict[str, float]
+    recommendations: List[str]
+```
+
+### Usage Patterns
+```python
+# Initialize benchmarker
+benchmarker = PerformanceBenchmarker()
+
+# Benchmark a component
+result = benchmarker.benchmark_component(
+    "Rheology Model", "Parameter Fitting",
+    fit_herschel_bulkley, experimental_data
+)
+
+# Create performance dashboard
+dashboard = benchmarker.create_performance_dashboard([result1, result2, result3])
+
+# Detect regressions
+regressions = benchmarker.detect_performance_regressions(baseline_results, current_results)
+```
+
+### Performance Metrics Tracked
+| Metric | Description | Units | Typical Range |
+|--------|-------------|-------|---------------|
+| `execution_time` | Total computation time | seconds | 0.1 - 3600+ |
+| `peak_memory_usage` | Maximum memory consumption | MB | 10 - 8000+ |
+| `cpu_utilization` | Average CPU usage | % | 0-100 |
+| `memory_efficiency` | Memory usage efficiency | 0-1 scale | 0.1 - 1.0 |
+| `scalability_score` | Scaling performance | 0-1 scale | 0.1 - 1.0 |
+
+## Quantitative Validation Metrics ([quantitative_validation_metrics.py](mdc:quantitative_validation_metrics.py))
+
+### Comprehensive Validation Framework
+- **Statistical Metrics** - MSE, RMSE, MAE, MAPE, R², correlation coefficients
+- **Confidence Intervals** - Bootstrap and parametric confidence intervals
+- **Statistical Tests** - Normality tests, significance testing, randomness tests
+- **Cross-Validation** - K-fold and bootstrap cross-validation
+- **Validation Reports** - Text and JSON format comprehensive reports
+
+### Key Classes and Methods
+```python
+class QuantitativeValidator:
+    def comprehensive_validation(self, y_true, y_pred, model_name, dataset_name) -> ValidationResult
+    def generate_validation_report(self, result, output_format="text") -> str
+    def create_validation_dashboard(self, results, save_path) -> plt.Figure
+
+@dataclass
+class ValidationMetrics:
+    mse: float
+    rmse: float
+    mae: float
+    mape: float
+    r_squared: float
+    pearson_r: float
+    spearman_r: float
+    mean_error: float
+    std_error: float
+    confidence_intervals: Dict[str, Tuple[float, float]]
+    validation_status: str  # "PASS", "FAIL", "WARNING"
+```
+
+### Validation Status Criteria
+- **PASS**: R² > 0.8, RMSE within data variability, normally distributed residuals
+- **WARNING**: R² 0.6-0.8, moderate performance issues, statistical concerns
+- **FAIL**: R² < 0.6, high error rates, significant statistical issues
+
+### Statistical Tests Performed
+- **Normality Tests**: Shapiro-Wilk, D'Agostino-Pearson
+- **Significance Tests**: One-sample t-test, Wilcoxon signed-rank test
+- **Randomness Tests**: Runs test for residual patterns
+- **Correlation Analysis**: Pearson and Spearman correlation coefficients
+
+## Benchmarking Best Practices
+
+### Performance Monitoring
+- Always benchmark with multiple iterations (n≥5) for statistical significance
+- Monitor memory usage patterns for leak detection
+- Track CPU utilization for parallelization opportunities
+- Establish performance baselines for regression detection
+
+### Validation Methodology
+- Use appropriate metrics for your problem domain (R² for regression, accuracy for classification)
+- Always calculate confidence intervals for robust inference
+- Perform cross-validation to assess generalization performance
+- Test statistical assumptions (normality, homoscedasticity, independence)
+
+### Performance Regression Detection
+```python
+# Example regression detection workflow
+baseline_results = load_baseline_benchmarks()
+current_results = run_current_benchmarks()
+
+regressions = benchmarker.detect_performance_regressions(baseline_results, current_results)
+
+for component, issues in regressions.items():
+    if 'execution_time' in issues:
+        print(f"⚠️  Performance regression in {component}: {issues['execution_time']['regression']:.1%}")
+        if issues['execution_time']['severity'] == 'high':
+            print("🚨 Critical performance regression - immediate investigation required")
+```
+
+### Validation Report Interpretation
+```python
+# Generate comprehensive validation report
+result = validator.comprehensive_validation(y_true, y_pred, "My Model", "Test Dataset")
+
+# Check validation status
+if result.metrics.validation_status == "PASS":
+    print("✅ Model validation successful")
+elif result.metrics.validation_status == "WARNING":
+    print("⚠️  Model validation with warnings - review recommendations")
+else:
+    print("❌ Model validation failed - significant issues detected")
+
+# Review recommendations
+for recommendation in result.recommendations:
+    print(f"💡 {recommendation}")
+```
+
+## Integration with Scientific Frameworks
+
+### Rheology Model Validation
+```python
+# Validate rheological model against experimental data
+from quantitative_validation_metrics import QuantitativeValidator
+from hbflow.models import hb_tau_from_gamma
+
+# Experimental data
+experimental_shear_rates = np.logspace(-3, 3, 50)
+experimental_stresses = [...]  # Measured stress values
+
+# Model predictions
+tau_y, K, n = 5.0, 2.0, 0.8  # Fitted parameters
+predicted_stresses = hb_tau_from_gamma(experimental_shear_rates, tau_y, K, n)
+
+# Comprehensive validation
+validator = QuantitativeValidator()
+validation_result = validator.comprehensive_validation(
+    experimental_stresses, predicted_stresses,
+    "Herschel-Bulkley Model", "CMC Solution Rheology"
+)
+
+# Generate validation report
+report = validator.generate_validation_report(validation_result)
+print(report)
+```
+
+### Performance Benchmarking Integration
+```python
+# Benchmark and validate in combination
+from performance_benchmarking import PerformanceBenchmarker
+
+# Performance benchmarking
+benchmarker = PerformanceBenchmarker()
+perf_result = benchmarker.benchmark_component(
+    "Rheology Validation", "HB Model Fitting",
+    lambda: validator.comprehensive_validation(exp_stresses, pred_stresses, "HB", "Data")
+)
+
+# Combined analysis
+if perf_result.metrics.execution_time > 60:  # > 1 minute
+    print("⚠️  Validation performance is slow - consider optimization")
+if perf_result.metrics.peak_memory_usage > 1000:  # > 1GB
+    print("⚠️  High memory usage - review data handling")
+```

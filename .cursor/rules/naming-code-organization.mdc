@@ -1,0 +1,425 @@
+---
+globs: *.py
+description: "Scientific computing toolkit naming conventions and code organization"
+---
+# 📝 Scientific Computing Toolkit - Naming & Code Organization
+
+## File Naming Conventions
+
+### Framework Categories
+- **Core Frameworks**: `*_framework.py` - Complete system implementations
+  - `inverse_precision_framework.py` - 0.9987 convergence systems
+  - `process_design_framework.py` - Industrial process design
+  - `deployment_architecture.py` - Deployment architectures
+
+- **Analysis Tools**: `*_analysis.py` - Specific analysis capabilities
+  - `multi_phase_flow_analysis.py` - Multi-phase flow modeling
+  - `cryptographic_analysis.py` - Cryptographic research
+  - `chromostereopsis_model.py` - Visual perception analysis
+
+- **Integration Modules**: `*_integration.py` - Integration frameworks
+  - `assembly_theory_integration.py` - Assembly Theory integration
+  - Future: `quantum_integration.py`, `neural_integration.py`
+
+- **Specialized Systems**: `*_system.py` - Complete specialized systems
+  - `optical_depth_enhancement.py` - Optical precision systems
+  - `integrated_eye_depth_system.py` - Ophthalmic analysis systems
+  - `rainbow_multivariate_crypto.py` - Cryptographic systems
+
+- **Models & Algorithms**: `*_model.py` - Specific model implementations
+  - `plant_biology_model.py` - Biological maturation models
+  - `herschel_bulkley_model.py` - Rheological constitutive models
+  - `composite_loss.mojo` - Specialized loss functions
+
+- **Demonstration & Testing**: `*_demo.py`, `test_*.py`, `*_results.json`
+  - `hb_demo.py` - Framework demonstrations
+  - `test_herschel_bulkley.py` - Unit tests
+  - `validation_results.json` - Test result storage
+
+### Package Organization
+- **Framework Packages**: `*/` - Modular packages with `__init__.py`
+  - `hbflow/` - Herschel-Bulkley fluid dynamics package
+  - `scientific-computing-tools/` - Core scientific frameworks
+  - `Corpus/qualia/` - Java security frameworks
+
+## Code Organization Patterns
+
+### Class Naming Conventions
+
+#### Framework Classes
+```python
+class InversePrecisionFramework:          # Core framework class
+class QuantitativeValidator:              # Validation framework
+class PerformanceBenchmarker:             # Benchmarking framework
+class AssemblyTheoryFramework:            # Integration framework
+class CloudFrontReverseProxy:             # Infrastructure automation
+```
+
+#### Specialized Classes
+```python
+class HerschelBulkleyModel:               # Mathematical model
+class MultiPhaseFlowAnalyzer:             # Analysis tool
+class LorenzPlantModel:                   # Biological model
+class OpticalDepthAnalyzer:               # Specialized analyzer
+```
+
+#### Data Classes
+```python
+@dataclass
+class ValidationMetrics:                  # Metrics container
+class ValidationResult:                   # Result container
+class BenchmarkResult:                    # Benchmark container
+class AssemblyMetrics:                    # Assembly analysis
+class FlowConditions:                     # Physical conditions
+```
+
+### Method Naming Conventions
+
+#### Core Framework Methods
+```python
+def inverse_extract_parameters(self, data) -> Result      # Main extraction method
+def comprehensive_validation(self, y_true, y_pred)        # Complete validation
+def benchmark_component(self, name, function)             # Component benchmarking
+def calculate_assembly_index(self, object_rep)           # Assembly calculation
+def create_distribution(self, origin_domain)             # Infrastructure creation
+```
+
+#### Analysis Methods
+```python
+def hb_tau_from_gamma(shear_rates, tau_y, K, n)          # Forward model
+def fit_herschel_bulkley(shear_rates, stresses)          # Parameter fitting
+def solve_advection_diffusion(self, domain, conditions)  # PDE solving
+def enhance_depth_profile(self, iris_image)              # Image processing
+def analyze_tissue_nutrition(self, tissue_type, nutrient) # Biological analysis
+```
+
+#### Utility Methods
+```python
+def _calculate_r_squared(self, experimental, predicted)  # Internal calculation
+def _perform_bootstrap_analysis(self, y_true, y_pred)    # Statistical analysis
+def _build_distribution_config(self, origin, path)       # Configuration building
+def _decompose_string(self, text)                        # Data preprocessing
+def _generate_namespace_manifest(self, architecture)     # Manifest generation
+```
+
+### Variable Naming Conventions
+
+#### Physical/Scientific Variables
+```python
+# Fluid dynamics
+shear_rate = 10.0              # γ̇ - shear rate (1/s)
+stress = 5.0                   # τ - shear stress (Pa)
+viscosity = 0.1                # η - viscosity (Pa·s)
+yield_stress = 2.0            # τ_y - yield stress (Pa)
+consistency_index = 1.5       # K - consistency index (Pa·s^n)
+power_index = 0.8             # n - power-law index (dimensionless)
+
+# Optical systems
+wavelength = 550e-9           # λ - wavelength (m)
+resolution = 1e-9             # Δx - spatial resolution (m)
+depth_precision = 10e-9       # σ_z - depth precision (m)
+iris_radius = 6e-3            # r_iris - iris radius (m)
+
+# Biological systems
+concentration = 5e-3          # C - nutrient concentration (mol/m³)
+diffusivity = 1e-10           # D - diffusion coefficient (m²/s)
+permeability = 2e-14          # κ - permeability (m²)
+pressure = 100.0              # P - pressure (Pa)
+
+# Cryptographic parameters
+security_bits = 256           # Security level in bits
+v1, o1, o2 = 29, 14, 15       # Rainbow signature parameters
+key_size = 2048               # RSA key size
+```
+
+#### Algorithm Variables
+```python
+# Optimization
+learning_rate = 0.01          # α - learning rate
+convergence_threshold = 0.9987  # ε - convergence criterion
+max_iterations = 1000         # N_max - maximum iterations
+tolerance = 1e-6              # δ - numerical tolerance
+
+# Statistical analysis
+confidence_level = 0.95       # α - confidence level
+sample_size = 100             # n - sample size
+degrees_of_freedom = 99       # df - degrees of freedom
+p_value = 0.05                # p - significance level
+
+# Performance metrics
+execution_time = 1.23         # t_exec - execution time (s)
+peak_memory = 512.0           # M_peak - peak memory (MB)
+cpu_utilization = 85.0        # CPU% - CPU utilization (%)
+efficiency_score = 0.92       # η - efficiency score (0-1)
+```
+
+#### Data Structures
+```python
+# Arrays and matrices
+shear_rates = np.array([0.1, 1.0, 10.0])     # γ̇_array - shear rate array
+stress_tensor = np.zeros((3, 3))               # τ_ij - stress tensor
+jacobian_matrix = np.eye(n_params)             # J - Jacobian matrix
+
+# Data containers
+experimental_data = pd.DataFrame()             # df_exp - experimental data
+validation_results = []                        # results - validation results
+benchmark_history = {}                         # history - benchmark history
+
+# Configuration objects
+flow_conditions = FlowConditions()              # conditions - flow parameters
+model_config = ModelConfiguration()            # config - model settings
+solver_options = SolverOptions()               # options - solver settings
+```
+
+## Function Parameter Patterns
+
+### Required vs Optional Parameters
+```python
+def calculate_assembly_index(self,
+                           object_representation: Union[str, List[str], np.ndarray],
+                           observation_context: Optional[Dict[str, Any]] = None) -> AssemblyMetrics:
+    """Calculate assembly index with optional context"""
+
+def comprehensive_validation(self,
+                           y_true: np.ndarray,
+                           y_pred: np.ndarray,
+                           model_name: str = "Unknown Model",
+                           dataset_name: str = "Unknown Dataset") -> ValidationResult:
+    """Comprehensive validation with defaults"""
+```
+
+### Parameter Type Hints
+```python
+def fit_herschel_bulkley(self,
+                        shear_rates: np.ndarray,
+                        stresses: np.ndarray,
+                        initial_guess: Optional[np.ndarray] = None,
+                        bounds: Optional[List[Tuple[float, float]]] = None) -> Dict[str, Any]:
+    """Parameter fitting with comprehensive type hints"""
+```
+
+## Error Handling Patterns
+
+### Custom Exceptions
+```python
+class ConvergenceError(Exception):
+    """Raised when iterative algorithm fails to converge"""
+    pass
+
+class ValidationError(Exception):
+    """Raised when validation criteria are not met"""
+    pass
+
+class IntegrationError(Exception):
+    """Raised when framework integration fails"""
+    pass
+```
+
+### Error Handling in Methods
+```python
+def inverse_extract_parameters(self, data: np.ndarray) -> InverseResult:
+    """Extract parameters with comprehensive error handling"""
+    try:
+        # Parameter validation
+        if data is None or len(data) == 0:
+            raise ValidationError("Input data cannot be empty")
+
+        if not np.isfinite(data).all():
+            raise ValidationError("Input data contains non-finite values")
+
+        # Core algorithm
+        result = self._perform_extraction(data)
+
+        # Convergence check
+        if not result.convergence_achieved:
+            raise ConvergenceError(f"Failed to converge within {self.max_iterations} iterations")
+
+        return result
+
+    except np.linalg.LinAlgError as e:
+        raise ConvergenceError(f"Linear algebra error during extraction: {e}")
+    except Exception as e:
+        raise IntegrationError(f"Unexpected error in parameter extraction: {e}")
+```
+
+## Documentation Patterns
+
+### Class Documentation
+```python
+class QuantitativeValidator:
+    """
+    Advanced quantitative validation framework for scientific computing models.
+
+    This class provides comprehensive statistical validation for scientific computing models
+    with confidence intervals, cross-validation, and bootstrap analysis capabilities.
+
+    Features:
+    - Statistical metrics (MSE, RMSE, MAE, MAPE, R², correlation)
+    - Confidence interval calculations (bootstrap and parametric)
+    - Statistical tests (normality, significance, randomness)
+    - Cross-validation analysis (K-fold, bootstrap)
+    - Comprehensive validation reports (text and JSON)
+
+    Example:
+        validator = QuantitativeValidator()
+        result = validator.comprehensive_validation(y_true, y_pred, "My Model", "Dataset")
+        print(validator.generate_validation_report(result))
+    """
+```
+
+### Method Documentation
+```python
+def comprehensive_validation(self,
+                           y_true: np.ndarray,
+                           y_pred: np.ndarray,
+                           model_name: str = "Unknown Model",
+                           dataset_name: str = "Unknown Dataset") -> ValidationResult:
+    """
+    Perform comprehensive quantitative validation of model predictions.
+
+    This method conducts thorough statistical validation including error metrics,
+    correlation analysis, statistical tests, cross-validation, and bootstrap analysis.
+
+    Parameters
+    ----------
+    y_true : np.ndarray
+        Ground truth values for comparison
+    y_pred : np.ndarray
+        Model predictions to validate
+    model_name : str, optional
+        Name of the model being validated (default: "Unknown Model")
+    dataset_name : str, optional
+        Name of the dataset used (default: "Unknown Dataset")
+
+    Returns
+    -------
+    ValidationResult
+        Complete validation results with statistical analysis
+
+    Raises
+    ------
+    ValueError
+        If y_true and y_pred have different lengths or contain invalid values
+
+    Example
+    -------
+    >>> validator = QuantitativeValidator()
+    >>> result = validator.comprehensive_validation(y_obs, y_model, "HB Model", "CMC Data")
+    >>> print(f"Validation: {result.metrics.validation_status}")
+    Validation: PASS
+    """
+```
+
+## Import Organization
+
+### Standard Library Imports
+```python
+import os
+import sys
+from pathlib import Path
+from typing import Dict, List, Tuple, Optional, Any, Union
+from dataclasses import dataclass, field
+from datetime import datetime
+import json
+import warnings
+```
+
+### Third-Party Imports
+```python
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy import stats, optimize
+from sklearn.metrics import r2_score, mean_squared_error
+from sklearn.model_selection import cross_val_score
+import psutil
+```
+
+### Local Framework Imports
+```python
+# Core frameworks
+from inverse_precision_framework import InversePrecisionFramework
+from quantitative_validation_metrics import QuantitativeValidator
+from performance_benchmarking import PerformanceBenchmarker
+
+# Specialized modules
+from hbflow.models import hb_tau_from_gamma, hb_gamma_from_tau
+from hbflow.fit import fit_herschel_bulkley
+from optical_depth_enhancement import OpticalDepthAnalyzer
+
+# Integration modules
+from assembly_theory_integration import AssemblyTheoryFramework
+from cloudfront_reverse_proxy import CloudFrontReverseProxy
+```
+
+## Code Structure Patterns
+
+### Framework Entry Points
+```python
+def main():
+    """Main entry point for framework demonstration"""
+    print("🔬 Scientific Computing Framework")
+    print("=" * 50)
+
+    # Framework initialization
+    framework = InversePrecisionFramework(convergence_threshold=0.9987)
+
+    # Core functionality demonstration
+    result = framework.inverse_extract_parameters(experimental_data)
+
+    # Results presentation
+    print(f"Convergence achieved: {result.convergence_achieved}")
+    print(f"Final precision: {result.final_precision:.6f}")
+
+    return 0
+
+if __name__ == "__main__":
+    exit(main())
+```
+
+### Framework Class Structure
+```python
+class ScientificFramework:
+    """Base class for scientific computing frameworks"""
+
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        """Initialize framework with configuration"""
+        self.config = config or self._default_config()
+        self._validate_config()
+        self._initialize_components()
+
+    def _default_config(self) -> Dict[str, Any]:
+        """Provide default configuration"""
+        return {
+            'convergence_threshold': 0.9987,
+            'max_iterations': 1000,
+            'tolerance': 1e-6,
+            'random_state': 42
+        }
+
+    def _validate_config(self):
+        """Validate configuration parameters"""
+        required_keys = ['convergence_threshold', 'max_iterations']
+        for key in required_keys:
+            if key not in self.config:
+                raise ValueError(f"Required configuration key missing: {key}")
+
+    def _initialize_components(self):
+        """Initialize framework components"""
+        # Component initialization logic
+        pass
+
+    def process(self, data: Any) -> Any:
+        """Main processing method - override in subclasses"""
+        raise NotImplementedError("Subclasses must implement process method")
+
+    def validate(self) -> ValidationResult:
+        """Validate framework configuration and state"""
+        # Validation logic
+        pass
+
+    def benchmark(self) -> BenchmarkResult:
+        """Benchmark framework performance"""
+        # Benchmarking logic
+        pass
+```

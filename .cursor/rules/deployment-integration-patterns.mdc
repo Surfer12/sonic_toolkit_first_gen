@@ -1,0 +1,365 @@
+---
+globs: *deployment*,*architecture*,*integration*,*assembly*
+description: "Deployment architectures and integration patterns"
+---
+# 🏗️ Deployment Architectures & Integration Patterns
+
+## Deployment Architecture Framework ([deployment_architecture.py](mdc:deployment_architecture.py))
+
+### Supported Deployment Patterns
+- **Microservices Architecture** - Service mesh, API gateway, auto-scaling
+- **Edge Computing** - Distributed deployments, federated learning
+- **Hybrid Cloud** - Multi-cloud flexibility, cost optimization
+
+### Key Classes and Methods
+```python
+class DeploymentArchitect:
+    def create_microservices_architecture(self) -> DeploymentArchitecture
+    def create_edge_computing_architecture(self) -> DeploymentArchitecture
+    def create_hybrid_cloud_architecture(self) -> DeploymentArchitecture
+    def generate_deployment_manifests(self, architecture, output_dir) -> Dict[str, str]
+    def create_deployment_blueprint(self, architecture) -> Dict[str, Any]
+
+@dataclass
+class DeploymentArchitecture:
+    name: str
+    environment: str  # "production", "staging", "development"
+    components: Dict[str, Dict[str, Any]]
+    infrastructure: Dict[str, Any]
+    networking: Dict[str, Any]
+    security: Dict[str, Any]
+    monitoring: Dict[str, Any]
+    scaling: Dict[str, Any]
+```
+
+### Microservices Architecture Components
+```yaml
+# Generated Kubernetes manifests include:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inverse-precision-service
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+      - name: inverse-precision
+        image: scientific/inverse-precision:latest
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "2Gi"
+          limits:
+            cpu: "2000m"
+            memory: "4Gi"
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8000
+```
+
+## Assembly Theory Integration ([assembly_theory_integration.py](mdc:assembly_theory_integration.py))
+
+### Core Concepts
+- **Assembly Index A(x)** - Minimal construction steps for object x
+- **Copy Number N(x)** - Abundance of similar objects in system
+- **Assembly Complexity** - Complexity measure of assembly pathways
+- **Reuse Efficiency** - Sub-assembly utilization metric
+
+### Key Classes and Methods
+```python
+class AssemblyTheoryFramework:
+    def calculate_assembly_index(self, object_rep, context) -> AssemblyMetrics
+    def integrate_with_consciousness_framework(self, psi_function, metrics) -> Dict[str, Any]
+    def analyze_biological_system(self, system_description) -> Dict[str, Any]
+
+@dataclass
+class AssemblyMetrics:
+    assembly_index: float
+    copy_number: int
+    assembly_complexity: float
+    reuse_efficiency: float
+    emergence_score: float
+    minimal_assembly_path: List[str]
+    sub_assembly_graph: Dict[str, List[str]]
+```
+
+### Integration with Consciousness Frameworks
+```python
+# Assembly Theory + Ψ(x) consciousness framework integration
+assembly_framework = AssemblyTheoryFramework()
+metrics = assembly_framework.calculate_assembly_index(biological_system)
+
+# Hybrid complexity measure
+integration = assembly_framework.integrate_with_consciousness_framework(
+    psi_score, metrics
+)
+
+hybrid_complexity = integration['hybrid_complexity_score']
+consciousness_bounds = integration['consciousness_bounds']
+```
+
+## Cloud Infrastructure Automation ([cloudfront_reverse_proxy.py](mdc:cloudfront_reverse_proxy.py))
+
+### CloudFront Reverse Proxy Features
+- **Custom Origin Configuration** - Flexible backend integration
+- **Security Headers** - OWASP security headers implementation
+- **SSL/TLS Configuration** - Modern encryption standards
+- **Real-time Logging** - CloudWatch integration for monitoring
+- **WAF Integration** - Web Application Firewall protection
+
+### Key Classes and Methods
+```python
+class CloudFrontReverseProxy:
+    def create_distribution(self, origin_domain, origin_path, **kwargs) -> Dict[str, Any]
+    def update_distribution_for_reverse_proxy(self, distribution_id, origin_domain) -> Dict[str, Any]
+    def invalidate_distribution(self, distribution_id, paths) -> str
+    def get_distribution_status(self, distribution_id) -> str
+```
+
+### AWS CloudFront Configuration
+```json
+{
+  "CallerReference": "scientific-computing-proxy",
+  "Comment": "Scientific Computing Reverse Proxy",
+  "Enabled": true,
+  "Origins": {
+    "Quantity": 1,
+    "Items": [{
+      "Id": "scientific-origin",
+      "DomainName": "api.scientific.example.com",
+      "CustomOriginConfig": {
+        "HTTPPort": 80,
+        "HTTPSPort": 443,
+        "OriginProtocolPolicy": "https-only",
+        "OriginReadTimeout": 30,
+        "OriginKeepaliveTimeout": 5
+      }
+    }]
+  },
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "scientific-origin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "MinTTL": 0,
+    "DefaultTTL": 86400,
+    "MaxTTL": 31536000,
+    "Compress": true
+  }
+}
+```
+
+## Integration Patterns
+
+### Scientific Framework Integration
+```python
+# Integration workflow: Research → Validation → Deployment → Monitoring
+
+# 1. Research Phase
+from inverse_precision_framework import InversePrecisionFramework
+model = InversePrecisionFramework(convergence_threshold=0.9987)
+result = model.inverse_extract_parameters(data)
+
+# 2. Validation Phase
+from quantitative_validation_metrics import QuantitativeValidator
+validator = QuantitativeValidator()
+validation = validator.comprehensive_validation(true_values, predictions)
+
+# 3. Performance Benchmarking
+from performance_benchmarking import PerformanceBenchmarker
+benchmarker = PerformanceBenchmarker()
+benchmark = benchmarker.benchmark_component("Model", "Validation", validation_function)
+
+# 4. Deployment Phase
+from deployment_architecture import DeploymentArchitect
+architect = DeploymentArchitect()
+architecture = architect.create_microservices_architecture()
+manifests = architect.generate_deployment_manifests(architecture)
+
+# 5. Assembly Theory Integration (Advanced Research)
+from assembly_theory_integration import AssemblyTheoryFramework
+assembly = AssemblyTheoryFramework()
+metrics = assembly.calculate_assembly_index(research_system)
+emergence = assembly.integrate_with_consciousness_framework(psi_score, metrics)
+```
+
+### Multi-Language Integration Patterns
+
+#### Python-Java Integration
+```python
+# Use JPype for seamless Java integration
+import jpype
+import jpype.imports
+
+# Start JVM and import Java classes
+jpype.startJVM(classpath=['path/to/java/classes'])
+from java.security import SecurityFramework
+from java.cryptographic import RainbowSystem
+
+# Use Java frameworks from Python
+security_analyzer = SecurityFramework()
+cryptographic_result = RainbowSystem.analyze(parameters)
+```
+
+#### Python-Mojo Integration (High Performance)
+```python
+# Use Mojo for high-performance computations
+from python import sys
+from mojo_interop import bridge
+
+# Bridge Python and Mojo for performance-critical sections
+@bridge.mojo_function
+def high_performance_computation(data: Float64, params: Dict) -> Float64:
+    # Mojo implementation for maximum performance
+    return optimized_calculation(data, params)
+
+# Use in Python workflow
+result = high_performance_computation(python_data, python_params)
+```
+
+### Containerization and Orchestration
+
+#### Docker Container Patterns
+```dockerfile
+# Multi-stage scientific computing container
+FROM python:3.11-slim as base
+WORKDIR /app
+
+# Install scientific dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Production stage
+FROM base as production
+COPY . .
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+#### Kubernetes Deployment Patterns
+```yaml
+# Scientific computing service deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scientific-service
+  labels:
+    app: scientific-computing
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: scientific-computing
+  template:
+    metadata:
+      labels:
+        app: scientific-computing
+    spec:
+      containers:
+      - name: scientific-container
+        image: scientific/scientific-service:latest
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "INFO"
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+```
+
+### Monitoring and Observability
+
+#### Prometheus Metrics Integration
+```python
+from prometheus_client import Counter, Histogram, Gauge
+
+# Define metrics
+REQUEST_COUNT = Counter('scientific_requests_total', 'Total scientific requests')
+COMPUTATION_TIME = Histogram('scientific_computation_duration', 'Computation duration')
+MEMORY_USAGE = Gauge('scientific_memory_usage', 'Current memory usage')
+VALIDATION_SCORE = Gauge('scientific_validation_score', 'Current validation score')
+
+# Use in scientific computations
+@COMPUTATION_TIME.time()
+def perform_scientific_computation(data):
+    REQUEST_COUNT.inc()
+    MEMORY_USAGE.set(psutil.virtual_memory().percent)
+    result = scientific_algorithm(data)
+    VALIDATION_SCORE.set(validation_score)
+    return result
+```
+
+#### ELK Stack Integration
+```python
+import logging
+from elasticsearch import Elasticsearch
+
+# Configure structured logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# Elasticsearch integration
+es = Elasticsearch(['localhost:9200'])
+
+def log_scientific_event(event_type, data):
+    """Log scientific events to ELK stack"""
+    log_entry = {
+        'timestamp': datetime.now().isoformat(),
+        'event_type': event_type,
+        'data': data,
+        'component': 'scientific-computing'
+    }
+
+    # Send to Elasticsearch
+    es.index(index='scientific-events', document=log_entry)
+
+    # Structured logging
+    logger.info(f"Scientific event: {event_type}", extra=log_entry)
+```
+
+## Best Practices
+
+### Deployment Security
+- Always use secrets management (HashiCorp Vault, AWS Secrets Manager)
+- Implement network policies and pod security standards
+- Enable audit logging for compliance
+- Regular security scanning and vulnerability assessments
+
+### Performance Optimization
+- Use horizontal pod autoscaling based on custom metrics
+- Implement resource quotas and limits
+- Optimize container images for size and security
+- Use persistent volumes for data-intensive workloads
+
+### Monitoring Strategy
+- Implement the four golden signals: latency, traffic, errors, saturation
+- Set up alerting for critical performance thresholds
+- Use distributed tracing for complex microservices
+- Implement log aggregation and correlation
+
+### Integration Testing
+- Test component interactions in staging environment
+- Validate data flow between services
+- Performance test integrated systems
+- Implement chaos engineering for resilience validation
