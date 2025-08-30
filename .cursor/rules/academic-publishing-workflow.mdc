@@ -1,0 +1,376 @@
+---
+description: "Workflow patterns for academic publishing in scientific computing"
+---
+# Academic Publishing Workflow for Scientific Computing
+
+This rule outlines the complete workflow for publishing scientific computing research, from initial research to final publication.
+
+## Phase 1: Research Planning and Design
+
+### 1.1 Research Question Formulation
+```markdown
+# Research Objectives
+- [ ] Clearly define the scientific problem
+- [ ] Identify the computational challenge
+- [ ] Establish novelty and significance
+- [ ] Define success criteria and validation metrics
+
+# Scope Definition
+- [ ] Determine computational domain boundaries
+- [ ] Identify required mathematical frameworks
+- [ ] Define performance requirements
+- [ ] Establish validation methodologies
+```
+
+### 1.2 Literature Review Structure
+```markdown
+# Literature Review Framework
+## Theoretical Foundations
+- [ ] Constitutive equations (HB, viscoelastic models)
+- [ ] Numerical methods (FEM, FVM, optimization)
+- [ ] Validation methodologies
+- [ ] Performance benchmarking
+
+## State of the Art
+- [ ] Current limitations in field
+- [ ] Existing solution approaches
+- [ ] Performance benchmarks
+- [ ] Open research challenges
+
+## Knowledge Gaps
+- [ ] Identified gaps in current research
+- [ ] Opportunities for innovation
+- [ ] Potential impact areas
+```
+
+## Phase 2: Implementation and Development
+
+### 2.1 Code Development Standards
+```python
+# Implementation Checklist
+- [ ] Modular architecture with clear separation of concerns
+- [ ] Comprehensive type hints and documentation
+- [ ] Unit tests for all core functions
+- [ ] Performance profiling and optimization
+- [ ] Memory efficiency analysis
+- [ ] Cross-platform compatibility testing
+```
+
+### 2.2 Documentation Requirements
+```markdown
+# Documentation Standards
+## Code Documentation
+- [ ] Inline comments for complex algorithms
+- [ ] Function docstrings with examples
+- [ ] Class documentation with inheritance
+- [ ] API documentation generation
+
+## Research Documentation
+- [ ] Mathematical derivation notebooks
+- [ ] Algorithm complexity analysis
+- [ ] Performance benchmarking results
+- [ ] Validation methodology documentation
+```
+
+## Phase 3: Validation and Testing
+
+### 3.1 Validation Framework
+```python
+# Validation Checklist
+def comprehensive_validation():
+    """Complete validation workflow for scientific computing research."""
+
+    # Analytical validation
+    analytical_tests = validate_against_analytical_solutions()
+    assert analytical_tests['convergence'] > 0.99, "Analytical convergence failed"
+
+    # Experimental validation
+    experimental_tests = validate_against_experimental_data()
+    assert experimental_tests['r_squared'] > 0.95, "Experimental validation failed"
+
+    # Numerical stability
+    stability_tests = validate_numerical_stability()
+    assert stability_tests['condition_number'] < 1e12, "Numerical instability detected"
+
+    # Performance validation
+    performance_tests = validate_performance_requirements()
+    assert performance_tests['efficiency'] > 0.8, "Performance requirements not met"
+
+    return True
+```
+
+### 3.2 Statistical Analysis Requirements
+```python
+# Statistical Validation Standards
+def statistical_validation_suite():
+    """Comprehensive statistical analysis for research validation."""
+
+    # Error analysis
+    error_metrics = {
+        'mae': mean_absolute_error(y_true, y_pred),
+        'rmse': root_mean_squared_error(y_true, y_pred),
+        'mape': mean_absolute_percentage_error(y_true, y_pred),
+        'r_squared': r2_score(y_true, y_pred)
+    }
+
+    # Uncertainty quantification
+    uncertainty_analysis = bootstrap_uncertainty_analysis(y_true, y_pred, n_bootstraps=1000)
+
+    # Statistical tests
+    statistical_tests = {
+        'normality': shapiro_wilk_test(residuals),
+        'homoscedasticity': levene_test(residuals),
+        'independence': durbin_watson_test(residuals)
+    }
+
+    # Confidence intervals
+    confidence_intervals = compute_confidence_intervals(y_pred, confidence_level=0.95)
+
+    return {
+        'error_metrics': error_metrics,
+        'uncertainty': uncertainty_analysis,
+        'statistical_tests': statistical_tests,
+        'confidence_intervals': confidence_intervals
+    }
+```
+
+## Phase 4: Paper Writing and Documentation
+
+### 4.1 Paper Structure Template
+```latex
+% Complete paper structure for scientific computing research
+\documentclass[11pt,a4paper]{article}
+
+% Essential packages
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{hyperref}
+
+\begin{document}
+
+% Title and abstract
+\title{Advanced Scientific Computing Framework for [Research Domain]}
+\author{Your Name}
+\maketitle
+
+\begin{abstract}
+[250-300 word abstract covering problem, methodology, results, significance]
+\end{abstract}
+
+% Main sections
+\section{Introduction}
+\section{Theoretical Background}
+\section{Methodology}
+\section{Implementation}
+\section{Results and Validation}
+\section{Discussion}
+\section{Conclusions}
+
+% Bibliography
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
+```
+
+### 4.2 Content Development Checklist
+```markdown
+# Paper Content Checklist
+## Introduction
+- [ ] Clear problem statement
+- [ ] Research significance
+- [ ] Literature gap identification
+- [ ] Objectives and scope
+- [ ] Paper structure overview
+
+## Theoretical Background
+- [ ] Mathematical foundations
+- [ ] Algorithm descriptions
+- [ ] Related work analysis
+- [ ] Theoretical contributions
+
+## Methodology
+- [ ] Implementation details
+- [ ] Algorithm specifications
+- [ ] Validation procedures
+- [ ] Performance metrics
+
+## Results
+- [ ] Experimental setup
+- [ ] Results presentation
+- [ ] Statistical analysis
+- [ ] Performance evaluation
+
+## Discussion
+- [ ] Results interpretation
+- [ ] Comparison with literature
+- [ ] Limitations and assumptions
+- [ ] Future work directions
+```
+
+## Phase 5: Peer Review and Revision
+
+### 5.1 Pre-Submission Checklist
+```markdown
+# Pre-Submission Review
+## Technical Quality
+- [ ] All equations verified and correctly formatted
+- [ ] Code implementations match descriptions
+- [ ] Algorithms clearly explained with complexity analysis
+- [ ] Performance claims supported by benchmarks
+
+## Scientific Rigor
+- [ ] Hypotheses clearly stated
+- [ ] Methods reproducible
+- [ ] Results statistically significant
+- [ ] Conclusions supported by evidence
+
+## Writing Quality
+- [ ] Clear and concise language
+- [ ] Logical flow between sections
+- [ ] Consistent terminology
+- [ ] Professional presentation
+
+## Documentation
+- [ ] Complete bibliography
+- [ ] Supplementary materials prepared
+- [ ] Code repository accessible
+- [ ] Data availability statement
+```
+
+### 5.2 Revision Workflow
+```markdown
+# Revision Process
+## Reviewer Response Strategy
+1. [ ] Carefully read all reviewer comments
+2. [ ] Categorize comments (major/minor concerns)
+3. [ ] Prioritize revisions by impact
+4. [ ] Plan response to each comment
+
+## Technical Revisions
+- [ ] Address algorithmic concerns
+- [ ] Verify mathematical corrections
+- [ ] Update performance benchmarks if needed
+- [ ] Strengthen validation procedures
+
+## Content Revisions
+- [ ] Clarify ambiguous explanations
+- [ ] Add missing references
+- [ ] Strengthen conclusions
+- [ ] Improve figure quality and captions
+
+## Response Letter Structure
+- [ ] Acknowledge reviewer contributions
+- [ ] Address each comment specifically
+- [ ] Reference changes made in manuscript
+- [ ] Explain decisions for unaddressed concerns
+```
+
+## Phase 6: Publication and Dissemination
+
+### 6.1 Final Publication Steps
+```markdown
+# Publication Preparation
+## Final Manuscript
+- [ ] Incorporate all revisions
+- [ ] Verify formatting compliance
+- [ ] Proofread final version
+- [ ] Author final approval
+
+## Supplementary Materials
+- [ ] Code repository with DOI
+- [ ] Dataset availability
+- [ ] Extended mathematical derivations
+- [ ] Additional performance benchmarks
+
+## Journal Submission
+- [ ] Complete submission requirements
+- [ ] Prepare cover letter
+- [ ] Ensure ethical compliance
+- [ ] Submit through journal system
+```
+
+### 6.2 Post-Publication Activities
+```markdown
+# Post-Publication Workflow
+## Academic Impact
+- [ ] Share on academic social networks
+- [ ] Present at conferences
+- [ ] Engage with research community
+- [ ] Monitor citations and impact
+
+## Community Engagement
+- [ ] Open-source code releases
+- [ ] Tutorial development
+- [ ] Collaboration opportunities
+- [ ] Student mentorship
+
+## Future Research
+- [ ] Identify extension opportunities
+- [ ] Plan follow-up studies
+- [ ] Apply methodology to new domains
+- [ ] Develop improved algorithms
+```
+
+## Quality Assurance Metrics
+
+### Research Quality Indicators
+```python
+# Quality assessment framework
+def assess_research_quality():
+    """Comprehensive quality assessment for scientific computing research."""
+
+    quality_metrics = {
+        'technical_rigor': assess_technical_rigor(),
+        'methodological_soundness': assess_methodology(),
+        'validation_completeness': assess_validation(),
+        'documentation_quality': assess_documentation(),
+        'reproducibility': assess_reproducibility(),
+        'impact_potential': assess_impact()
+    }
+
+    # Overall quality score
+    overall_score = sum(quality_metrics.values()) / len(quality_metrics)
+
+    return {
+        'metrics': quality_metrics,
+        'overall_score': overall_score,
+        'recommendations': generate_quality_recommendations(quality_metrics)
+    }
+```
+
+### Performance Benchmarks
+```python
+# Performance benchmarking standards
+def performance_benchmarking_standards():
+    """Establish performance benchmarking requirements."""
+
+    standards = {
+        'computational_efficiency': {
+            'target': '< 1 second for typical problems',
+            'metric': 'execution_time',
+            'validation': 'statistical_significance_test'
+        },
+        'memory_efficiency': {
+            'target': '< 1GB for standard datasets',
+            'metric': 'peak_memory_usage',
+            'validation': 'memory_profiling_analysis'
+        },
+        'numerical_accuracy': {
+            'target': 'relative_error < 1e-6',
+            'metric': 'numerical_precision',
+            'validation': 'convergence_analysis'
+        },
+        'scalability': {
+            'target': 'O(n) or better scaling',
+            'metric': 'algorithmic_complexity',
+            'validation': 'asymptotic_analysis'
+        }
+    }
+
+    return standards
+```
+
+This workflow ensures that scientific computing research maintains the highest standards of academic excellence while following systematic processes for reproducible and impactful publications.

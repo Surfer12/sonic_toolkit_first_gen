@@ -1,0 +1,276 @@
+---
+description: "LaTeX formatting standards and structure for scientific computing papers"
+globs: *.tex
+---
+# Scientific Paper LaTeX Formatting Standards
+
+This rule provides comprehensive guidelines for writing scientific papers in LaTeX, specifically optimized for computational science and engineering research.
+
+## Document Structure
+
+### Standard Paper Sections
+```latex
+\documentclass[11pt,a4paper]{article}
+
+% Essential packages for scientific papers
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{subcaption}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{abstract}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+% Page geometry
+\geometry{margin=1in}
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    citecolor=red,
+}
+
+\begin{document}
+
+% Title page
+\begin{titlepage}
+    \centering
+    {\Huge\bfseries Paper Title\\[0.5cm]
+    Subtitle if needed\par}
+    \vspace{1.5cm}
+    {\large Author Name\\[0.5cm]
+    Affiliation\\[0.5cm]
+    \texttt{email@institution.edu}\par}
+    \vspace{2cm}
+    {\Large\bfseries Abstract\par}
+    \vspace{0.5cm}
+    \begin{minipage}{0.8\textwidth}
+    Abstract text here...
+    \end{minipage}
+    {\bfseries Keywords:} keyword1, keyword2, keyword3
+\end{titlepage}
+
+% Main content sections
+\section{Introduction}
+\section{Theoretical Background}
+\section{Methodology}
+\section{Results}
+\section{Discussion}
+\section{Conclusions}
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
+```
+
+### Mathematical Equation Formatting
+
+#### Inline Equations
+```latex
+% Use inline equations for simple expressions
+The constitutive equation is $\tau = \tau_y + K\dot{\gamma}^n$ where $\tau_y$ is the yield stress.
+
+% For complex expressions within text
+The parameter extraction uses the criterion $\epsilon_{relative} = ||k'_{n+1} - k'_n|| / ||k'_n|| \leq 0.0013$.
+```
+
+#### Display Equations
+```latex
+% Numbered equations for important relationships
+\begin{equation}
+\tau(\dot{\gamma}) = \tau_y + K\cdot\dot{\gamma}^n
+\label{eq:hb_constitutive}
+\end{equation}
+
+% Aligned equations for multi-line expressions
+\begin{align}
+\Psi(x) &= \min\left\{\beta \cdot \exp\left(-[\lambda_1 R_a + \lambda_2 R_v]\right)\right. \notag \\
+        &\quad \left. \cdot [\alpha S + (1-\alpha)N], 1\right\}
+\label{eq:psi_function}
+\end{align}
+
+% Equation arrays for systems
+\begin{equation}
+\begin{cases}
+\frac{dx}{dt} = \sigma(y - x) \\
+\frac{dy}{dt} = x(\rho - z) - y \\
+\frac{dz}{dt} = xy - \beta z
+\end{cases}
+\label{eq:lorenz_system}
+\end{equation}
+```
+
+### Code Listing Standards
+
+#### Python Code in LaTeX
+```latex
+\begin{lstlisting}[caption=Python Implementation of HB Model]
+import numpy as np
+from typing import Union, Optional
+from dataclasses import dataclass
+
+@dataclass
+class HBParameters:
+    """Herschel-Bulkley model parameters."""
+    tau_y: float  # Yield stress [Pa]
+    K: float      # Consistency index [Pa·s^n]
+    n: float      # Flow behavior index [-]
+
+class HerschelBulkleyModel:
+    """Herschel-Bulkley fluid model implementation."""
+
+    def __init__(self, parameters: HBParameters):
+        self.params = parameters
+
+    def constitutive_model(self, gamma_dot: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute stress from shear rate using HB model."""
+        gamma_dot = np.asarray(gamma_dot)
+        return self.params.tau_y + self.params.K * np.power(gamma_dot, self.params.n)
+\end{lstlisting}
+```
+
+#### Algorithm Formatting
+```latex
+\begin{algorithm}
+\caption{Herschel-Bulkley Parameter Fitting Algorithm}
+\label{alg:hb_fitting}
+\begin{algorithmic}[1]
+\Procedure{FitHBParameters}{$\dot{\gamma}_{data}, \tau_{data}$}
+    \State Initialize $\theta_0 = [\tau_y, K, n]^T$
+    \State Define objective: $f(\theta) = \sum (\tau_{predicted} - \tau_{data})^2$
+    \While{convergence not reached}
+        \State Compute Jacobian $J = \nabla_\theta f(\theta)$
+        \State Update $\theta \leftarrow \theta - (J^T J)^{-1} J^T f(\theta)$
+        \State Check convergence: $||\theta_{new} - \theta_{old}|| < \epsilon$
+    \EndWhile
+    \State \Return $\theta_{optimal}$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+```
+
+### Figure and Table Standards
+
+#### Figure Formatting
+```latex
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{constitutive_model.png}
+    \caption{Herschel-Bulkley constitutive model}
+    \label{fig:hb_model}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{validation_results.png}
+    \caption{Model validation against experimental data}
+    \label{fig:validation}
+\end{subfigure}
+\caption{Constitutive modeling and validation results}
+\label{fig:constitutive_analysis}
+\end{figure}
+```
+
+#### Table Formatting
+```latex
+\begin{table}[H]
+\centering
+\caption{Herschel-Bulkley Model Validation Results}
+\label{tab:hb_validation}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Material & R² & RMSE (Pa) & MAE (Pa) & Status \\
+\midrule
+Carboxymethyl Cellulose & 0.987 & 2.34 & 1.87 & \textcolor{green}{PASS} \\
+Polymer Melt & 0.993 & 1.56 & 1.23 & \textcolor{green}{PASS} \\
+Drilling Mud & 0.976 & 3.45 & 2.78 & \textcolor{green}{PASS} \\
+\midrule
+\textbf{Average} & \textbf{0.985} & \textbf{2.51} & \textbf{2.00} & \textcolor{green}{PASS} \\
+\bottomrule
+\end{tabular}
+\end{table}
+```
+
+### Bibliography Management
+
+#### BibTeX Entry Standards
+```latex
+@article{herschel_bulkley_1926,
+    title={Konsistenzmessungen von {G}ummi-{B}enzollösungen},
+    author={Herschel, W.H. and Bulkley, R.},
+    journal={Kolloid-Zeitschrift},
+    volume={39},
+    number={4},
+    pages={291--300},
+    year={1926},
+    publisher={Springer}
+}
+
+@inproceedings{oates_lstm_2024,
+    title={LSTM Convergence Theorem for Chaotic System Prediction},
+    author={Oates, Ryan David},
+    booktitle={Proceedings of the International Conference on Neural Networks},
+    pages={1--8},
+    year={2024},
+    organization={IEEE}
+}
+
+@phdthesis{consciousness_framework_2024,
+    title={Mathematical Framework for Artificial Consciousness Quantification},
+    author={Oates, Ryan David},
+    school={Independent Research},
+    year={2024},
+    type={Technical Report}
+}
+```
+
+### Best Practices
+
+#### 1. Document Organization
+- Use consistent section numbering and hierarchy
+- Include table of contents, list of figures, and list of tables
+- Add page headers with paper title and author
+- Use consistent citation style throughout
+
+#### 2. Mathematical Notation
+- Define all symbols and variables clearly
+- Use consistent notation across equations
+- Include units for all physical quantities
+- Provide equation references for important relationships
+
+#### 3. Code Integration
+- Include relevant code snippets with syntax highlighting
+- Reference complete implementations in appendices
+- Document algorithm complexity and performance characteristics
+- Provide clear code comments and documentation
+
+#### 4. Scientific Rigor
+- Include uncertainty analysis and error bounds
+- Provide statistical validation of results
+- Document experimental conditions and data sources
+- Include sensitivity analysis for key parameters
+
+#### 5. Professional Presentation
+- Use consistent formatting throughout the document
+- Ensure high-quality figures and tables
+- Include comprehensive literature review
+- Provide clear conclusions and future work
+
+This rule ensures that scientific papers maintain the highest standards of academic publishing while effectively communicating complex computational research to the scientific community.
