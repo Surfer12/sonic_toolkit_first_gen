@@ -138,5 +138,7 @@ pytest = ">=8.4.1,<9"
 pandas = ">=2.3.2,<3"
 sympy = ">=1.14.0,<2"
 jupyter = ">=1.1.1,<2"
+seaborn = ">=0.13.2,<0.14"
+pip = ">=25.2,<26"
 # Using system-installed Amazon Corretto 24
 # openjdk = ">=21.0.0,<22"  # Commented out - using system Corretto 24
