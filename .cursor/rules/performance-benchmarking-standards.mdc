@@ -1,0 +1,737 @@
+---
+globs: *.py,*.java,*.swift,*.mojo
+description: "Performance benchmarking and optimization standards for scientific computing"
+---
+
+# 🚀 Performance Benchmarking Standards
+
+## Universal Performance Metrics Framework
+
+### Core Performance Indicators
+```python
+PERFORMANCE_THRESHOLDS = {
+    'EXCELLENT': {
+        'execution_time': {'small': 0.1, 'medium': 1.0, 'large': 10.0},
+        'memory_efficiency': {'peak_mb': 50, 'growth_rate': 1.1},
+        'convergence_rate': {'iterations': 50, 'tolerance': 1e-8},
+        'scalability_score': 0.9
+    },
+    'GOOD': {
+        'execution_time': {'small': 0.5, 'medium': 5.0, 'large': 50.0},
+        'memory_efficiency': {'peak_mb': 200, 'growth_rate': 1.5},
+        'convergence_rate': {'iterations': 200, 'tolerance': 1e-6},
+        'scalability_score': 0.7
+    },
+    'ACCEPTABLE': {
+        'execution_time': {'small': 2.0, 'medium': 20.0, 'large': 200.0},
+        'memory_efficiency': {'peak_mb': 1000, 'growth_rate': 2.0},
+        'convergence_rate': {'iterations': 1000, 'tolerance': 1e-4},
+        'scalability_score': 0.5
+    }
+}
+
+def evaluate_performance_metrics(metrics, problem_size_category='medium'):
+    """
+    Evaluate performance metrics against established standards.
+
+    Args:
+        metrics: Dict containing performance measurements
+        problem_size_category: 'small', 'medium', or 'large'
+
+    Returns:
+        Performance evaluation with recommendations
+    """
+    execution_time = metrics.get('execution_time', float('inf'))
+    peak_memory = metrics.get('peak_memory_mb', float('inf'))
+    convergence_iter = metrics.get('convergence_iterations', float('inf'))
+    tolerance_achieved = metrics.get('final_tolerance', 1.0)
+    scalability = metrics.get('scalability_score', 0.0)
+
+    # Evaluate against thresholds
+    for rating, thresholds in PERFORMANCE_THRESHOLDS.items():
+        exec_threshold = thresholds['execution_time'][problem_size_category]
+        mem_threshold = thresholds['memory_efficiency']['peak_mb']
+        conv_threshold = thresholds['convergence_rate']['iterations']
+        scal_threshold = thresholds['scalability_score']
+
+        if (execution_time <= exec_threshold and
+            peak_memory <= mem_threshold and
+            convergence_iter <= conv_threshold and
+            scalability >= scal_threshold and
+            tolerance_achieved <= thresholds['convergence_rate']['tolerance']):
+            return {
+                'rating': rating,
+                'score': 1.0 if rating == 'EXCELLENT' else 0.7 if rating == 'GOOD' else 0.5,
+                'recommendations': generate_performance_recommendations(metrics, rating),
+                'bottlenecks': identify_performance_bottlenecks(metrics)
+            }
+
+    return {
+        'rating': 'NEEDS_IMPROVEMENT',
+        'score': 0.3,
+        'recommendations': ['Comprehensive performance optimization required',
+                          'Consider algorithm redesign for better scalability'],
+        'bottlenecks': identify_performance_bottlenecks(metrics)
+    }
+```
+
+## Benchmark Suite Architecture
+
+### Standardized Benchmark Categories
+```python
+BENCHMARK_CATEGORIES = {
+    'micro_benchmarks': {
+        'description': 'Low-level performance tests',
+        'test_cases': [
+            'matrix_multiplication',
+            'vector_operations',
+            'memory_bandwidth',
+            'cache_performance',
+            'branch_prediction'
+        ],
+        'metrics': ['latency', 'throughput', 'efficiency']
+    },
+    'algorithm_benchmarks': {
+        'description': 'Algorithm-specific performance tests',
+        'test_cases': [
+            'inverse_problem_solving',
+            'optimization_algorithms',
+            'numerical_integration',
+            'differential_equation_solving',
+            'statistical_computation'
+        ],
+        'metrics': ['accuracy', 'convergence_rate', 'numerical_stability']
+    },
+    'application_benchmarks': {
+        'description': 'End-to-end application performance',
+        'test_cases': [
+            'fluid_dynamics_simulation',
+            'biological_transport_modeling',
+            'security_analysis_pipeline',
+            'cryptographic_operations',
+            'visual_cognition_processing'
+        ],
+        'metrics': ['total_runtime', 'resource_utilization', 'scalability']
+    },
+    'stress_tests': {
+        'description': 'Performance under extreme conditions',
+        'test_cases': [
+            'large_scale_problems',
+            'memory_pressure_scenarios',
+            'concurrent_workloads',
+            'adversarial_inputs',
+            'system_resource_limits'
+        ],
+        'metrics': ['robustness', 'graceful_degradation', 'error_handling']
+    }
+}
+
+class BenchmarkSuite:
+    """
+    Comprehensive benchmark suite for scientific computing performance evaluation.
+    """
+
+    def __init__(self, target_system=None):
+        self.target_system = target_system or self.detect_system()
+        self.benchmark_results = {}
+        self.baseline_results = self.load_baseline_results()
+
+    def run_complete_benchmark_suite(self):
+        """
+        Run complete benchmark suite across all categories.
+        """
+        print("🚀 Running Complete Scientific Computing Benchmark Suite")
+        print("=" * 70)
+
+        total_score = 0.0
+        category_count = 0
+
+        for category_name, category_config in BENCHMARK_CATEGORIES.items():
+            print(f"\n📊 Running {category_name.replace('_', ' ').title()} Benchmarks")
+            print("-" * 50)
+
+            category_results = self.run_category_benchmarks(category_name, category_config)
+            category_score = self.evaluate_category_performance(category_results, category_config)
+
+            self.benchmark_results[category_name] = {
+                'results': category_results,
+                'score': category_score,
+                'recommendations': self.generate_category_recommendations(category_results)
+            }
+
+            total_score += category_score
+            category_count += 1
+
+            print(".3f"
+        overall_score = total_score / category_count
+        overall_rating = self.determine_overall_rating(overall_score)
+
+        self.generate_final_report(overall_score, overall_rating)
+
+        return {
+            'overall_score': overall_score,
+            'overall_rating': overall_rating,
+            'category_results': self.benchmark_results,
+            'system_info': self.target_system
+        }
+
+    def run_category_benchmarks(self, category_name, category_config):
+        """
+        Run all benchmarks within a specific category.
+        """
+        category_results = {}
+
+        for test_case in category_config['test_cases']:
+            print(f"  Running {test_case.replace('_', ' ')}...")
+
+            try:
+                result = self.execute_benchmark_test(category_name, test_case)
+                category_results[test_case] = {
+                    'success': True,
+                    'metrics': result,
+                    'comparison': self.compare_to_baseline(category_name, test_case, result)
+                }
+                print("    ✅ Completed"
+            except Exception as e:
+                category_results[test_case] = {
+                    'success': False,
+                    'error': str(e)
+                }
+                print(f"    ❌ Failed: {e}")
+
+        return category_results
+
+    def execute_benchmark_test(self, category, test_case):
+        """
+        Execute individual benchmark test with performance monitoring.
+        """
+        # Performance monitoring setup
+        import time
+        import psutil
+        import tracemalloc
+
+        process = psutil.Process()
+        tracemalloc.start()
+
+        # Pre-test measurements
+        initial_memory = process.memory_info().rss
+        initial_cpu = process.cpu_times()
+        start_time = time.perf_counter()
+
+        try:
+            # Execute the actual benchmark
+            result = self.run_specific_test(category, test_case)
+
+            # Post-test measurements
+            end_time = time.perf_counter()
+            final_memory = process.memory_info().rss
+            final_cpu = process.cpu_times()
+            current, peak_memory = tracemalloc.get_traced_memory()
+
+            # Calculate performance metrics
+            execution_time = end_time - start_time
+            memory_usage = final_memory - initial_memory
+            cpu_time = (final_cpu.user + final_cpu.system) -
+                      (initial_cpu.user + initial_cpu.system)
+
+            performance_metrics = {
+                'execution_time': execution_time,
+                'memory_usage_mb': memory_usage / 1024 / 1024,
+                'peak_memory_mb': peak_memory / 1024 / 1024,
+                'cpu_time': cpu_time,
+                'cpu_utilization_percent': (cpu_time / execution_time) * 100 if execution_time > 0 else 0
+            }
+
+            # Combine with test-specific results
+            return {**result, **performance_metrics}
+
+        finally:
+            tracemalloc.stop()
+
+    def run_specific_test(self, category, test_case):
+        """
+        Run the specific benchmark test implementation.
+        """
+        test_implementations = {
+            ('micro_benchmarks', 'matrix_multiplication'): self.benchmark_matrix_multiplication,
+            ('micro_benchmarks', 'vector_operations'): self.benchmark_vector_operations,
+            ('algorithm_benchmarks', 'inverse_problem_solving'): self.benchmark_inverse_problem,
+            ('application_benchmarks', 'fluid_dynamics_simulation'): self.benchmark_fluid_dynamics,
+            # Add more test implementations...
+        }
+
+        test_function = test_implementations.get((category, test_case))
+        if test_function:
+            return test_function()
+        else:
+            raise NotImplementedError(f"Benchmark {category}/{test_case} not implemented")
+
+    # Specific benchmark implementations
+    def benchmark_matrix_multiplication(self):
+        """Benchmark matrix multiplication performance."""
+        import numpy as np
+
+        sizes = [100, 500, 1000, 2000]
+        results = {}
+
+        for size in sizes:
+            A = np.random.random((size, size))
+            B = np.random.random((size, size))
+
+            start_time = time.perf_counter()
+            C = np.dot(A, B)
+            end_time = time.perf_counter()
+
+            results[f'size_{size}'] = {
+                'time': end_time - start_time,
+                'gflops': (2 * size**3) / (end_time - start_time) / 1e9
+            }
+
+        return results
+
+    def benchmark_vector_operations(self):
+        """Benchmark vectorized operations performance."""
+        import numpy as np
+
+        size = 10000000
+        a = np.random.random(size)
+        b = np.random.random(size)
+
+        # Test different vector operations
+        operations = {
+            'add': lambda: a + b,
+            'multiply': lambda: a * b,
+            'sin': lambda: np.sin(a),
+            'exp': lambda: np.exp(a)
+        }
+
+        results = {}
+        for op_name, op_func in operations.items():
+            times = []
+            for _ in range(10):  # Multiple runs for stable timing
+                start_time = time.perf_counter()
+                result = op_func()
+                end_time = time.perf_counter()
+                times.append(end_time - start_time)
+
+            results[op_name] = {
+                'mean_time': np.mean(times),
+                'std_time': np.std(times),
+                'throughput': size / np.mean(times) / 1e6  # M operations/second
+            }
+
+        return results
+
+    def benchmark_inverse_problem(self):
+        """Benchmark inverse problem solving performance."""
+        from scipy.optimize import minimize
+        import numpy as np
+
+        # Generate synthetic inverse problem data
+        np.random.seed(42)
+        true_params = np.array([1.5, 0.8, 100.0])  # τ_y, n, K
+        shear_rates = np.logspace(-2, 3, 100)
+        noise_level = 0.05
+
+        # Forward model (Herschel-Bulkley)
+        def forward_model(params, gamma):
+            tau_y, n, K = params
+            return tau_y + K * gamma**n
+
+        # Generate synthetic measurements
+        true_stresses = forward_model(true_params, shear_rates)
+        measured_stresses = true_stresses * (1 + noise_level * np.random.randn(len(shear_rates)))
+
+        # Objective function
+        def objective(params):
+            predicted = forward_model(params, shear_rates)
+            return np.sum((predicted - measured_stresses)**2)
+
+        # Benchmark optimization
+        start_time = time.perf_counter()
+        result = minimize(objective, x0=true_params * 1.2, method='BFGS')
+        end_time = time.perf_counter()
+
+        return {
+            'optimization_time': end_time - start_time,
+            'final_objective': result.fun,
+            'iterations': result.nit,
+            'success': result.success,
+            'estimated_params': result.x,
+            'parameter_error': np.abs(result.x - true_params) / true_params
+        }
+
+    def benchmark_fluid_dynamics(self):
+        """Benchmark complete fluid dynamics simulation."""
+        # This would integrate with actual fluid dynamics code
+        # For now, return placeholder structure
+        return {
+            'simulation_time': 2.5,
+            'grid_points': 100000,
+            'time_steps': 1000,
+            'convergence_achieved': True,
+            'accuracy_metrics': {'l2_error': 1e-6, 'conservation_error': 1e-8}
+        }
+```
+
+## Performance Optimization Framework
+
+### Optimization Strategy Selection
+```python
+OPTIMIZATION_STRATEGIES = {
+    'memory_optimization': {
+        'techniques': [
+            'memory_pool_allocation',
+            'object_reuse',
+            'lazy_evaluation',
+            'streaming_processing',
+            'memory_mapped_files'
+        ],
+        'indicators': ['high_memory_usage', 'memory_fragmentation', 'frequent_gc'],
+        'expected_improvement': '30-70% memory reduction'
+    },
+    'compute_optimization': {
+        'techniques': [
+            'vectorization',
+            'parallel_processing',
+            'gpu_acceleration',
+            'algorithmic_improvements',
+            'caching_optimization'
+        ],
+        'indicators': ['high_cpu_usage', 'long_execution_times', 'scalability_issues'],
+        'expected_improvement': '2-100x speedup'
+    },
+    'io_optimization': {
+        'techniques': [
+            'buffered_io',
+            'asynchronous_io',
+            'compression',
+            'memory_mapped_io',
+            'batch_processing'
+        ],
+        'indicators': ['high_io_wait_times', 'large_data_transfers', 'disk_bottlenecks'],
+        'expected_improvement': '5-50x io performance'
+    },
+    'algorithmic_optimization': {
+        'techniques': [
+            'better_convergence_criteria',
+            'adaptive_algorithms',
+            'preconditioning',
+            'multigrid_methods',
+            'problem_reformulation'
+        ],
+        'indicators': ['slow_convergence', 'numerical_instability', 'high_iteration_counts'],
+        'expected_improvement': '2-1000x faster convergence'
+    }
+}
+
+def recommend_optimization_strategy(performance_profile):
+    """
+    Recommend optimization strategy based on performance profile.
+
+    Args:
+        performance_profile: Dict containing performance metrics and bottlenecks
+
+    Returns:
+        Recommended optimization strategy with expected benefits
+    """
+    bottlenecks = identify_bottlenecks(performance_profile)
+    recommendations = []
+
+    for bottleneck_type, severity in bottlenecks.items():
+        if severity > 0.7:  # High severity bottleneck
+            strategy = OPTIMIZATION_STRATEGIES.get(bottleneck_type, {})
+            if strategy:
+                recommendations.append({
+                    'strategy': bottleneck_type,
+                    'techniques': strategy['techniques'],
+                    'expected_improvement': strategy['expected_improvement'],
+                    'priority': 'HIGH'
+                })
+        elif severity > 0.4:  # Medium severity bottleneck
+            strategy = OPTIMIZATION_STRATEGIES.get(bottleneck_type, {})
+            if strategy:
+                recommendations.append({
+                    'strategy': bottleneck_type,
+                    'techniques': strategy['techniques'][:2],  # Top 2 techniques
+                    'expected_improvement': strategy['expected_improvement'],
+                    'priority': 'MEDIUM'
+                })
+
+    # Sort by priority and expected impact
+    recommendations.sort(key=lambda x: (x['priority'] == 'HIGH', x['expected_improvement']),
+                        reverse=True)
+
+    return recommendations
+
+def identify_bottlenecks(performance_profile):
+    """
+    Identify performance bottlenecks from profile data.
+    """
+    bottlenecks = {}
+
+    # Memory bottleneck detection
+    if performance_profile.get('memory_usage_percent', 0) > 80:
+        bottlenecks['memory_optimization'] = 0.9
+    elif performance_profile.get('memory_usage_percent', 0) > 60:
+        bottlenecks['memory_optimization'] = 0.6
+
+    # Compute bottleneck detection
+    if performance_profile.get('cpu_utilization_percent', 0) > 90:
+        bottlenecks['compute_optimization'] = 0.9
+    elif performance_profile.get('cpu_utilization_percent', 0) > 70:
+        bottlenecks['compute_optimization'] = 0.6
+
+    # IO bottleneck detection
+    io_time_ratio = performance_profile.get('io_time_ratio', 0)
+    if io_time_ratio > 0.5:
+        bottlenecks['io_optimization'] = 0.9
+    elif io_time_ratio > 0.2:
+        bottlenecks['io_optimization'] = 0.6
+
+    # Algorithmic bottleneck detection
+    convergence_efficiency = performance_profile.get('convergence_efficiency', 1.0)
+    if convergence_efficiency < 0.1:
+        bottlenecks['algorithmic_optimization'] = 0.9
+    elif convergence_efficiency < 0.3:
+        bottlenecks['algorithmic_optimization'] = 0.6
+
+    return bottlenecks
+```
+
+## Scalability Analysis Framework
+
+### Scalability Metrics and Analysis
+```python
+def analyze_scalability_performance(scaling_data):
+    """
+    Analyze how performance scales with problem size and resources.
+
+    Args:
+        scaling_data: Dict containing performance data across different scales
+
+    Returns:
+        Scalability analysis with recommendations
+    """
+    problem_sizes = scaling_data.get('problem_sizes', [])
+    execution_times = scaling_data.get('execution_times', [])
+    memory_usages = scaling_data.get('memory_usages', [])
+    accuracy_metrics = scaling_data.get('accuracy_metrics', [])
+
+    # Analyze time complexity
+    if len(problem_sizes) >= 3:
+        # Fit power law: time = c * size^α
+        log_sizes = np.log(problem_sizes)
+        log_times = np.log(execution_times)
+
+        # Linear regression on log-log scale
+        slope, intercept = np.polyfit(log_sizes, log_times, 1)
+
+        time_complexity = slope
+        scalability_score = 1.0 / (1.0 + abs(time_complexity))  # Better for lower complexity
+
+        if time_complexity < 1.5:
+            time_scaling = "Excellent scaling (nearly linear)"
+        elif time_complexity < 2.5:
+            time_scaling = "Good scaling (quadratic)"
+        elif time_complexity < 3.5:
+            time_scaling = "Acceptable scaling (cubic)"
+        else:
+            time_scaling = "Poor scaling (high polynomial)"
+    else:
+        time_complexity = None
+        time_scaling = "Insufficient data for scaling analysis"
+        scalability_score = 0.5
+
+    # Analyze memory scaling
+    if len(problem_sizes) >= 3 and len(memory_usages) >= 3:
+        memory_slope, _ = np.polyfit(np.log(problem_sizes), np.log(memory_usages), 1)
+        memory_scaling = f"Memory scales as O(n^{memory_slope:.2f})"
+    else:
+        memory_scaling = "Insufficient data for memory scaling analysis"
+
+    # Analyze accuracy vs performance trade-off
+    if len(accuracy_metrics) >= 3:
+        accuracy_vs_time = np.corrcoef(accuracy_metrics, 1.0/np.array(execution_times))[0,1]
+        if accuracy_vs_time > 0.7:
+            tradeoff_assessment = "Good accuracy-performance balance"
+        elif accuracy_vs_time > 0.3:
+            tradeoff_assessment = "Moderate accuracy-performance trade-off"
+        else:
+            tradeoff_assessment = "Poor accuracy-performance balance"
+    else:
+        tradeoff_assessment = "Insufficient data for trade-off analysis"
+
+    # Generate recommendations
+    recommendations = []
+    if time_complexity and time_complexity > 2.5:
+        recommendations.append("Consider algorithmic improvements to reduce computational complexity")
+    if scalability_score < 0.6:
+        recommendations.append("Implement parallel processing or distributed computing")
+    if 'memory' in memory_scaling.lower() and 'high' in memory_scaling.lower():
+        recommendations.append("Optimize memory usage through better data structures or streaming")
+
+    return {
+        'time_complexity': time_complexity,
+        'time_scaling_description': time_scaling,
+        'memory_scaling_description': memory_scaling,
+        'scalability_score': scalability_score,
+        'accuracy_performance_tradeoff': tradeoff_assessment,
+        'recommendations': recommendations,
+        'performance_projection': project_future_performance(scaling_data)
+    }
+
+def project_future_performance(scaling_data):
+    """
+    Project performance for larger problem sizes based on scaling analysis.
+    """
+    if len(scaling_data.get('problem_sizes', [])) < 3:
+        return "Insufficient data for performance projection"
+
+    # Fit scaling model
+    sizes = np.array(scaling_data['problem_sizes'])
+    times = np.array(scaling_data['execution_times'])
+
+    # Power law fit
+    log_sizes = np.log(sizes)
+    log_times = np.log(times)
+    slope, intercept = np.polyfit(log_sizes, log_times, 1)
+
+    # Project to larger sizes
+    target_sizes = [10 * max(sizes), 100 * max(sizes)]
+    projected_times = [np.exp(intercept) * size**slope for size in target_sizes]
+
+    return {
+        'scaling_law': ".2f",
+        'projections': [
+            {'size': int(target_sizes[0]), 'estimated_time': f"{projected_times[0]:.2f}s"},
+            {'size': int(target_sizes[1]), 'estimated_time': f"{projected_times[1]:.2f}s"}
+        ]
+    }
+```
+
+## Performance Monitoring Dashboard
+
+### Real-time Performance Monitoring
+```python
+class PerformanceDashboard:
+    """
+    Real-time performance monitoring and visualization dashboard.
+    """
+
+    def __init__(self):
+        self.metrics_history = []
+        self.alerts = []
+        self.performance_targets = self.load_performance_targets()
+
+    def update_metrics(self, new_metrics):
+        """
+        Update performance metrics and check against targets.
+        """
+        timestamp = datetime.now()
+        self.metrics_history.append({
+            'timestamp': timestamp,
+            'metrics': new_metrics
+        })
+
+        # Check for performance regressions
+        self.check_performance_regression(new_metrics)
+
+        # Check against performance targets
+        self.check_performance_targets(new_metrics)
+
+        # Maintain history size
+        if len(self.metrics_history) > 1000:
+            self.metrics_history = self.metrics_history[-1000:]
+
+    def check_performance_regression(self, current_metrics):
+        """
+        Check for performance regressions compared to recent history.
+        """
+        if len(self.metrics_history) < 10:
+            return  # Need minimum history
+
+        recent_metrics = self.metrics_history[-10:]
+        baseline_metrics = np.mean([m['metrics']['execution_time'] for m in recent_metrics[:-1]])
+
+        current_time = current_metrics['execution_time']
+        regression_threshold = 1.2  # 20% regression threshold
+
+        if current_time > baseline_metrics * regression_threshold:
+            self.alerts.append({
+                'type': 'PERFORMANCE_REGRESSION',
+                'message': ".2f",
+                'severity': 'HIGH',
+                'timestamp': datetime.now()
+            })
+
+    def check_performance_targets(self, current_metrics):
+        """
+        Check current metrics against performance targets.
+        """
+        for metric_name, target_value in self.performance_targets.items():
+            if metric_name in current_metrics:
+                current_value = current_metrics[metric_name]
+
+                # Check if target is exceeded (for minimization metrics)
+                if metric_name in ['execution_time', 'memory_usage'] and current_value > target_value:
+                    self.alerts.append({
+                        'type': 'TARGET_EXCEEDED',
+                        'message': f"{metric_name} target exceeded: {current_value:.2f} > {target_value:.2f}",
+                        'severity': 'MEDIUM',
+                        'timestamp': datetime.now()
+                    })
+
+    def generate_performance_report(self):
+        """
+        Generate comprehensive performance report.
+        """
+        if not self.metrics_history:
+            return "No performance data available"
+
+        recent_metrics = self.metrics_history[-50:]  # Last 50 measurements
+
+        # Calculate summary statistics
+        execution_times = [m['metrics']['execution_time'] for m in recent_metrics]
+        memory_usages = [m['metrics']['memory_usage'] for m in recent_metrics]
+
+        report = f"""
+Performance Dashboard Report
+{'='*50}
+
+Time Period: {recent_metrics[0]['timestamp']} to {recent_metrics[-1]['timestamp']}
+
+Execution Time Statistics:
+  Mean: {np.mean(execution_times):.4f}s
+  Std:  {np.std(execution_times):.4f}s
+  Min:  {np.min(execution_times):.4f}s
+  Max:  {np.max(execution_times):.4f}s
+
+Memory Usage Statistics:
+  Mean: {np.mean(memory_usages):.2f} MB
+  Std:  {np.std(memory_usages):.2f} MB
+  Max:  {np.max(memory_usages):.2f} MB
+
+Active Alerts: {len(self.alerts)}
+"""
+
+        if self.alerts:
+            report += "\nRecent Alerts:\n"
+            for alert in self.alerts[-5:]:  # Show last 5 alerts
+                report += f"  {alert['timestamp']}: {alert['message']} ({alert['severity']})\n"
+
+        return report
+
+    def load_performance_targets(self):
+        """
+        Load performance targets from configuration.
+        """
+        return {
+            'execution_time': 1.0,  # seconds
+            'memory_usage': 500.0,  # MB
+            'cpu_utilization': 80.0,  # percent
+            'error_rate': 0.001  # fraction
+        }
+```
+
+This comprehensive performance benchmarking framework ensures **optimal performance** across all scientific computing domains, providing quantitative evaluation, optimization guidance, and scalability analysis for research-grade computational performance.
