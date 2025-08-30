@@ -26,6 +26,11 @@ from .toolkit_integration import (
     UncertaintyQuantificationIntegrator,
     UOIFTemporalIntegrator
 )
+from .decision_equations import (
+    DecisionEquations,
+    DecisionParameters,
+    OptimizationResult
+)
 
 __all__ = [
     'SourceHierarchy', 'SourceType',
@@ -34,5 +39,8 @@ __all__ = [
     'AllocationSystem', 'AllocationResult',
     'BootstrapIntegrator',
     'UncertaintyQuantificationIntegrator',
-    'UOIFTemporalIntegrator'
+    'UOIFTemporalIntegrator',
+    'DecisionEquations',
+    'DecisionParameters',
+    'OptimizationResult'
 ]
