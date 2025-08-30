@@ -1,0 +1,99 @@
+---
+globs: *hbflow*,*fluid*,*rheology*,*flow*
+description: "Fluid dynamics and rheological modeling frameworks"
+---
+# 🌊 Fluid Dynamics & Rheological Frameworks
+
+## Herschel-Bulkley Fluid Dynamics Package ([hbflow/](mdc:hbflow/))
+
+### Core Components
+- **[models.py](mdc:hbflow/models.py)** - Constitutive equations and forward/inverse models
+  - `hb_tau_from_gamma()` - Forward model: stress from shear rate
+  - `hb_gamma_from_tau()` - Inverse model: shear rate from stress
+  - `yield_stress_extraction()` - Yield stress parameter extraction
+
+- **[fit.py](mdc:hbflow/fit.py)** - Parameter fitting with uncertainty quantification
+  - `fit_herschel_bulkley()` - Nonlinear least squares fitting
+  - `bootstrap_parameter_estimation()` - Uncertainty quantification
+  - `confidence_intervals()` - Statistical bounds calculation
+
+- **[duct.py](mdc:hbflow/duct.py)** - Flow solver for complex geometries
+  - `solve_duct_flow()` - General duct flow solution
+  - `elliptical_duct_solver()` - Specialized elliptical geometry
+  - `boundary_condition_handling()` - Complex boundary conditions
+
+### Usage Patterns
+```python
+# Basic constitutive modeling
+from hbflow.models import hb_tau_from_gamma, hb_gamma_from_tau
+
+tau_y, K, n = 5.0, 2.0, 0.8  # Yield stress, consistency, power index
+shear_rates = [0.1, 1.0, 10.0, 100.0]
+stresses = hb_tau_from_gamma(shear_rates, tau_y, K, n)
+
+# Parameter fitting from experimental data
+from hbflow.fit import fit_herschel_bulkley
+fitted_params = fit_herschel_bulkley(experimental_shear_rates, experimental_stresses)
+
+# Advanced flow solving
+from hbflow.duct import solve_duct_flow
+flow_solution = solve_duct_flow(geometry='elliptical', params=fitted_params)
+```
+
+## Multi-Phase Flow Analysis ([multi_phase_flow_analysis.py](mdc:multi_phase_flow_analysis.py))
+
+### Core Features
+- **VOF Interface Tracking** - Volume of Fluid method implementation
+- **Droplet Dynamics** - Single and multi-droplet analysis
+- **Phase Separation** - Complex fluid interface modeling
+- **Advection-Diffusion** - Coupled transport phenomena
+
+### Key Classes
+```python
+class MultiPhaseFlowAnalyzer:
+    def __init__(self, config: FlowConfig)
+    def add_phase(self, properties: PhaseProperties)
+    def initialize_droplet(self, center, radius, cont_phase, drop_phase)
+    def solve_flow(self, conditions: FlowConditions) -> FlowSolution
+```
+
+## Process Design Framework ([process_design_framework.py](mdc:process_design_framework.py))
+
+### Industrial Applications
+- **Scale-up Studies** - Laboratory to industrial scale conversion
+- **Equipment Optimization** - Process equipment design and optimization
+- **Flow Simulation** - Complex industrial flow modeling
+- **Process Validation** - Industrial process verification
+
+### Design Principles
+- **Constant Shear Rate** - Maintains flow characteristics during scale-up
+- **Residence Time Control** - Ensures adequate reaction/mixing time
+- **Power Consumption Optimization** - Energy-efficient process design
+- **Material Compatibility** - Equipment material selection and validation
+
+### Usage Workflow
+1. **Material Characterization** - Rheological property measurement
+2. **Process Definition** - Operating conditions and requirements
+3. **Scale-up Calculation** - Dimensionless number analysis
+4. **Equipment Selection** - Optimal equipment configuration
+5. **Validation** - Process performance verification
+
+## Best Practices
+
+### Parameter Estimation
+- Always use uncertainty quantification with bootstrap methods
+- Validate parameter bounds against physical constraints
+- Consider temperature and concentration effects on rheological properties
+- Use multiple experimental techniques for robust characterization
+
+### Flow Simulation
+- Validate numerical methods against analytical solutions
+- Use appropriate mesh resolution for interface capturing
+- Consider computational efficiency vs. accuracy trade-offs
+- Implement proper boundary conditions for industrial geometries
+
+### Scale-up Considerations
+- Maintain dimensionless groups (Reynolds, Deborah, etc.)
+- Consider heat transfer effects in large-scale processes
+- Account for mixing inefficiencies in industrial equipment
+- Validate process performance at scale with pilot studies

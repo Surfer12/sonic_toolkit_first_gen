@@ -1,0 +1,47 @@
+---
+alwaysApply: true
+description: "Scientific computing frameworks overview and navigation guide"
+---
+# 🔬 Scientific Computing Frameworks - Architecture Overview
+
+## Core Framework Architecture
+
+This scientific computing toolkit follows a modular architecture with specialized frameworks for different domains:
+
+### Primary Research Frameworks
+- **[inverse_precision_framework.py](mdc:inverse_precision_framework.py)** - 0.9987 convergence criterion for ill-conditioned systems
+- **[hbflow/](mdc:hbflow/)** - Herschel-Bulkley fluid dynamics package with constitutive models
+- **[multi_phase_flow_analysis.py](mdc:multi_phase_flow_analysis.py)** - Advanced interface tracking with VOF methods
+- **[process_design_framework.py](mdc:process_design_framework.py)** - Industrial flow simulation and scale-up studies
+
+### Specialized Analysis Tools
+- **[optical_depth_enhancement.py](mdc:optical_depth_enhancement.py)** - Sub-nanometer precision optical systems
+- **[chromostereopsis_model.py](mdc:chromostereopsis_model.py)** - Visual depth illusion modeling
+- **[cryptographic_analysis.py](mdc:cryptographic_analysis.py)** - Post-quantum cryptographic implementations
+- **[plant_biology_model.py](mdc:plant_biology_model.py)** - Lorenz-based biological maturation
+
+### Enhanced Integration Frameworks
+- **[assembly_theory_integration.py](mdc:assembly_theory_integration.py)** - Assembly Theory with consciousness frameworks
+- **[cloudfront_reverse_proxy.py](mdc:cloudfront_reverse_proxy.py)** - Cloud deployment automation
+- **[performance_benchmarking.py](mdc:performance_benchmarking.py)** - Comprehensive performance analysis
+- **[quantitative_validation_metrics.py](mdc:quantitative_validation_metrics.py)** - Statistical validation framework
+
+## Framework Navigation Guide
+
+### Entry Points by Domain
+**Fluid Dynamics**: Start with [hbflow/models.py](mdc:hbflow/models.py) for constitutive equations
+**Optical Systems**: Use [optical_depth_enhancement.py](mdc:optical_depth_enhancement.py) for precision analysis
+**Biological Research**: Access via [plant_biology_model.py](mdc:plant_biology_model.py)
+**Cryptographic Research**: See [cryptographic_analysis.py](mdc:cryptographic_analysis.py)
+
+### Integration Patterns
+- **Ψ(x) Consciousness**: Integrates with Assembly Theory via [assembly_theory_integration.py](mdc:assembly_theory_integration.py)
+- **Performance Monitoring**: Use [performance_benchmarking.py](mdc:performance_benchmarking.py) for any component
+- **Validation**: Apply [quantitative_validation_metrics.py](mdc:quantitative_validation_metrics.py) to any model
+- **Deployment**: Leverage [deployment_architecture.py](mdc:deployment_architecture.py) for production setups
+
+### Key Constants and Parameters
+- **Convergence Criterion**: 0.9987 for inverse precision methods
+- **Rainbow Parameters**: v1=29, o1=14, o2=15 for cryptographic security
+- **Optical Precision**: 1nm resolution, 10nm accuracy targets
+- **Biological Modeling**: Lorenz system parameters for plant maturation
