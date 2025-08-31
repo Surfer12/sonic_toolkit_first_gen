@@ -1,7 +1,5 @@
 ---
-alwaysApply: false
-description: "Standards for cross-domain validation of computational methods and algorithms across scientific disciplines"
-globs: *.md,*.tex,*.py
+alwaysApply: true
 ---
 # 🌐 Cross-Domain Validation Standards
 

@@ -1,8 +1,7 @@
 ---
-globs: *.sh,*.yml,*.yaml,Makefile,Dockerfile*
 description: "Build, deployment, and DevOps patterns for multi-language frameworks"
+alwaysApply: false
 ---
-
 # 🔨 Build & Deployment Patterns
 
 ## Multi-Language Build System

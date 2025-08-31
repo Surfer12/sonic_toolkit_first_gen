@@ -1,7 +1,6 @@
 ---
-alwaysApply: false
 description: "Standards for documenting and comparing algorithm performance in scientific computing"
-globs: *.md,*.tex,*.py,*.ipynb
+alwaysApply: false
 ---
 # 📊 Algorithm Performance Documentation Standards
 

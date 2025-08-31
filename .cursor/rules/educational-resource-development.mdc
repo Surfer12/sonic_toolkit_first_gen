@@ -1,6 +1,6 @@
 ---
 description: "Comprehensive framework for developing multi-level educational resources that leverage supplementary materials for different expertise levels"
-globs: *.md,*.tex,docs/*,publications/*
+alwaysApply: false
 ---
 # Educational Resource Development
 

@@ -1,8 +1,7 @@
 ---
-globs: *.java
 description: "Java security framework development patterns and penetration testing conventions"
+alwaysApply: false
 ---
-
 # ☕ Java Security Frameworks - Development Guide
 
 ## Security Framework Architecture

@@ -32,6 +32,12 @@ import warnings
 from pathlib import Path
 import random
 
+# Configure matplotlib for better font support
+plt.rcParams['font.family'] = ['DejaVu Sans', 'Arial', 'sans-serif']
+plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'Helvetica', 'sans-serif']
+plt.rcParams['axes.unicode_minus'] = False
+plt.rcParams['text.usetex'] = False  # Disable LaTeX to avoid font issues
+
 # Import depth amplification system
 try:
     from depth_amplification_system import DepthAmplificationSystem, create_depth_field
@@ -608,7 +614,7 @@ def rainbow_parameter_optimization():
     # Parameter bounds for optimization
     bounds = [(10, 50), (5, 25), (5, 25)]  # v1, o1, o2
 
-    print("🔬 Optimizing Rainbow Parameters with 1e-6 Convergence...")
+    print("Optimizing Rainbow Parameters with 1e-6 Convergence...")
 
     # Multi-algorithm optimization
     algorithms = {
@@ -668,7 +674,7 @@ def rainbow_parameter_optimization():
 def create_comparison_visualization():
     """Create comprehensive comparison visualization for Rainbow vs other PQC algorithms."""
     fig, axes = plt.subplots(2, 3, figsize=(20, 12))
-    fig.suptitle('🔬 Post-Quantum Cryptography: Rainbow vs Competitors\nEnhanced with Exceptional Primes & Depth Amplification',
+    fig.suptitle('Post-Quantum Cryptography: Rainbow vs Competitors\nEnhanced with Exceptional Primes & Depth Amplification',
                 fontsize=16, fontweight='bold')
 
     # Define algorithms and their characteristics
@@ -816,7 +822,7 @@ def create_comparison_visualization():
 def create_rainbow_visualization():
     """Create comprehensive Rainbow cryptography visualization."""
     fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-    fig.suptitle('🌈 Rainbow Multivariate Cryptography - Exceptional Twin Prime Analysis\n'
+    fig.suptitle('Rainbow Multivariate Cryptography - Exceptional Twin Prime Analysis\n'
                 'Enhanced with (179,181) & (29,31) Pairs using 1e-6 Convergence',
                 fontsize=16, fontweight='bold')
 

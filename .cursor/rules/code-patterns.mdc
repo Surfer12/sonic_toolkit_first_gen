@@ -1,9 +1,7 @@
 ---
-alwaysApply: false
 globs: *.py
-description: Python coding patterns, best practices, and conventions for the scientific computing toolkit
+alwaysApply: false
 ---
-
 # 🐍 Python Code Patterns & Best Practices Guide
 
 ## Core Scientific Computing Patterns

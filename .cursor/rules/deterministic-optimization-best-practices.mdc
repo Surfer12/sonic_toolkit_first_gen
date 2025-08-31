@@ -1,7 +1,6 @@
 ---
-alwaysApply: true
 description: "Best practices for implementing and documenting deterministic optimization methods in scientific computing"
-globs: *.py,*.md,*.tex
+alwaysApply: false
 ---
 # Deterministic Optimization Best Practices
 

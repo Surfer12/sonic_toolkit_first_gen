@@ -1,7 +1,6 @@
 ---
-alwaysApply: false
 description: "Comprehensive standards for hardware acceleration across GPU, TPU, and specialized processors"
-globs: *.py,*.cpp,*.cu,*.h,*.cuh
+alwaysApply: false
 ---
 # 🚀 Hardware Acceleration Standards
 

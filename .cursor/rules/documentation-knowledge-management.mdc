@@ -1,8 +1,7 @@
 ---
-globs: *.md,*.tex,*.py,*.java,*.swift
 description: "Documentation standards, knowledge management, and research paper generation for the scientific computing toolkit"
+alwaysApply: false
 ---
-
 # 📚 Documentation & Knowledge Management
 
 This rule establishes comprehensive documentation standards, knowledge management practices, and research publication workflows for the scientific computing toolkit.

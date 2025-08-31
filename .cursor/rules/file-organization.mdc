@@ -1,8 +1,7 @@
 ---
-alwaysApply: true
 description: "File organization, naming conventions, and workspace management patterns"
+alwaysApply: false
 ---
-
 # 📁 File Organization Standards
 
 ## Directory Structure

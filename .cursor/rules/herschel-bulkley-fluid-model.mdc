@@ -1,8 +1,7 @@
 ---
-globs: *Herschel*,*Bulkley*,*Rheology*,*Fluid*,*Constitutive*,*Inverse*
 description: "Herschel-Bulkley fluid model implementation with constitutive and inverse forms, parameter fitting, and flow solvers"
+alwaysApply: false
 ---
-
 # Herschel-Bulkley Fluid Model Implementation
 
 Complete implementation of the Herschel-Bulkley (HB) fluid model with constitutive and inverse forms, parameter fitting, elliptical-duct flow solver, and comprehensive validation.

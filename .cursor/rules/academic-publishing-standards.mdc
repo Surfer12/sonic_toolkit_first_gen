@@ -1,8 +1,7 @@
 ---
-globs: *.tex,*.md,*.py,*.java,*.swift
 description: "Academic publishing standards and LaTeX formatting guidelines for scientific research"
+alwaysApply: false
 ---
-
 # 📚 Academic Publishing Standards
 
 ## LaTeX Document Structure

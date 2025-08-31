@@ -1,5 +1,5 @@
 ---
-globs: *.py,*.java,*.mojo
+alwaysApply: false
 ---
 # Inverse Precision Framework with 0.9987 Convergence Criterion
 

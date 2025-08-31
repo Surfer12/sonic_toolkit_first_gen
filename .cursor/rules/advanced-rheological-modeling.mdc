@@ -1,5 +1,5 @@
 ---
-globs: *.py,*.mojo
+alwaysApply: false
 ---
 # Advanced Rheological Modeling Standards
 

@@ -1,9 +1,7 @@
 ---
-alwaysApply: false
 description: "Comprehensive framework for analyzing optimization algorithms in scientific computing, ensuring mathematical rigor and empirical validation"
-globs: *.py,*.md,*.tex
+alwaysApply: false
 ---
-
 # Algorithm Analysis Framework
 
 ## Overview

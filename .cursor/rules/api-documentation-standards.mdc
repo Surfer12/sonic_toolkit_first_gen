@@ -1,7 +1,6 @@
 ---
-alwaysApply: false
 description: "API documentation standards for scientific computing frameworks"
-globs: *.py,*.java,*.swift
+alwaysApply: false
 ---
 # API Documentation Standards
 

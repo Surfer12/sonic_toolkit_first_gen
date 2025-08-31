@@ -1,8 +1,7 @@
 ---
-globs: *.py
 description: CloudFront reverse proxy integration and deployment for scientific computing services
+alwaysApply: false
 ---
-
 # ☁️ CloudFront Integration and Deployment
 
 ## Core Architecture

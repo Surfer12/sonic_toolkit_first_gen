@@ -1,8 +1,7 @@
 ---
-globs: *.java
 description: "Java development standards for research frameworks, consciousness modeling, and scientific computing"
+alwaysApply: false
 ---
-
 # ☕ Java Development Standards - Research Frameworks
 
 ## Core Research Principles

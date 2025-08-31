@@ -1,8 +1,7 @@
 ---
-globs: Corpus/qualia/**/*.java,Corpus/qualia/**/*.py,qualia_integration_pipeline.py
 description: "Standards for integration testing and validation of qualia components"
+alwaysApply: false
 ---
-
 # Integration Testing Standards for Qualia Components
 
 ## 🎯 **Testing Framework Overview**

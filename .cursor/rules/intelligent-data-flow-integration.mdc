@@ -1,11 +1,7 @@
 ---
 description: "Extended Intelligent Data Flow Integration Framework with LSTM Oates Theorem, Rainbow Cryptographic Processing, and Cross-Ruleset Intelligence Adaptation"
-alwaysApply: true
-globs: ["**/*.py", "**/*.java", "**/*.swift", "**/*.json", "**/*.md", "**/*.tex", "**/*.h5", "**/*.csv", "**/*.nc", "**/*.tif", "**/*.fits", "**/*.dat", "**/*.bin"]
-tags: ["data-flow", "integration", "scientific-computing", "adaptive-processing", "context-aware", "lstm-oates", "rainbow-crypto", "temporal-processing", "cross-ruleset"]
-priority: "high"
+alwaysApply: false
 ---
-
 # 🧠 Intelligent Data Flow Integration Framework
 
 ## **AI-Powered Context Recognition System**

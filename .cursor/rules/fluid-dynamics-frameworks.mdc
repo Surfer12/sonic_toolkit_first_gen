@@ -1,6 +1,6 @@
 ---
-globs: *hbflow*,*fluid*,*rheology*,*flow*
 description: "Fluid dynamics and rheological modeling frameworks"
+alwaysApply: false
 ---
 # 🌊 Fluid Dynamics & Rheological Frameworks
 

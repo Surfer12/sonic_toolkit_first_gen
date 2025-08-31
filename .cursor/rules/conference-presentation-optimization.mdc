@@ -1,6 +1,5 @@
 ---
-description: "Comprehensive strategy for optimizing conference presentations and workshops to maximize professional impact"
-globs: *.tex,*.md,publications/*,docs/*
+alwaysApply: false
 ---
 # Conference Presentation Optimization
 

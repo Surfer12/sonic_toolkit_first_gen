@@ -1,6 +1,6 @@
 ---
-alwaysApply: true
 description: "Overview and usage guide for all scientific computing Cursor rules"
+alwaysApply: false
 ---
 # 📚 Scientific Computing Toolkit - Cursor Rules Overview
 

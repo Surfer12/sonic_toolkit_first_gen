@@ -1,6 +1,6 @@
 ---
 description: "Comprehensive strategy for academic networking and research community engagement across multiple platforms"
-globs: *.md,publications/*,docs/*
+alwaysApply: false
 ---
 # Academic Networking Strategy
 

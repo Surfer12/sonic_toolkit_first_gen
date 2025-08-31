@@ -1,8 +1,7 @@
 ---
-globs: *.py,*.ipynb,*.json
 description: "AI/ML integration patterns for scientific computing workflows"
+alwaysApply: false
 ---
-
 # 🤖 AI/ML Integration Patterns
 
 This rule establishes comprehensive AI/ML integration patterns for the scientific computing toolkit, enabling seamless incorporation of machine learning and artificial intelligence capabilities into research workflows.

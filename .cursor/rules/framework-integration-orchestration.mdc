@@ -1,6 +1,6 @@
 ---
-globs: *integration*,*orchestration*,*framework*,*system*
 description: "Framework integration and orchestration patterns"
+alwaysApply: false
 ---
 # 🔗 Framework Integration & Orchestration
 

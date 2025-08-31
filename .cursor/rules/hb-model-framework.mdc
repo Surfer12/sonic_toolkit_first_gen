@@ -1,7 +1,6 @@
 ---
-alwaysApply: true
 description: Hierarchical Bayesian model framework for probability estimation with Ψ(x) integration
-globs: *.py,*.tex,*.md
+alwaysApply: false
 ---
 # Hierarchical Bayesian Model Framework for Probability Estimation
 

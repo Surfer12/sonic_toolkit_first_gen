@@ -1,7 +1,6 @@
 ---
-alwaysApply: false
 description: "Standards for documenting and validating fundamental computational laws discovered through mathematical analysis"
-globs: *.md,*.tex,*.py
+alwaysApply: false
 ---
 # 🌟 Fundamental Computational Laws Standards
 

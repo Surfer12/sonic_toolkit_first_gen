@@ -1,6 +1,5 @@
 ---
-globs: *assembly*,*consciousness*,*information*,*complexity*
-description: "Assembly Theory integration with consciousness frameworks"
+alwaysApply: true
 ---
 # 🧬 Assembly Theory & Consciousness Integration
 

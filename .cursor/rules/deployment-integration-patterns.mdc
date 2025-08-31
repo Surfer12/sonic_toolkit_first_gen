@@ -1,6 +1,6 @@
 ---
-globs: *deployment*,*architecture*,*integration*,*assembly*
 description: "Deployment architectures and integration patterns"
+alwaysApply: false
 ---
 # 🏗️ Deployment Architectures & Integration Patterns
 

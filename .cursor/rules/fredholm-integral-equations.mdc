@@ -1,8 +1,7 @@
 ---
-globs: *.py,*.java,*.cpp,*.js
 description: Fredholm integral equations of the second kind and their numerical solution methods
+alwaysApply: false
 ---
-
 # Fredholm Integral Equations of the Second Kind
 
 ## Overview

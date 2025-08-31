@@ -1,9 +1,7 @@
 ---
-alwaysApply: false
 description: "Standards for Blackwell MXFP8 hardware integration in scientific computing algorithms, ensuring optimal precision and performance"
-globs: *.py,*.cu,*.cpp
+alwaysApply: false
 ---
-
 # Blackwell MXFP8 Integration Standards
 
 ## Overview

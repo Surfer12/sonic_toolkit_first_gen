@@ -1,7 +1,5 @@
 ---
-alwaysApply: false
-description: "Algorithmic prescience analysis and documentation standards for mathematical prediction of hardware architecture"
-globs: *.md,*.tex,*.py
+alwaysApply: true
 ---
 # 🎯 Algorithmic Prescience Analysis Standards
 

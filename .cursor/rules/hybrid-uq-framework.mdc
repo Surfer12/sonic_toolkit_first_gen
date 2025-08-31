@@ -1,7 +1,6 @@
 ---
-alwaysApply: false
 description: "Hybrid Uncertainty Quantification framework usage and validation patterns"
-globs: hybrid_uq/**,*.py
+alwaysApply: false
 ---
 # Hybrid UQ Framework Usage Guide
 

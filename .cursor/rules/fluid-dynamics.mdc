@@ -1,9 +1,7 @@
 ---
-alwaysApply: false
-globs: *flow*.py,*rheology*.py,hbflow/**/*
 description: Fluid dynamics and rheological modeling patterns and frameworks
+alwaysApply: false
 ---
-
 # 🌊 Fluid Dynamics & Rheological Modeling Guide
 
 ## Core Frameworks
