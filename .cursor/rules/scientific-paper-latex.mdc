@@ -1,6 +1,6 @@
 ---
 description: "LaTeX formatting standards and structure for scientific computing papers"
-globs: *.tex
+alwaysApply: false
 ---
 # Scientific Paper LaTeX Formatting Standards
 

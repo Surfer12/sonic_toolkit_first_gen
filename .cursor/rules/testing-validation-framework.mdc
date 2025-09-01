@@ -1,7 +1,6 @@
 ---
-alwaysApply: false
 description: "Testing and validation procedures for scientific computing frameworks"
-globs: test*.py,tests/**,validation*.py,*test*,*validation*
+alwaysApply: false
 ---
 # Testing and Validation Framework
 

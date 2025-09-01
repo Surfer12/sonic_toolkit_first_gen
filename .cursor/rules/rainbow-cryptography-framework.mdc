@@ -1,8 +1,7 @@
 ---
-globs: *.py,*.java,*.swift
 description: Rainbow multivariate cryptography framework and security implementation
+alwaysApply: false
 ---
-
 # 🌈 Rainbow Cryptography Framework
 
 ## Core Security Specifications

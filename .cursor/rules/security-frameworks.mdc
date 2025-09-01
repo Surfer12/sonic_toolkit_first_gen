@@ -1,8 +1,7 @@
 ---
-globs: *.java,*.swift
 description: "Security framework patterns and implementations across Java and Swift"
+alwaysApply: false
 ---
-
 # 🔐 Security Framework Patterns
 
 ## Reverse Koopman Penetration Testing Framework

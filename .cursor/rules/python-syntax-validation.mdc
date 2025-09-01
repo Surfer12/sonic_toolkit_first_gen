@@ -1,6 +1,6 @@
 ---
-globs: *.py
 description: Python syntax validation and error prevention for scientific computing
+alwaysApply: false
 ---
 # Python Syntax Validation for Scientific Computing
 

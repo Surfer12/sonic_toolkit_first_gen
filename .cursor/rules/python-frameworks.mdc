@@ -1,8 +1,7 @@
 ---
-globs: *.py
 description: "Python framework development patterns and scientific computing conventions"
+alwaysApply: false
 ---
-
 # 🐍 Python Scientific Frameworks - Development Guide
 
 ## Scientific Computing Patterns

@@ -1,8 +1,7 @@
 ---
-globs: *Mathematical*,*Proof*,*Theorem*,*Lemma*,*Psi*,*Koopman*,*Hierarchical*,*Bayesian*
 description: "Mathematical frameworks and notation standards for consciousness modeling, Bayesian inference, and dynamical systems"
+alwaysApply: false
 ---
-
 # Mathematical Frameworks and Notation Standards
 
 This workspace implements advanced mathematical frameworks for consciousness modeling, Bayesian inference, and dynamical systems analysis. Understanding these frameworks is essential for effective research and development.

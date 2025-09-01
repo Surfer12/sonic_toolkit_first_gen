@@ -1,8 +1,7 @@
 ---
-globs: *.java,*.swift,*.py,*.mojo
 description: "Language-specific patterns, conventions, and best practices across Java, Swift, Python, and Mojo"
+alwaysApply: false
 ---
-
 # 💻 Language-Specific Patterns
 
 ## Java Development Standards

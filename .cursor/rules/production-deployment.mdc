@@ -1,8 +1,7 @@
 ---
-globs: *.py,*.yaml,*.yml,*.dockerfile,*.sh,*.md
 description: "Production deployment patterns and DevOps practices for scientific computing applications"
+alwaysApply: false
 ---
-
 # 🚀 Production Deployment Patterns
 
 This rule establishes comprehensive production deployment patterns and DevOps practices for the scientific computing toolkit, ensuring reliable, scalable, and maintainable deployment across production environments.

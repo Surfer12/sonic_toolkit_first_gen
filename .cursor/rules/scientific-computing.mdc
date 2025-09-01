@@ -1,9 +1,7 @@
 ---
-alwaysApply: false
-globs: *demo*.py,*analysis*.py,*framework*.py,scientific-computing-tools/**
 description: Scientific computing patterns, numerical methods, and research methodologies
+alwaysApply: false
 ---
-
 # 🔬 Scientific Computing & Research Methods Guide
 
 ## Core Computational Frameworks

@@ -1,5 +1,5 @@
 ---
-globs: *.py
+alwaysApply: false
 ---
 # Test Rule
 This is a test rule for the scientific computing toolkit.

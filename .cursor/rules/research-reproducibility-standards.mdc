@@ -1,7 +1,6 @@
 ---
-alwaysApply: false
 description: "Research reproducibility standards for scientific computing frameworks"
-globs: research/**,reproducibility/**,*research*,*reproduce*,experiments/**,notebooks/**
+alwaysApply: false
 ---
 # Research Reproducibility Standards
 

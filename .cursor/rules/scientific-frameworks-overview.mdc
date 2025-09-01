@@ -1,6 +1,6 @@
 ---
-alwaysApply: true
 description: "Scientific computing frameworks overview and navigation guide"
+alwaysApply: false
 ---
 # 🔬 Scientific Computing Frameworks - Architecture Overview
 

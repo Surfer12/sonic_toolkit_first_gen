@@ -1,8 +1,7 @@
 ---
-alwaysApply: true
 description: "Comprehensive navigation guide and workflow patterns for the scientific computing toolkit"
+alwaysApply: false
 ---
-
 # 🧭 Scientific Computing Toolkit Navigation Guide
 
 This rule provides comprehensive navigation guidance, workflow patterns, and development roadmaps for the scientific computing toolkit, ensuring efficient exploration and utilization of its capabilities.

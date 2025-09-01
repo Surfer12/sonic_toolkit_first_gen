@@ -1,8 +1,6 @@
 ---
-globs: *PenetrationTesting*,*Security*,*Audit*,*Koopman*
-description: "Security analysis patterns and penetration testing frameworks used in this research environment"
+alwaysApply: true
 ---
-
 # Security Analysis Patterns and Penetration Testing Frameworks
 
 This workspace implements advanced security analysis using mathematical frameworks, particularly reverse Koopman operators for system stability analysis and iOS penetration testing.

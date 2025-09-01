@@ -1,9 +1,7 @@
 ---
-alwaysApply: false
-globs: *process*.py,*design*.py,*scale*.py,*equipment*.py
 description: Process design, scale-up studies, and equipment optimization for industrial applications
+alwaysApply: false
 ---
-
 # 🏭 Process Design & Industrial Applications Guide
 
 ## Core Framework

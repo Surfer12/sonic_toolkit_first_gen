@@ -1,7 +1,6 @@
 ---
-alwaysApply: true
 description: "Comprehensive state logging for all file modifications, ensuring complete traceability and rollback capabilities for scientific computing toolkit development"
-globs: *.py, *.md, *.tex, *.yml, *.yaml, *.json, *.csv, *.txt
+alwaysApply: false
 ---
 # State Logging and Change Management
 

@@ -1,7 +1,6 @@
 ---
-alwaysApply: true
 description: "Prevents incorrect MCMC assumptions in scientific computing documentation and ensures proper deterministic optimization terminology"
-globs: *.md,*.tex,*.py,*.rst,*.yml,*.yaml
+alwaysApply: false
 ---
 # MCMC Assumption Avoidance
 

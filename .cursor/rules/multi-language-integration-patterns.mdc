@@ -1,8 +1,7 @@
 ---
-globs: *.py,*.java,*.swift,*.mojo
 description: "Multi-language integration patterns and cross-language development standards"
+alwaysApply: false
 ---
-
 # 🔗 Multi-Language Integration Patterns
 
 ## Cross-Language Architecture

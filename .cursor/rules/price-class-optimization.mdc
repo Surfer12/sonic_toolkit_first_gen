@@ -1,8 +1,7 @@
 ---
-globs: *.py
 description: Price class optimization for CloudFront distributions in scientific computing
+alwaysApply: false
 ---
-
 # 💰 CloudFront Price Class Optimization
 
 ## Cost Optimization Strategy

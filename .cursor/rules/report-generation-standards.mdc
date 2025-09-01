@@ -1,8 +1,7 @@
 ---
-globs: qualia_integration_pipeline.py,docs/**/*.md,Corpus/qualia/reports/*.txt
 description: "Standards for report generation and documentation across qualia components"
+alwaysApply: false
 ---
-
 # Report Generation and Documentation Standards
 
 ## 📊 **Report Generation Framework Overview**

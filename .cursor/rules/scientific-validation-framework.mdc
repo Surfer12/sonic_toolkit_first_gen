@@ -1,6 +1,6 @@
 ---
 description: "Comprehensive validation framework for scientific computing research"
-globs: *.py,test_*.py
+alwaysApply: false
 ---
 # Scientific Validation Framework
 

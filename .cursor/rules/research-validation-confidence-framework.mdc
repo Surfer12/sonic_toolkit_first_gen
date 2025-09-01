@@ -1,8 +1,7 @@
 ---
-globs: *.py,*.java,*.swift,*.mojo
 description: "Research validation patterns and confidence scoring frameworks for scientific computing"
+alwaysApply: false
 ---
-
 # 🔬 Research Validation & Confidence Scoring Framework
 
 ## Universal Confidence Scoring System

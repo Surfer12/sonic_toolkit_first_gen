@@ -1,8 +1,7 @@
 ---
-globs: *.py,*.java,*.swift,*.mojo,*.json,*.md
 description: "Multi-language development patterns, cross-platform integration, and language selection guidelines"
+alwaysApply: false
 ---
-
 # 🌐 Multi-Language Development Patterns
 
 This rule establishes the multi-language development patterns, cross-platform integration strategies, and language selection guidelines for the scientific computing toolkit.

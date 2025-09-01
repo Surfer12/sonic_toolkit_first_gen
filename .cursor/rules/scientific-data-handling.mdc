@@ -1,7 +1,6 @@
 ---
-alwaysApply: false
 description: "Scientific data handling and preprocessing patterns for research computing"
-globs: data/**,preprocessing/**,*data*,*preprocess*,scientific-computing-tools/**
+alwaysApply: false
 ---
 # Scientific Data Handling Patterns
 

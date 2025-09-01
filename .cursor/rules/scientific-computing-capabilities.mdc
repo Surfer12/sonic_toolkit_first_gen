@@ -1,7 +1,6 @@
 ---
-alwaysApply: true
 description: "Comprehensive documentation of scientific computing toolkit capabilities with accurate deterministic optimization foundation"
-globs: *.md,*.tex,*.py
+alwaysApply: false
 ---
 # Scientific Computing Toolkit Capabilities
 

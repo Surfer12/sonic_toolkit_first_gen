@@ -1,7 +1,6 @@
 ---
-alwaysApply: true
 description: "Automatically logs timestamps and request metadata for all AI interactions to ensure complete audit trail and reproducibility"
-globs: *.py, *.md, *.tex, *.yml, *.yaml, *.json
+alwaysApply: false
 ---
 # Timestamp Logging and Request State Management
 

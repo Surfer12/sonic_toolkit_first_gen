@@ -1,5 +1,5 @@
 ---
-globs: *.py,*.java,*.mojo
+alwaysApply: false
 ---
 # Advanced Viscoelastic Rheology Framework
 

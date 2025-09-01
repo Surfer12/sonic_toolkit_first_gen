@@ -1,6 +1,6 @@
 ---
-globs: *.py
 description: Common Python error patterns and prevention strategies
+alwaysApply: false
 ---
 # Common Python Error Patterns in Scientific Computing
 

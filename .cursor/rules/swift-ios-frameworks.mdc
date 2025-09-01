@@ -1,8 +1,7 @@
 ---
-globs: *.swift
 description: "Swift iOS framework development patterns and mobile application conventions"
+alwaysApply: false
 ---
-
 # 📱 Swift iOS Frameworks - Development Guide
 
 ## iOS Framework Architecture

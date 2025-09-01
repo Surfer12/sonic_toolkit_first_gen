@@ -1,8 +1,7 @@
 ---
-globs: *.md,*.tex,*.rst
 description: "Research documentation patterns, academic writing standards, and knowledge organization"
+alwaysApply: false
 ---
-
 # 📚 Research Documentation Standards
 
 ## Documentation Hierarchy

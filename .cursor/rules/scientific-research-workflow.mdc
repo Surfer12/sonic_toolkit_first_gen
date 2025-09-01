@@ -1,7 +1,6 @@
 ---
-alwaysApply: false
 description: "Research workflow standards for scientific computing from hypothesis to publication"
-globs: *.md,*.tex,*.py,*.ipynb
+alwaysApply: false
 ---
 # 🔬 Scientific Research Workflow Standards
 

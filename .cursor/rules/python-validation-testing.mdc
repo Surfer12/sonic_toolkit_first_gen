@@ -1,6 +1,6 @@
 ---
-globs: *.py
 description: Automated validation and testing for Python scientific computing code
+alwaysApply: false
 ---
 # Python Validation and Testing for Scientific Computing
 

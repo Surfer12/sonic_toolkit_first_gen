@@ -1,8 +1,7 @@
 ---
-alwaysApply: true
 description: "Complete scientific computing toolkit overview with directory structure, frameworks, and integration patterns"
+alwaysApply: false
 ---
-
 # 🔬 Scientific Computing Toolkit - Complete Overview
 
 This workspace contains a comprehensive scientific computing ecosystem with research-grade frameworks, multi-language implementations, and production-ready integration across five core directories.

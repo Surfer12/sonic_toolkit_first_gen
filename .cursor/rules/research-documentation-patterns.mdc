@@ -1,8 +1,7 @@
 ---
-globs: *research*.md,*theorem*.md,*proof*.md
 description: "Research documentation patterns for scientific computing"
+alwaysApply: false
 ---
-
 # 📚 Research Documentation Patterns
 
 ## Theorem Documentation

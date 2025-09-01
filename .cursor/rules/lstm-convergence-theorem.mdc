@@ -1,7 +1,6 @@
 ---
-alwaysApply: true
 description: Oates' LSTM convergence theorem for chaotic system prediction with confidence bounds
-globs: *.py,*.tex,*.md
+alwaysApply: false
 ---
 # Oates' LSTM Convergence Theorem for Chaotic System Prediction
 
